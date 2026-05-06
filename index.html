@@ -27,17 +27,36 @@
             </div>
 
             <div class="desktop-menu">
-                <a href="https://zyronneil2007.github.io/Isabela-State-University_Cabagan/" class="nav-link">Home</a>
-                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link" target="_blank">Repository</a>
+                <a href="#home" class="nav-link"
+                    onclick="document.getElementById('home').scrollIntoView({behavior: 'smooth'})">Home</a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link"
+                    target="_blank">Repository</a>
             </div>
 
             <div class="nav-actions">
-                <a href="#idCard" class="btn-primary liquid-glass" onclick="document.getElementById('idCard').scrollIntoView({behavior: 'smooth'})">ID Preview</a>
+                <a href="#idCard" class="btn-primary liquid-glass"
+                    onclick="document.getElementById('idCard').scrollIntoView({behavior: 'smooth'})">ID Preview</a>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <!-- Home / Hero Section -->
+    <section id="home" class="hero-section glass-panel">
+        <div class="hero-content">
+            <div class="hero-badge liquid-glass">✨ Spatial Edition 2026</div>
+            <h1 class="hero-title">The ISU Digital ID Experience</h1>
+            <p class="hero-subtitle">Crafted for precision. Designed with spatial aesthetics. Instantly generate your
+                digital and print-ready Isabela State University ID right from your browser, complete with a live
+                digital signature.</p>
+            <div class="hero-actions">
+                <a href="#generator" class="btn-primary"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior: 'smooth'})">Get Started <i
+                        class="ph ph-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container" id="generator">
         <!-- Form Section -->
         <div class="form-section glass-panel">
             <h1>ID Generator</h1>
@@ -134,14 +153,14 @@
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass"><i
                         class="ph ph-envelope"></i></a>
-                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
-                    class="icon-link liquid-glass"><i class="ph ph-facebook-logo"></i></a>
-                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
-                    class="icon-link liquid-glass"><i class="ph ph-instagram-logo"></i></a>
-                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="icon-link liquid-glass"><i
-                        class="ph ph-tiktok-logo"></i></a>
-                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer"
-                    aria-label="GitHub" class="icon-link liquid-glass"><i class="ph ph-github-logo"></i></a>
+                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer"
+                    aria-label="Facebook" class="icon-link liquid-glass"><i class="ph ph-facebook-logo"></i></a>
+                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer"
+                    aria-label="Instagram" class="icon-link liquid-glass"><i class="ph ph-instagram-logo"></i></a>
+                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer"
+                    aria-label="TikTok" class="icon-link liquid-glass"><i class="ph ph-tiktok-logo"></i></a>
+                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer" aria-label="GitHub"
+                    class="icon-link liquid-glass"><i class="ph ph-github-logo"></i></a>
             </div>
         </div>
     </footer>
