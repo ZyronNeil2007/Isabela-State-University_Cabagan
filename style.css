@@ -1,0 +1,385 @@
+/* iOS 26 Spatial Design Aesthetic */
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-highlight: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 24px 48px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --accent: #007aff;
+            --danger: #ff3b30;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            /* Clean dynamic gradient background using the requested green palette */
+            background: linear-gradient(135deg, #043904 0%, #15B915 100%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: clamp(0.5rem, 3vw, 2rem);
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: clamp(1rem, 3vw, 2rem);
+            max-width: 1400px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        /* Glassmorphism Panels */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border: 1px solid var(--glass-border);
+            border-radius: clamp(20px, 4vw, 32px);
+            box-shadow: var(--glass-shadow);
+            padding: clamp(1.25rem, 4vw, 2.5rem);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit; /* Inherits the dynamic clamp() border radius from parent */
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%, rgba(255, 255, 255, 0.1) 100%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .form-section {
+            flex: 1 1 400px;
+            max-width: 450px;
+        }
+
+        .preview-section {
+            flex: 2 1 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .preview-section > div {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+            font-size: clamp(0.85rem, 1.5vw, 1rem);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: clamp(1rem, 2vw, 1.25rem);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: clamp(0.75rem, 1.2vw, 0.85rem);
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input[type="text"],
+        input[type="file"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: clamp(12px, 2vw, 16px);
+            color: var(--text-primary);
+            font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--glass-highlight);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1), inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Custom File Input */
+        input[type="file"] {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        input[type="file"]::file-selector-button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-right: 10px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Signature Pad */
+        .signature-container {
+            background: rgba(255, 255, 255, 0.8);
+            /* Opaque enough to see the black ink */
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            margin-bottom: 0.75rem;
+            width: 100%;
+        }
+
+        #signature-pad {
+            display: block;
+            width: 100%;
+            height: 150px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+
+        .btn-clear {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            float: right;
+            margin-top: 5px;
+        }
+
+        .btn-clear:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Action Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: clamp(14px, 2vw, 18px);
+            background: rgba(255, 255, 255, 0.95);
+            color: #043904; /* Darkest green from palette */
+            border: none;
+            border-radius: clamp(12px, 2vw, 16px);
+            font-size: clamp(1rem, 1.5vw, 1.2rem);
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: clamp(1rem, 3vw, 1.5rem);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        /* --- 3D FLIP CARD --- */
+        .flip-card-container {
+            background: transparent;
+            perspective: 1000px; /* 3D perspective */
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .flip-card {
+            position: relative;
+            width: 100%;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Front and Back wrappers */
+        .flip-card-front, .flip-card-back {
+            width: 100%;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .flip-card-front {
+            position: relative;
+            z-index: 2;
+        }
+
+        .flip-card-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(180deg);
+        }
+
+        /* Canvas inside card */
+        .id-card-preview canvas {
+            display: block;
+            width: 100%; 
+            height: auto;
+            border-radius: 16px;
+            margin: 0 auto;
+        }
+
+        .flip-card-container:hover .flip-card {
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+
+        .preview-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .clearfix::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+
+        /* --- RESPONSIVE OPTIMIZATION --- */
+        
+        /* Tablet Landscape & Below */
+        @media (max-width: 1024px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .form-section {
+                flex: none; /* Removed flex-basis 100% */
+                max-width: 600px; /* Allow form to be wider on tablet but not full screen */
+                width: 100%;
+            }
+            .preview-section {
+                flex: none; /* Removed flex-basis 100% */
+                width: 100%;
+                max-width: 600px;
+            }
+        }
+
+        /* Mobile & Small Tablet */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .glass-panel {
+                padding: 1.5rem;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 1.75rem;
+            }
+            .container {
+                gap: 1.5rem;
+            }
+            .btn-primary {
+                padding: 14px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Small Mobile Phones */
+        @media (max-width: 480px) {
+            body {
+                padding: 0.5rem;
+            }
+            .glass-panel {
+                padding: 1rem;
+                border-radius: 20px;
+            }
+            h1 {
+                font-size: 1.5rem;
+            }
+            input[type="text"], input[type="file"], input[type="date"], textarea {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+            label {
+                font-size: 0.8rem;
+            }
+            .id-card-preview {
+                box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            }
+        }

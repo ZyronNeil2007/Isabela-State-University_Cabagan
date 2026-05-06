@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium ID Generator</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Condensed:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Form Section -->
+        <div class="form-section glass-panel">
+            <h1>ID Generator</h1>
+            <p class="subtitle">Spatial Edition. Fill details to generate live preview.</p>
+
+            <div class="form-group">
+                <label for="profile-pic">Profile Picture</label>
+                <input type="file" id="profile-pic" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label for="full-name">Full Name</label>
+                <input type="text" id="full-name" placeholder="e.g. JOHN DOE">
+            </div>
+
+            <div class="form-group">
+                <label for="id-number">ID Number</label>
+                <input type="text" id="id-number" placeholder="e.g. 2026-0001">
+            </div>
+
+            <div class="form-group">
+                <label for="course">Course</label>
+                <input type="text" id="course" placeholder="e.g. BS Computer Science">
+            </div>
+
+            <div class="form-group">
+                <label for="dob">Date of Birth</label>
+                <input type="date" id="dob">
+            </div>
+
+            <div class="form-group">
+                <label for="parent-name">Parent/Guardian Name</label>
+                <input type="text" id="parent-name" placeholder="e.g. JANE DOE">
+            </div>
+
+            <div class="form-group">
+                <label for="address">Address</label>
+                <textarea id="address" placeholder="e.g. 123 Main St, City, Country"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="telephone">Telephone Number</label>
+                <input type="text" id="telephone" placeholder="e.g. +1 234 567 8900">
+            </div>
+
+            <div class="form-group clearfix">
+                <label>Digital Signature</label>
+                <div class="signature-container">
+                    <canvas id="signature-pad"></canvas>
+                </div>
+                <button id="clear-signature" class="btn-clear">Clear</button>
+            </div>
+
+            <button id="download-btn" class="btn-primary">Download for Print (A4)</button>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section glass-panel">
+            <div class="preview-title" id="flip-title">ID Card Preview - Front</div>
+            
+            <div class="flip-card-container" onclick="document.getElementById('idCard').classList.toggle('is-flipped'); document.getElementById('flip-title').innerText = document.getElementById('idCard').classList.contains('is-flipped') ? 'ID Card Preview - Back' : 'ID Card Preview - Front';">
+                <div class="flip-card" id="idCard">
+                    <!-- Front -->
+                    <div class="flip-card-front id-card-preview">
+                        <canvas id="front-canvas"></canvas>
+                    </div>
+                    <!-- Back -->
+                    <div class="flip-card-back id-card-preview">
+                        <canvas id="back-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-primary); opacity: 0.7; cursor: pointer;" onclick="document.querySelector('.flip-card-container').click();">
+                👆 Tap card to flip
+            </p>
+        </div>
+    </div>
+
+    <!-- Hidden canvas for A4 Export -->
+    <canvas id="export-canvas" style="display:none;"></canvas>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
