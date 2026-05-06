@@ -25,9 +25,13 @@
             color: var(--text-primary);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
-            padding: clamp(0.5rem, 3vw, 2rem);
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 2rem;
+            padding: clamp(1rem, 4vw, 2.5rem);
             overflow-x: hidden;
+            width: 100%;
         }
 
         @keyframes gradientBG {
@@ -381,5 +385,98 @@
             }
             .id-card-preview {
                 box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            }
+        }
+
+        /* --- HEADER & FOOTER STYLING --- */
+        .app-header {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: clamp(0.75rem, 2vw, 1.25rem) clamp(1.25rem, 4vw, 2.5rem);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: clamp(16px, 3vw, 24px);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: clamp(1rem, 2vw, 1.5rem);
+            width: 100%;
+            max-width: 800px;
+            justify-content: center;
+        }
+
+        .header-logo {
+            width: clamp(50px, 8vw, 75px);
+            height: auto;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+            transition: transform 0.3s ease;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        .header-text h2 {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            font-weight: 600;
+            letter-spacing: -0.5px;
+            color: var(--text-primary);
+        }
+
+        .header-text p {
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .app-footer {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: clamp(1rem, 2vw, 1.5rem);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: clamp(16px, 3vw, 24px);
+            margin-top: 1rem;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            text-align: center;
+        }
+
+        .footer-logo {
+            width: clamp(35px, 5vw, 45px);
+            height: auto;
+            opacity: 0.85;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+        }
+
+        .footer-content p {
+            font-size: clamp(0.75rem, 1.5vw, 0.85rem);
+            color: var(--text-secondary);
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        /* Adjustments for header/footer on super small screens */
+        @media (max-width: 480px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+                gap: 0.5rem;
+            }
+            .header-text h2 {
+                line-height: 1.2;
             }
         }

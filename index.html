@@ -13,6 +13,17 @@
 
 <body>
 
+    <!-- Header -->
+    <header class="app-header glass-panel">
+        <div class="header-content">
+            <img src="images/isu_logo.png" alt="ISU Logo" class="header-logo">
+            <div class="header-text">
+                <h2>Isabela State University</h2>
+                <p>Digital Student ID Portal</p>
+            </div>
+        </div>
+    </header>
+
     <div class="container">
         <!-- Form Section -->
         <div class="form-section glass-panel">
@@ -73,8 +84,9 @@
         <!-- Preview Section -->
         <div class="preview-section glass-panel">
             <div class="preview-title" id="flip-title">ID Card Preview - Front</div>
-            
-            <div class="flip-card-container" onclick="document.getElementById('idCard').classList.toggle('is-flipped'); document.getElementById('flip-title').innerText = document.getElementById('idCard').classList.contains('is-flipped') ? 'ID Card Preview - Back' : 'ID Card Preview - Front';">
+
+            <div class="flip-card-container"
+                onclick="document.getElementById('idCard').classList.toggle('is-flipped'); document.getElementById('flip-title').innerText = document.getElementById('idCard').classList.contains('is-flipped') ? 'ID Card Preview - Back' : 'ID Card Preview - Front';">
                 <div class="flip-card" id="idCard">
                     <!-- Front -->
                     <div class="flip-card-front id-card-preview">
@@ -87,11 +99,20 @@
                 </div>
             </div>
 
-            <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-primary); opacity: 0.7; cursor: pointer;" onclick="document.querySelector('.flip-card-container').click();">
+            <p style="text-align: center; margin-top: 15px; font-size: 0.9rem; color: var(--text-primary); opacity: 0.7; cursor: pointer;"
+                onclick="document.querySelector('.flip-card-container').click();">
                 👆 Tap card to flip
             </p>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer class="app-footer glass-panel">
+        <div class="footer-content">
+            <img src="images/isu_logo.png" alt="ISU Logo" class="footer-logo">
+            <p>© 2026 Isabela State University. All rights reserved. | Cabagan Campus</p>
+        </div>
+    </footer>
 
     <!-- Hidden canvas for A4 Export -->
     <canvas id="export-canvas" style="display:none;"></canvas>
