@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Premium ID Generator</title>
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Condensed:wght@400;700&display=swap"
         rel="stylesheet">
@@ -13,16 +15,27 @@
 
 <body>
 
-    <!-- Header -->
-    <header class="app-header glass-panel">
-        <div class="header-content">
-            <img src="images/isu_logo.png" alt="ISU Logo" class="header-logo">
-            <div class="header-text">
-                <h2>Isabela State University</h2>
-                <p>Digital Student ID Portal</p>
+    <!-- Fading Blur Backdrop for Top Navbar -->
+    <div class="top-nav-backdrop"></div>
+
+    <!-- Navbar -->
+    <nav id="navbar" class="liquid-glass">
+        <div class="nav-container">
+            <div class="logo-container">
+                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <span class="logo-text">Isabela State University</span>
+            </div>
+
+            <div class="desktop-menu">
+                <a href="https://zyronneil2007.github.io/Isabela-State-University_Cabagan/" class="nav-link">Home</a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link" target="_blank">Repository</a>
+            </div>
+
+            <div class="nav-actions">
+                <a href="#idCard" class="btn-primary liquid-glass" onclick="document.getElementById('idCard').scrollIntoView({behavior: 'smooth'})">ID Preview</a>
             </div>
         </div>
-    </header>
+    </nav>
 
     <div class="container">
         <!-- Form Section -->
@@ -107,10 +120,29 @@
     </div>
 
     <!-- Footer -->
-    <footer class="app-footer glass-panel">
-        <div class="footer-content">
-            <img src="images/isu_logo.png" alt="ISU Logo" class="footer-logo">
-            <p>© 2026 Isabela State University. All rights reserved. | Cabagan Campus</p>
+    <footer>
+        <div class="footer-container liquid-glass">
+            <div class="footer-logo">
+                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <span>Isabela State University</span>
+            </div>
+
+            <p class="footer-text">
+                © 2026 Designed &amp; Developed by Zyron Neil.
+            </p>
+
+            <div class="social-links">
+                <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass"><i
+                        class="ph ph-envelope"></i></a>
+                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"
+                    class="icon-link liquid-glass"><i class="ph ph-facebook-logo"></i></a>
+                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"
+                    class="icon-link liquid-glass"><i class="ph ph-instagram-logo"></i></a>
+                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer" aria-label="TikTok" class="icon-link liquid-glass"><i
+                        class="ph ph-tiktok-logo"></i></a>
+                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer"
+                    aria-label="GitHub" class="icon-link liquid-glass"><i class="ph ph-github-logo"></i></a>
+            </div>
         </div>
     </footer>
 
