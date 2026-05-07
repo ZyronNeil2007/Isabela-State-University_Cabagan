@@ -749,6 +749,28 @@ footer {
     flex-shrink: 0;
     width: 60px;
     height: 95px;
+    perspective: 800px;
+}
+
+.stepper-mini-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transform-style: preserve-3d;
+}
+
+.stepper-mini-card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.stepper-mini-front, .stepper-mini-back {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 6px 20px rgba(0,0,0,0.35);
@@ -756,7 +778,11 @@ footer {
     border: 1px solid rgba(255,255,255,0.15);
 }
 
-#mini-canvas {
+.stepper-mini-back {
+    transform: rotateY(180deg);
+}
+
+#mini-canvas-front, #mini-canvas-back {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -976,39 +1002,36 @@ footer {
 
 
 /* ══════════════════════════════════════════════════════════
-   MOBILE BREAKPOINT — Activate stepper mode
+   STEPPER MODE — Activated Globally
 ══════════════════════════════════════════════════════════ */
-@media (max-width: 768px) {
+/* Show stepper chrome */
+.stepper-header { display: flex !important; }
+.stepper-nav    { display: flex !important; }
 
-    /* Show stepper chrome */
-    .stepper-header { display: flex; }
-    .stepper-nav    { display: flex; }
+/* Hide desktop-only elements */
+.desktop-form-header  { display: none !important; }
+.desktop-download-btn { display: none !important; }
 
-    /* Hide desktop-only elements */
-    .desktop-form-header  { display: none; }
-    .desktop-download-btn { display: none; }
+/* All steps hidden by default */
+.steps-wrapper .form-group {
+    display: none;
+    animation: stepFadeIn 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+    margin-bottom: 0;
+}
 
-    /* All steps hidden by default */
-    .steps-wrapper .form-group {
-        display: none;
-        animation: stepFadeIn 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) both;
-        margin-bottom: 0;
-    }
+/* Only the active step is visible */
+.steps-wrapper .form-group.active-step {
+    display: block;
+}
 
-    /* Only the active step is visible */
-    .steps-wrapper .form-group.active-step {
-        display: block;
-    }
+/* Slide-in animation for step reveal */
+@keyframes stepFadeIn {
+    from { opacity: 0; transform: translateX(18px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
 
-    /* Slide-in animation for step reveal */
-    @keyframes stepFadeIn {
-        from { opacity: 0; transform: translateX(18px); }
-        to   { opacity: 1; transform: translateX(0); }
-    }
-
-    /* Make the form section not scroll internally */
-    .form-section {
-        max-width: 100%;
-        overflow: visible;
-    }
+/* Make the form section not scroll internally */
+.form-section {
+    max-width: 100%;
+    overflow: visible;
 }

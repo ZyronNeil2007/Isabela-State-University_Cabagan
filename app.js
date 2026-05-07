@@ -32,8 +32,10 @@ const frontCanvas = document.getElementById('front-canvas');
 const frontCtx    = frontCanvas.getContext('2d');
 const backCanvas  = document.getElementById('back-canvas');
 const backCtx     = backCanvas.getContext('2d');
-const miniCanvas  = document.getElementById('mini-canvas');
-const miniCtx     = miniCanvas ? miniCanvas.getContext('2d') : null;
+const miniCanvasFront = document.getElementById('mini-canvas-front');
+const miniCtxFront    = miniCanvasFront ? miniCanvasFront.getContext('2d') : null;
+const miniCanvasBack  = document.getElementById('mini-canvas-back');
+const miniCtxBack     = miniCanvasBack ? miniCanvasBack.getContext('2d') : null;
 
 // ─── Signature Pad ────────────────────────────────────────────────────────────
 const sigCanvas = document.getElementById('signature-pad');
@@ -150,9 +152,13 @@ function loadTemplates() {
         backCanvas.height  = back  ? back.height  : 1013;
 
         // Set mini canvas intrinsic size
-        if (miniCanvas) {
-            miniCanvas.width  = frontCanvas.width;
-            miniCanvas.height = frontCanvas.height;
+        if (miniCanvasFront) {
+            miniCanvasFront.width  = frontCanvas.width;
+            miniCanvasFront.height = frontCanvas.height;
+        }
+        if (miniCanvasBack) {
+            miniCanvasBack.width  = backCanvas.width;
+            miniCanvasBack.height = backCanvas.height;
         }
 
         renderCanvases();
@@ -261,9 +267,14 @@ function renderCanvases() {
 }
 
 function updateMiniCanvas() {
-    if (!miniCanvas || !miniCtx) return;
-    miniCtx.clearRect(0, 0, miniCanvas.width, miniCanvas.height);
-    miniCtx.drawImage(frontCanvas, 0, 0, miniCanvas.width, miniCanvas.height);
+    if (miniCanvasFront && miniCtxFront) {
+        miniCtxFront.clearRect(0, 0, miniCanvasFront.width, miniCanvasFront.height);
+        miniCtxFront.drawImage(frontCanvas, 0, 0, miniCanvasFront.width, miniCanvasFront.height);
+    }
+    if (miniCanvasBack && miniCtxBack) {
+        miniCtxBack.clearRect(0, 0, miniCanvasBack.width, miniCanvasBack.height);
+        miniCtxBack.drawImage(backCanvas, 0, 0, miniCanvasBack.width, miniCanvasBack.height);
+    }
 }
 
 
@@ -319,9 +330,9 @@ const STEP_TITLES = [
 
 let currentStep = 1;
 
-/** Returns true if we are in mobile stepper mode */
+/** Returns true if we are in stepper mode (now enabled globally) */
 function isStepperMode() {
-    return window.innerWidth <= 768;
+    return true;
 }
 
 /** Build the dot indicators once on load */
@@ -352,7 +363,7 @@ function goToStep(n) {
             // Auto-focus the first input in the step
             const firstInput = el.querySelector('input, textarea');
             if (firstInput && firstInput.type !== 'file') {
-                setTimeout(() => firstInput.focus(), 350);
+                setTimeout(() => firstInput.focus({ preventScroll: true }), 350);
             }
         } else {
             el.classList.remove('active-step');
@@ -391,9 +402,28 @@ function goToStep(n) {
         if (doneBtn) doneBtn.style.display = 'none';
     }
 
-    // Scroll the form section into view smoothly
-    const formSection = document.querySelector('.form-section');
-    if (formSection) formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // Update step front/back flip for main preview and mini preview
+    const idCard = document.getElementById('idCard');
+    const flipTitle = document.getElementById('flip-title');
+    const miniCard = document.getElementById('mini-card');
+
+    if (currentStep >= 5) {
+        if (idCard && !idCard.classList.contains('is-flipped')) {
+            idCard.classList.add('is-flipped');
+            if (flipTitle) flipTitle.innerText = 'ID Card Preview — Back';
+        }
+        if (miniCard && !miniCard.classList.contains('is-flipped')) {
+            miniCard.classList.add('is-flipped');
+        }
+    } else {
+        if (idCard && idCard.classList.contains('is-flipped')) {
+            idCard.classList.remove('is-flipped');
+            if (flipTitle) flipTitle.innerText = 'ID Card Preview — Front';
+        }
+        if (miniCard && miniCard.classList.contains('is-flipped')) {
+            miniCard.classList.remove('is-flipped');
+        }
+    }
 }
 
 /** Next button handler */
