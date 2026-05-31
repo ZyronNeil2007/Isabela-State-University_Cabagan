@@ -4,55 +4,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premium ID Generator</title>
+    <meta name="description" content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature.">
+    <meta name="theme-color" content="#021a02">
+    <title>ISU Premium ID Generator — Isabela State University</title>
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Inter (UI) + Roboto Condensed (ID card text) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- VanillaTilt — 3D card hover effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+    <!-- ═══════════════════════════════════════════════════════
+         BACKGROUND DECORATIVE ORBS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="floating-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         NAVBAR
+    ═══════════════════════════════════════════════════════ -->
     <div class="top-nav-backdrop"></div>
 
-    <!-- Navbar -->
     <nav id="navbar" class="liquid-glass">
         <div class="nav-container">
-            <div class="logo-container">
-                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+            <div class="logo-container" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})" role="button" tabindex="0" aria-label="Back to home">
+                <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
                 <span class="logo-text">Isabela State University</span>
             </div>
             <div class="desktop-menu">
                 <a href="#home" class="nav-link" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
-                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link" target="_blank">Repository</a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link" target="_blank" rel="noopener noreferrer">Repository</a>
             </div>
             <div class="nav-actions">
-                <a href="#idCard" class="btn-primary liquid-glass" onclick="document.getElementById('idCard').scrollIntoView({behavior:'smooth'})">ID Preview</a>
+                <a href="#generator" class="btn-nav" id="nav-cta-btn" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    <i class="ph ph-identification-card"></i>
+                    <span>Get Your ID</span>
+                </a>
             </div>
         </div>
     </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero-section glass-panel">
-        <div class="hero-content">
-            <div class="hero-badge liquid-glass">✨ Spatial Edition 2026</div>
-            <h1 class="hero-title">The ISU Digital ID Experience</h1>
-            <p class="hero-subtitle">Crafted for precision. Designed with spatial aesthetics. Instantly generate your digital and print-ready Isabela State University ID right from your browser, complete with a live digital signature.</p>
-            <div class="hero-actions">
-                <a href="#generator" class="btn-primary" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">Get Started <i class="ph ph-arrow-right"></i></a>
+    <!-- ═══════════════════════════════════════════════════════
+         HERO SECTION
+    ═══════════════════════════════════════════════════════ -->
+    <section id="home" class="hero-section">
+        <div class="hero-content glass-panel">
+
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                Spatial Edition 2026
             </div>
+
+            <h1 class="hero-title">
+                The <span class="hero-title-highlight">ISU Digital ID</span><br>
+                <span class="hero-title-sub">Experience</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Crafted for precision. Designed with spatial aesthetics. Instantly generate your
+                digital and print-ready Isabela State University ID right from your browser —
+                complete with a live digital signature.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#generator" class="btn-primary" id="hero-get-started-btn"
+                   onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    Get Started <i class="ph ph-arrow-right"></i>
+                </a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan"
+                   class="btn-ghost" target="_blank" rel="noopener noreferrer">
+                    <i class="ph ph-github-logo"></i> Repository
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">9</span>
+                    <span class="hero-stat-label">Easy Steps</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">Live</span>
+                    <span class="hero-stat-label">ID Preview</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">A4</span>
+                    <span class="hero-stat-label">Print-Ready</span>
+                </div>
+            </div>
+
         </div>
     </section>
 
-    <div class="container" id="generator">
+    <!-- ═══════════════════════════════════════════════════════
+         MAIN GENERATOR — SPLIT LAYOUT
+    ═══════════════════════════════════════════════════════ -->
+    <main class="container" id="generator">
 
-        <!-- Form Section -->
+        <!-- ── LEFT: FORM SECTION ──────────────────────────── -->
         <div class="form-section glass-panel">
 
-            <!-- ═══════════════════════════════════════════
-                 MOBILE STEPPER HEADER (hidden on desktop)
-            ═══════════════════════════════════════════ -->
+            <!-- ─────────────────────────────────────────────
+                 STEPPER HEADER (shown in stepper mode)
+                 Contains mini live preview + progress meta
+            ───────────────────────────────────────────────── -->
             <div class="stepper-header">
-                <!-- Mini live preview -->
                 <div class="stepper-mini-preview">
                     <div class="stepper-mini-card" id="mini-card">
                         <div class="stepper-mini-front">
@@ -64,7 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Step progress info -->
                 <div class="stepper-meta">
                     <div class="stepper-step-label">
                         <span id="stepper-step-name">Upload Photo</span>
@@ -77,147 +148,230 @@
                 </div>
             </div>
 
-            <!-- ═══════════════════════════════════════════
-                 DESKTOP HEADER (hidden on mobile)
-            ═══════════════════════════════════════════ -->
+            <!-- ─────────────────────────────────────────────
+                 DESKTOP FORM HEADER
+            ───────────────────────────────────────────────── -->
             <div class="desktop-form-header">
-                <h1>ID Generator</h1>
-                <p class="subtitle">Spatial Edition. Fill details to generate live preview.</p>
+                <div class="desktop-form-header-top">
+                    <div class="desktop-step-badge" id="desktop-step-badge">
+                        <i class="ph ph-number-one"></i>
+                        Step 1 of 9
+                    </div>
+                    <h2 class="desktop-step-title" id="desktop-step-title">Upload Photo</h2>
+                    <p class="subtitle">Fill in your details to generate the live ID preview.</p>
+                </div>
+                <!-- Segmented progress bar — JS injects 9 segments -->
+                <div class="desktop-progress-bar" id="desktop-progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1"></div>
             </div>
 
-            <!-- ═══════════════════════════════════════════
+            <!-- ─────────────────────────────────────────────
                  FORM STEPS
-                 Each .form-group has data-step & data-step-title
-            ═══════════════════════════════════════════ -->
+                 Each .form-group: data-step & data-step-title
+            ───────────────────────────────────────────────── -->
             <div class="steps-wrapper">
 
+                <!-- Step 1: Photo -->
                 <div class="form-group" data-step="1" data-step-title="Upload Photo">
-                    <label for="profile-pic">Profile Picture</label>
+                    <label for="profile-pic">
+                        <i class="ph ph-camera"></i> Profile Picture
+                    </label>
                     <div class="photo-upload-area" id="photo-upload-area">
                         <div class="photo-upload-placeholder" id="photo-placeholder">
-                            <i class="ph ph-camera"></i>
-                            <span>Tap to upload photo</span>
-                            <small>JPG, PNG supported</small>
+                            <div class="photo-upload-icon">
+                                <i class="ph ph-cloud-arrow-up"></i>
+                            </div>
+                            <span>Click or drag to upload</span>
+                            <small>JPG, PNG supported · Passport size recommended</small>
                         </div>
-                        <img id="photo-preview-thumb" class="photo-preview-thumb" style="display:none;" alt="Preview">
-                        <input type="file" id="profile-pic" accept="image/*">
+                        <img id="photo-preview-thumb" class="photo-preview-thumb" style="display:none;" alt="Profile photo preview">
+                        <input type="file" id="profile-pic" accept="image/*" aria-label="Upload profile picture">
                     </div>
+                    <p class="step-hint"><i class="ph ph-info"></i> Your photo will appear on the front of the ID card.</p>
                 </div>
 
+                <!-- Step 2: Full Name -->
                 <div class="form-group" data-step="2" data-step-title="Full Name">
-                    <label for="full-name">Full Name</label>
-                    <input type="text" id="full-name" placeholder="e.g. JOHN DOE">
-                    <p class="step-hint"><i class="ph ph-info"></i> Will appear on the front of your ID</p>
+                    <label for="full-name"><i class="ph ph-user"></i> Full Name</label>
+                    <input type="text" id="full-name" placeholder="e.g. JUAN DELA CRUZ" autocomplete="name" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the front of your ID. Use your official full name.</p>
                 </div>
 
+                <!-- Step 3: ID Number -->
                 <div class="form-group" data-step="3" data-step-title="ID Number">
-                    <label for="id-number">ID Number</label>
-                    <input type="text" id="id-number" placeholder="e.g. 2026-0001">
-                    <p class="step-hint"><i class="ph ph-info"></i> Your student identification number</p>
+                    <label for="id-number"><i class="ph ph-hash"></i> ID / Student Number</label>
+                    <input type="text" id="id-number" placeholder="e.g. 25-00001" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Your official student identification number.</p>
                 </div>
 
+                <!-- Step 4: Course -->
                 <div class="form-group" data-step="4" data-step-title="Course">
-                    <label for="course">Course</label>
-                    <input type="text" id="course" placeholder="e.g. BS Computer Science">
-                    <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name</p>
+                    <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
+                    <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear on the ID.</p>
                 </div>
 
+                <!-- Step 5: DOB -->
                 <div class="form-group" data-step="5" data-step-title="Date of Birth">
-                    <label for="dob">Date of Birth</label>
+                    <label for="dob"><i class="ph ph-cake"></i> Date of Birth</label>
                     <input type="date" id="dob">
+                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the back of the ID card.</p>
                 </div>
 
+                <!-- Step 6: Parent / Guardian -->
                 <div class="form-group" data-step="6" data-step-title="Parent / Guardian">
-                    <label for="parent-name">Parent / Guardian Name</label>
-                    <input type="text" id="parent-name" placeholder="e.g. JANE DOE">
+                    <label for="parent-name"><i class="ph ph-users"></i> Parent / Guardian Name</label>
+                    <input type="text" id="parent-name" placeholder="e.g. JANE DELA CRUZ" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Person to notify in case of emergency.</p>
                 </div>
 
+                <!-- Step 7: Address -->
                 <div class="form-group" data-step="7" data-step-title="Address">
-                    <label for="address">Address</label>
-                    <textarea id="address" placeholder="e.g. 123 Main St, City, Country"></textarea>
+                    <label for="address"><i class="ph ph-map-pin"></i> Home Address</label>
+                    <textarea id="address" placeholder="e.g. Brgy. San Antonio, Cauayan City, Isabela" rows="3" spellcheck="false"></textarea>
+                    <p class="step-hint"><i class="ph ph-info"></i> Full home address for your ID record.</p>
                 </div>
 
+                <!-- Step 8: Telephone -->
                 <div class="form-group" data-step="8" data-step-title="Telephone">
-                    <label for="telephone">Telephone Number</label>
-                    <input type="text" id="telephone" placeholder="e.g. +63 912 345 6789">
+                    <label for="telephone"><i class="ph ph-phone"></i> Telephone / Mobile</label>
+                    <input type="text" id="telephone" placeholder="e.g. +63 912 345 6789" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Emergency contact number printed on the back.</p>
                 </div>
 
+                <!-- Step 9: Signature -->
                 <div class="form-group clearfix" data-step="9" data-step-title="Signature">
-                    <label>Digital Signature</label>
+                    <label><i class="ph ph-pen-nib"></i> Digital Signature</label>
                     <div class="signature-container">
-                        <canvas id="signature-pad"></canvas>
+                        <canvas id="signature-pad" aria-label="Draw your signature"></canvas>
+                        <div class="signature-watermark">Draw your signature here</div>
                     </div>
-                    <button id="clear-signature" class="btn-clear">Clear</button>
+                    <div class="signature-actions">
+                        <button id="clear-signature" class="btn-clear">
+                            <i class="ph ph-eraser"></i> Clear Signature
+                        </button>
+                    </div>
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign inside the box. Your signature appears on the front of the ID.</p>
                 </div>
 
             </div><!-- /steps-wrapper -->
 
-            <!-- ═══════════════════════════════════════════
-                 MOBILE STEPPER NAVIGATION (hidden on desktop)
-            ═══════════════════════════════════════════ -->
+            <!-- ─────────────────────────────────────────────
+                 STEPPER NAVIGATION (Back / Next / Done)
+            ───────────────────────────────────────────────── -->
             <div class="stepper-nav">
-                <button class="stepper-btn stepper-btn-back" id="stepper-back" onclick="stepperBack()">
+                <button class="stepper-btn stepper-btn-back" id="stepper-back" onclick="stepperBack()" aria-label="Previous step">
                     <i class="ph ph-arrow-left"></i> Back
                 </button>
-                <button class="stepper-btn stepper-btn-next" id="stepper-next" onclick="stepperNext()">
+                <button class="stepper-btn stepper-btn-next" id="stepper-next" onclick="stepperNext()" aria-label="Next step">
                     Next <i class="ph ph-arrow-right"></i>
                 </button>
-                <button class="stepper-btn stepper-btn-done btn-primary" id="stepper-done" style="display:none;" onclick="document.getElementById('download-btn').click()">
+                <button class="stepper-btn stepper-btn-done" id="stepper-done" style="display:none;"
+                        onclick="document.getElementById('download-btn').click()" aria-label="Download ID">
                     <i class="ph ph-download-simple"></i> Download ID
                 </button>
             </div>
 
-            <!-- Desktop download button (hidden on mobile) -->
-            <button id="download-btn" class="btn-primary desktop-download-btn">Download for Print (A4)</button>
+            <!-- Desktop Download Button -->
+            <button id="download-btn" class="btn-primary desktop-download-btn" aria-label="Download print-ready A4 ID">
+                <i class="ph ph-download-simple"></i>
+                Download for Print (A4)
+            </button>
 
         </div><!-- /form-section -->
 
-        <!-- Preview Section -->
+        <!-- ── RIGHT: PREVIEW SECTION ──────────────────────── -->
         <div class="preview-section glass-panel">
-            <div class="preview-title" id="flip-title">ID Card Preview — Front</div>
 
-            <div class="flip-card-container"
-                onclick="document.getElementById('idCard').classList.toggle('is-flipped'); document.getElementById('flip-title').innerText = document.getElementById('idCard').classList.contains('is-flipped') ? 'ID Card Preview — Back' : 'ID Card Preview — Front';">
-                <div class="flip-card" id="idCard">
-                    <div class="flip-card-front id-card-preview">
-                        <canvas id="front-canvas"></canvas>
-                    </div>
-                    <div class="flip-card-back id-card-preview">
-                        <canvas id="back-canvas"></canvas>
+            <div class="preview-header">
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    LIVE
+                </div>
+                <div class="preview-title" id="flip-title">Front Side</div>
+                <div class="preview-side-hint">Click card to flip</div>
+            </div>
+
+            <!-- Card Stage: ambient glow + tilt container -->
+            <div class="card-stage">
+                <div class="card-ambient-glow" aria-hidden="true"></div>
+
+                <div class="flip-card-container" id="card-tilt-wrapper"
+                     onclick="flipCard()"
+                     role="button"
+                     tabindex="0"
+                     aria-label="Click to flip ID card"
+                     onkeydown="if(event.key==='Enter'||event.key===' ')flipCard()">
+                    <div class="flip-card" id="idCard">
+                        <div class="flip-card-front id-card-preview">
+                            <canvas id="front-canvas"></canvas>
+                        </div>
+                        <div class="flip-card-back id-card-preview">
+                            <canvas id="back-canvas"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <p style="text-align:center; margin-top:15px; font-size:0.9rem; color:var(--text-primary); opacity:0.7; cursor:pointer;"
-               onclick="document.querySelector('.flip-card-container').click();">
-                👆 Tap card to flip
-            </p>
-        </div>
+            <!-- Flip Hint -->
+            <div class="flip-hint" onclick="document.querySelector('.flip-card-container').click();" role="button">
+                <i class="ph ph-arrows-clockwise"></i>
+                <span>Tap card to flip</span>
+            </div>
 
-    </div><!-- /container -->
+            <!-- Info Chips -->
+            <div class="preview-chips">
+                <div class="chip"><i class="ph ph-lightning"></i> Real-time</div>
+                <div class="chip"><i class="ph ph-printer"></i> Print-Ready</div>
+                <div class="chip chip-gold"><i class="ph ph-shield-check"></i> ISU Official</div>
+            </div>
 
-    <!-- Footer -->
+        </div><!-- /preview-section -->
+
+    </main><!-- /container -->
+
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════ -->
     <footer>
         <div class="footer-container liquid-glass">
             <div class="footer-logo">
                 <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
-                <span>Isabela State University</span>
+                <div class="footer-logo-text">
+                    <span class="footer-uni-name">Isabela State University</span>
+                    <span class="footer-tagline">Cabagan, Isabela</span>
+                </div>
             </div>
             <p class="footer-text">
-                © 2026 Designed &amp; Developed by Zyron Neil.<br>
-                <span style="font-size: 0.85rem; opacity: 0.7; display: block; margin-top: 4px;">v1.0.0 • Deployments: 9</span>
+                © 2026 Designed &amp; Developed by Zyron Neil.
+                <span>v2.0.0 · Premium ID Generator</span>
             </p>
             <div class="social-links">
-                <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass"><i class="ph ph-envelope"></i></a>
-                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer" class="icon-link liquid-glass"><i class="ph ph-facebook-logo"></i></a>
-                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer" class="icon-link liquid-glass"><i class="ph ph-instagram-logo"></i></a>
-                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer" class="icon-link liquid-glass"><i class="ph ph-tiktok-logo"></i></a>
-                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer" class="icon-link liquid-glass"><i class="ph ph-github-logo"></i></a>
+                <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
+                    <i class="ph ph-envelope"></i>
+                </a>
+                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer"
+                   class="icon-link liquid-glass" aria-label="Facebook">
+                    <i class="ph ph-facebook-logo"></i>
+                </a>
+                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer"
+                   class="icon-link liquid-glass" aria-label="Instagram">
+                    <i class="ph ph-instagram-logo"></i>
+                </a>
+                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer"
+                   class="icon-link liquid-glass" aria-label="TikTok">
+                    <i class="ph ph-tiktok-logo"></i>
+                </a>
+                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer"
+                   class="icon-link liquid-glass" aria-label="GitHub">
+                    <i class="ph ph-github-logo"></i>
+                </a>
             </div>
         </div>
     </footer>
 
-    <canvas id="export-canvas" style="display:none;"></canvas>
+    <!-- Hidden export canvas -->
+    <canvas id="export-canvas" style="display:none;" aria-hidden="true"></canvas>
+
     <script src="app.js"></script>
 </body>
 </html>
