@@ -2,7 +2,7 @@
 
 A premium, fully responsive client-side web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Refactored from the ground up with a stunning, modern **Apple-style glassmorphism UI**, smooth 3D interactive preview components, and a custom high-resolution dual-card layout canvas renderer.
 
-🔗 **Live Demo**: [https://id.isu-cabagan.edu.ph](https://id.isu-cabagan.edu.ph)
+🔗 **Live Demo**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)
 
 ---
 
