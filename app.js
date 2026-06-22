@@ -1027,6 +1027,7 @@ setTimeout(renderStudentTabs, 100);
    14. INTERACTIVE PHOTO CROPPER LOGIC
 ═══════════════════════════════════════════════════════════════════════════ */
 let cropZoom = 1;
+let baseScale = 1;
 let isDraggingCrop = false;
 let startDragX = 0, startDragY = 0;
 let imgOffsetX = 0, imgOffsetY = 0;
@@ -1038,6 +1039,17 @@ function openCropper() {
     document.getElementById('cropper-modal').classList.add('active');
     const imgEl = document.getElementById('cropper-img');
     imgEl.src = student.rawSourceImage.src;
+    
+    // Calculate base scale so the image covers the frame initially
+    const frame = document.querySelector('.cropper-frame');
+    if (frame && student.rawSourceImage.width) {
+        const frameRect = frame.getBoundingClientRect();
+        const scaleX = frameRect.width / student.rawSourceImage.width;
+        const scaleY = frameRect.height / student.rawSourceImage.height;
+        baseScale = Math.max(scaleX, scaleY);
+    } else {
+        baseScale = 1;
+    }
     
     cropZoom = 1;
     document.getElementById('cropper-zoom').value = 1;
@@ -1052,7 +1064,7 @@ function closeCropper() {
 
 function updateCropperTransform() {
     const imgEl = document.getElementById('cropper-img');
-    if (imgEl) imgEl.style.transform = `translate(${imgOffsetX}px, ${imgOffsetY}px) scale(${cropZoom})`;
+    if (imgEl) imgEl.style.transform = `translate(${imgOffsetX}px, ${imgOffsetY}px) scale(${baseScale * cropZoom})`;
 }
 
 document.getElementById('cropper-zoom')?.addEventListener('input', e => {
@@ -1123,7 +1135,7 @@ document.getElementById('cropper-save-btn')?.addEventListener('click', () => {
     ctx.save();
     ctx.translate(315/2, 355/2); 
     ctx.translate(imgOffsetX * domToNativeX - frameCx * domToNativeX, imgOffsetY * domToNativeY - frameCy * domToNativeY);
-    ctx.scale(cropZoom * domToNativeX, cropZoom * domToNativeY);
+    ctx.scale(baseScale * cropZoom * domToNativeX, baseScale * cropZoom * domToNativeY);
     ctx.drawImage(rawImage, -rawImage.width/2, -rawImage.height/2);
     ctx.restore();
     
