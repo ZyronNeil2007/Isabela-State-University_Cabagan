@@ -121,6 +121,18 @@
         <div class="form-section glass-panel">
 
             <!-- ─────────────────────────────────────────────
+                 STUDENT TABS (Batch Print Feature)
+            ───────────────────────────────────────────────── -->
+            <div class="student-tabs-container">
+                <div class="student-tabs" id="student-tabs">
+                    <!-- Tabs injected by JS -->
+                </div>
+                <button class="add-student-btn" id="add-student-btn" aria-label="Add new student" title="Add Student (Max 5)">
+                    <i class="ph ph-plus"></i>
+                </button>
+            </div>
+
+            <!-- ─────────────────────────────────────────────
                  STEPPER HEADER (shown in stepper mode)
                  Contains mini live preview + progress meta
             ───────────────────────────────────────────────── -->
@@ -183,7 +195,10 @@
                             <span>Click or drag to upload</span>
                             <small>JPG, PNG supported · Passport size recommended</small>
                         </div>
-                        <img id="photo-preview-thumb" class="photo-preview-thumb" style="display:none;" alt="Profile photo preview">
+                        <div class="photo-preview-wrapper" id="photo-preview-wrapper" style="display:none;">
+                            <img id="photo-preview-thumb" class="photo-preview-thumb" alt="Profile photo preview">
+                            <button id="recrop-btn" class="recrop-btn" type="button"><i class="ph ph-crop"></i> Re-crop</button>
+                        </div>
                         <input type="file" id="profile-pic" accept="image/*" aria-label="Upload profile picture">
                     </div>
                     <p class="step-hint"><i class="ph ph-info"></i> Your photo will appear on the front of the ID card.</p>
@@ -266,16 +281,51 @@
                     Next <i class="ph ph-arrow-right"></i>
                 </button>
                 <button class="stepper-btn stepper-btn-done" id="stepper-done" style="display:none;"
-                        onclick="document.getElementById('download-btn').click()" aria-label="Download ID">
+                        onclick="showMobileExportMenu()" aria-label="Download ID">
                     <i class="ph ph-download-simple"></i> Download ID
                 </button>
             </div>
 
-            <!-- Desktop Download Button -->
-            <button id="download-btn" class="btn-primary desktop-download-btn" aria-label="Download print-ready A4 ID">
-                <i class="ph ph-download-simple"></i>
-                Download for Print (A4)
-            </button>
+            <!-- Desktop Download Buttons -->
+            <div class="export-actions" id="desktop-export-actions">
+                <button id="download-btn" class="btn-primary desktop-download-btn" aria-label="Download print-ready A4 ID">
+                    <i class="ph ph-printer"></i>
+                    Print Batch (A4)
+                </button>
+                <div class="export-dropdown-container">
+                    <button id="save-image-btn" class="btn-primary desktop-download-btn" aria-label="Save as Image">
+                        <i class="ph ph-image"></i>
+                        Save Image <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="export-dropdown-menu" id="export-dropdown-menu">
+                        <button onclick="saveAsImage('front')">Front Side</button>
+                        <button onclick="saveAsImage('back')">Back Side</button>
+                        <button onclick="saveAsImage('both')">Both Sides</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Export Actions Sheet -->
+            <div class="mobile-export-sheet" id="mobile-export-sheet">
+                <div class="sheet-header">
+                    <h3>Export ID</h3>
+                    <button class="btn-close" onclick="hideMobileExportMenu()"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="sheet-body">
+                    <button class="btn-primary" onclick="document.getElementById('download-btn').click(); hideMobileExportMenu();">
+                        <i class="ph ph-printer"></i> Print Batch (A4)
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('front'); hideMobileExportMenu();">
+                        <i class="ph ph-image"></i> Save Front Image
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('back'); hideMobileExportMenu();">
+                        <i class="ph ph-image"></i> Save Back Image
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('both'); hideMobileExportMenu();">
+                        <i class="ph ph-images"></i> Save Both Sides
+                    </button>
+                </div>
+            </div>
 
         </div><!-- /form-section -->
 
@@ -371,6 +421,44 @@
 
     <!-- Hidden export canvas -->
     <canvas id="export-canvas" style="display:none;" aria-hidden="true"></canvas>
+    <!-- Hidden crop canvas -->
+    <canvas id="crop-canvas" style="display:none;" aria-hidden="true"></canvas>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHOTO CROPPER MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="cropper-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel">
+            <div class="cropper-header">
+                <h3>Adjust Photo</h3>
+                <button class="btn-close" id="cropper-cancel" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="cropper-body">
+                <div class="cropper-viewport" id="cropper-viewport">
+                    <img id="cropper-img" src="" alt="Source image to crop">
+                    <div class="cropper-frame">
+                        <div class="cropper-handle top-left"></div>
+                        <div class="cropper-handle top-right"></div>
+                        <div class="cropper-handle bottom-left"></div>
+                        <div class="cropper-handle bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-zoom">
+                    <i class="ph ph-magnifying-glass-minus"></i>
+                    <input type="range" id="cropper-zoom" min="0.5" max="3" step="0.01" value="1">
+                    <i class="ph ph-magnifying-glass-plus"></i>
+                </div>
+                <div class="cropper-actions">
+                    <button class="btn-ghost" id="cropper-cancel-btn">Cancel</button>
+                    <button class="btn-primary" id="cropper-save-btn">Use This Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════════════════════════
    ISU PREMIUM ID GENERATOR — DESIGN SYSTEM
    Apple-inspired Glassmorphism · Inter Typography · ISU Green + Gold Palette
    ═══════════════════════════════════════════════════════════════════════════
@@ -146,8 +146,10 @@
 }
 
 html {
+    overflow-x: hidden;
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    background-color: var(--forest-950);
 }
 
 body {
@@ -1463,14 +1465,14 @@ textarea:focus {
    20. FOOTER
 ─────────────────────────────────────────────────────────────────────────── */
 footer {
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    padding: 0 clamp(1rem, 4vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+    width: 100%;
+    padding: 2rem clamp(1rem, 4vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
     border-top: 1px solid rgba(255, 255, 255, 0.06);
     position: relative;
     z-index: 1;
+    margin-top: 2rem;
+    /* overflow: hidden removed - was clipping glass content */
 }
-
 .footer-container {
     max-width: 1100px;
     margin: 0 auto;
@@ -1639,6 +1641,7 @@ footer {
 /* Hide desktop-only in stepper mode */
 .desktop-form-header  { display: none !important; }
 .desktop-download-btn { display: none !important; }
+#desktop-export-actions { display: none !important; }
 
 /* All form steps hidden by default */
 .steps-wrapper .form-group {
@@ -1662,6 +1665,7 @@ footer {
     /* Restore desktop header elements */
     .desktop-form-header  { display: block !important; }
     .desktop-download-btn { display: block !important; }
+    #desktop-export-actions { display: flex !important; }
 
     /* Hide mini-preview header on desktop (full preview is on the right) */
     .stepper-header { display: none !important; }
@@ -1761,3 +1765,354 @@ footer {
     .preview-chips   { gap: 0.35rem; }
     .chip            { font-size: 0.65rem; padding: 0.25rem 0.55rem; }
 }
+
+/* ---------------------------------------------------------------------------
+   23. V3.0 UPGRADES � STUDENT TABS, CROPPER, EXPORT ACTIONS
+--------------------------------------------------------------------------- */
+
+/* -- STUDENT TABS -- */
+.student-tabs-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none; /* Firefox */
+}
+.student-tabs-container::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.student-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.student-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    background: var(--glass-t2-bg);
+    border: 1px solid var(--glass-t2-border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-smooth);
+    white-space: nowrap;
+}
+
+.student-tab.active {
+    background: var(--green-glow-strong);
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.student-tab-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--white-12);
+}
+
+.btn-remove-student {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--danger);
+    font-size: 0.6rem;
+    margin-left: 0.25rem;
+    transition: background 0.2s;
+}
+
+.btn-remove-student:hover {
+    background: rgba(255, 59, 48, 0.5);
+    color: #fff;
+}
+
+.add-student-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--white-12);
+    border: 1px dashed var(--white-40);
+    color: var(--text-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--dur-fast) ease;
+}
+
+.add-student-btn:hover {
+    background: var(--white-20);
+    border-color: var(--white);
+    transform: scale(1.05);
+}
+
+/* -- PHOTO CROPPER -- */
+.photo-preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.recrop-btn {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--glass-t3-bg);
+    border: 1px solid var(--glass-t3-border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all var(--dur-fast) ease;
+}
+
+.recrop-btn:hover {
+    color: var(--text-primary);
+    background: var(--white-12);
+}
+
+.cropper-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-base) ease;
+}
+
+.cropper-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cropper-modal {
+    width: 90%;
+    max-width: 500px;
+    background: var(--forest-900); /* solid fallback */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    transform: translateY(20px) scale(0.95);
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.cropper-modal-overlay.active .cropper-modal {
+    transform: translateY(0) scale(1);
+}
+
+.cropper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cropper-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.btn-close {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+.cropper-body {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    touch-action: none; /* Prevent scroll on drag */
+}
+
+.cropper-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+}
+
+.cropper-viewport:active {
+    cursor: grabbing;
+}
+
+#cropper-img {
+    max-width: none;
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.cropper-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Passport ratio 315:355 = 1:1.127 */
+    width: 200px;
+    height: 225.4px;
+    border: 2px solid var(--gold-500);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.cropper-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.cropper-zoom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.cropper-zoom input[type="range"] {
+    flex: 1;
+    accent-color: var(--green-500);
+}
+
+.cropper-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.cropper-actions button {
+    padding: 0.5rem 1.25rem;
+}
+
+/* -- EXPORT ACTIONS -- */
+.export-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.export-dropdown-container {
+    position: relative;
+}
+
+.export-dropdown-menu {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    background: var(--glass-t1-bg);
+    backdrop-filter: blur(var(--glass-t1-blur));
+    border: 1px solid var(--glass-t1-border);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 160px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all var(--dur-fast) ease;
+    box-shadow: var(--glass-t2-shadow);
+}
+
+.export-dropdown-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.export-dropdown-menu button {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.export-dropdown-menu button:hover {
+    background: var(--white-12);
+}
+
+/* Mobile Export Sheet */
+.mobile-export-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--forest-900);
+    border-top: 1px solid var(--glass-t1-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transform: translateY(100%);
+    transform: translateY(110%);
+    transition: transform var(--dur-base) var(--ease-spring), visibility var(--dur-base);
+    visibility: hidden;
+}
+
+.mobile-export-sheet.show {
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sheet-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.sheet-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sheet-body button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+}
+

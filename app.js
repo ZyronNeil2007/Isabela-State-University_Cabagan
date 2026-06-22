@@ -112,17 +112,24 @@ const CONFIG = {
 const state = {
     frontTemplate:  null,
     backTemplate:   null,
-    photoImage:     null,
-    signatureImage: null,
-    formData: {
-        name:       '',
-        idNumber:   '',
-        course:     '',
-        dob:        '',
-        parentName: '',
-        address:    '',
-        telephone:  ''
-    }
+    activeStudentIndex: 0,
+    students: [
+        {
+            photoImage:     null,
+            photoDataUrl:   null,
+            signatureImage: null,
+            signatureDataUrl: null,
+            formData: {
+                name:       '',
+                idNumber:   '',
+                course:     '',
+                dob:        '',
+                parentName: '',
+                address:    '',
+                telephone:  ''
+            }
+        }
+    ]
 };
 
 
@@ -198,14 +205,15 @@ function stopDrawing() {
     updateSignatureImage();
 }
 
-/** Capture signature canvas as an Image object, then re-render the ID */
 function updateSignatureImage() {
     const img = new Image();
+    const dataUrl = sigCanvas.toDataURL('image/png');
     img.onload = () => {
-        state.signatureImage = img;
+        state.students[state.activeStudentIndex].signatureImage = img;
+        state.students[state.activeStudentIndex].signatureDataUrl = dataUrl;
         renderCanvases();
     };
-    img.src = sigCanvas.toDataURL('image/png');
+    img.src = dataUrl;
 }
 
 // Signature event listeners
@@ -217,10 +225,10 @@ sigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
 sigCanvas.addEventListener('touchmove',  draw,         { passive: false });
 sigCanvas.addEventListener('touchend',   stopDrawing);
 
-// Clear button
 document.getElementById('clear-signature').addEventListener('click', () => {
     sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-    state.signatureImage = null;
+    state.students[state.activeStudentIndex].signatureImage = null;
+    state.students[state.activeStudentIndex].signatureDataUrl = null;
     // Restore watermark
     const watermark = sigCanvas.parentElement.querySelector('.signature-watermark');
     if (watermark) watermark.style.opacity = '1';
@@ -257,8 +265,13 @@ Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
     if (!el) return;
     el.addEventListener('input', e => {
         const raw = e.target.value;
-        state.formData[stateKey] = UPPERCASE_FIELDS.has(id) ? raw.toUpperCase() : raw;
+        state.students[state.activeStudentIndex].formData[stateKey] = UPPERCASE_FIELDS.has(id) ? raw.toUpperCase() : raw;
         renderCanvases();
+        
+        // Also update tab name if editing full name
+        if (stateKey === 'name') {
+            renderStudentTabs();
+        }
     });
 });
 
@@ -271,21 +284,13 @@ document.getElementById('profile-pic').addEventListener('change', e => {
     reader.onload = event => {
         const img = new Image();
         img.onload = () => {
-            state.photoImage = img;
-            renderCanvases();
-
-            // Update the thumbnail inside the upload area
-            const thumb       = document.getElementById('photo-preview-thumb');
-            const placeholder = document.getElementById('photo-placeholder');
-            if (thumb) {
-                thumb.src = event.target.result;
-                thumb.style.display = 'block';
-            }
-            if (placeholder) placeholder.style.display = 'none';
+            state.students[state.activeStudentIndex].rawSourceImage = img;
+            openCropper();
         };
         img.src = event.target.result;
     };
     reader.readAsDataURL(file);
+    e.target.value = ''; // Reset to allow same file re-upload
 });
 
 
@@ -416,6 +421,8 @@ function formatCourseText(course) {
  * Called every time state changes (input, photo upload, signature).
  */
 function renderCanvases() {
+    const student = state.students[state.activeStudentIndex];
+
     // ── Front Face ──────────────────────────────────────────
     frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
 
@@ -427,14 +434,14 @@ function renderCanvases() {
     }
 
     // Photo: cover-fit into the defined box
-    if (state.photoImage) {
+    if (student.photoImage) {
         const { x, y, width, height } = CONFIG.photo;
         frontCtx.save();
         frontCtx.beginPath();
         frontCtx.rect(x, y, width, height);
         frontCtx.clip();
 
-        const imgRatio = state.photoImage.width / state.photoImage.height;
+        const imgRatio = student.photoImage.width / student.photoImage.height;
         const boxRatio = width / height;
         let dw = width, dh = height, dx = x, dy = y;
 
@@ -446,23 +453,23 @@ function renderCanvases() {
             dy = y - (dh - height) / 2;
         }
 
-        frontCtx.drawImage(state.photoImage, dx, dy, dw, dh);
+        frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
         frontCtx.restore();
     }
 
     // Signature
-    if (state.signatureImage) {
+    if (student.signatureImage) {
         const { x, y, width, height } = CONFIG.signature;
-        frontCtx.drawImage(state.signatureImage, x, y, width, height);
+        frontCtx.drawImage(student.signatureImage, x, y, width, height);
     }
 
     // Text fields on front face
     renderText(frontCtx, CONFIG.text.name,
-        state.formData.name || 'JUAN DELA CRUZ');
+        student.formData.name || 'JUAN DELA CRUZ');
     renderText(frontCtx, CONFIG.text.idNumber,
-        state.formData.idNumber || '25-00001');
+        student.formData.idNumber || '25-00001');
     renderText(frontCtx, CONFIG.text.course,
-        formatCourseText(state.formData.course || 'Bachelor of Science in Computer Science'));
+        formatCourseText(student.formData.course || 'Bachelor of Science in Computer Science'));
 
     // ── Back Face ───────────────────────────────────────────
     backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height);
@@ -480,15 +487,15 @@ function renderCanvases() {
 
     // Text fields on back face
     renderText(backCtx, CONFIG.text.parentName,
-        state.formData.parentName || 'JANE DELA CRUZ');
+        student.formData.parentName || 'JANE DELA CRUZ');
     renderText(backCtx, CONFIG.text.address,
-        'Address: ' + (state.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
+        'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
     renderText(backCtx, CONFIG.text.telephone,
-        'Telephone No.: ' + (state.formData.telephone || '+63 912 345 6789'));
+        'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
     renderText(backCtx, CONFIG.text.dob,
         'Birth Date: ' + (
-            state.formData.dob
-                ? state.formData.dob.split('-').reverse().join('-')
+            student.formData.dob
+                ? student.formData.dob.split('-').reverse().join('-')
                 : '01-01-2000'
         ));
 
@@ -771,39 +778,97 @@ document.getElementById('download-btn').addEventListener('click', async () => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
 
-        // Card dimensions and layout on A4
+        const studentCount = state.students.length;
         const printWidth  = 638;
         const printHeight = 1011;
-        const xPos        = (exportCanvas.width  - printWidth) / 2;
-        const yPosFront   = 380;
-        const yPosBack    = yPosFront + printHeight + 220;
-
-        // Draw both card faces
-        ctx.drawImage(frontCanvas, xPos, yPosFront, printWidth, printHeight);
-        ctx.drawImage(backCanvas,  xPos, yPosBack,  printWidth, printHeight);
-
-        // Dashed cut guides around each card
-        ctx.strokeStyle = '#cccccc';
-        ctx.lineWidth   = 3;
-        ctx.setLineDash([14, 14]);
-        const p = 4;
-        ctx.strokeRect(xPos - p, yPosFront - p, printWidth + p * 2, printHeight + p * 2);
-        ctx.strokeRect(xPos - p, yPosBack  - p, printWidth + p * 2, printHeight + p * 2);
-
-        // Reset dash
-        ctx.setLineDash([]);
-
-        // "Cut here" label
-        ctx.font      = '28px Inter, sans-serif';
-        ctx.fillStyle = '#cccccc';
+        const gap = 40;
+        
+        let scale = 1;
+        
+        // Header
+        ctx.font = 'bold 48px Inter, sans-serif';
+        ctx.fillStyle = '#000000';
         ctx.textAlign = 'center';
-        ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosFront - p - 20);
-        ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosBack  - p - 20);
+        const dateStr = new Date().toLocaleDateString();
+        ctx.fillText(`ISU Student IDs — ${studentCount} Student${studentCount > 1 ? 's' : ''} — ${dateStr}`, exportCanvas.width / 2, 160);
 
-        // Trigger download
-        const link    = document.createElement('a');
-        link.download = `ISU_ID_${(state.formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.png`;
-        link.href     = exportCanvas.toDataURL('image/png');
+        if (studentCount === 1) {
+            // Center single pair
+            const xPos = (exportCanvas.width - printWidth) / 2;
+            const yPosFront = 380;
+            const yPosBack = yPosFront + printHeight + 220;
+            
+            // Front
+            ctx.drawImage(frontCanvas, xPos, yPosFront, printWidth, printHeight);
+            // Back
+            ctx.drawImage(backCanvas, xPos, yPosBack, printWidth, printHeight);
+            
+            ctx.strokeStyle = '#cccccc';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([14, 14]);
+            const p = 4;
+            ctx.strokeRect(xPos - p, yPosFront - p, printWidth + p * 2, printHeight + p * 2);
+            ctx.strokeRect(xPos - p, yPosBack  - p, printWidth + p * 2, printHeight + p * 2);
+            ctx.setLineDash([]);
+            ctx.font = '28px Inter, sans-serif';
+            ctx.fillStyle = '#cccccc';
+            ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosFront - p - 20);
+            ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosBack  - p - 20);
+            
+        } else {
+            // Batch layout: Fronts on top row, Backs on bottom row
+            const availableW = exportCanvas.width - 200; 
+            const totalW = (printWidth * studentCount) + (gap * (studentCount - 1));
+            if (totalW > availableW) {
+                scale = availableW / totalW;
+            }
+            
+            const scaledW = printWidth * scale;
+            const scaledH = printHeight * scale;
+            const scaledGap = gap * scale;
+            
+            const startX = (exportCanvas.width - (scaledW * studentCount + scaledGap * (studentCount - 1))) / 2;
+            const startY = 380;
+
+            const originalIndex = state.activeStudentIndex;
+            
+            for (let i = 0; i < studentCount; i++) {
+                state.activeStudentIndex = i;
+                renderCanvases(); // render i-th student
+                
+                const x = startX + i * (scaledW + scaledGap);
+                const yF = startY;
+                const yB = startY + scaledH + 120;
+                
+                // Draw Front
+                ctx.drawImage(frontCanvas, x, yF, scaledW, scaledH);
+                // Draw Back
+                ctx.drawImage(backCanvas, x, yB, scaledW, scaledH);
+                
+                ctx.strokeStyle = '#cccccc';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([14, 14]);
+                const p = 4;
+                ctx.strokeRect(x - p, yF - p, scaledW + p * 2, scaledH + p * 2);
+                ctx.strokeRect(x - p, yB - p, scaledW + p * 2, scaledH + p * 2);
+                ctx.setLineDash([]);
+            }
+            
+            // Cut here labels for rows
+            ctx.font = '28px Inter, sans-serif';
+            ctx.fillStyle = '#cccccc';
+            ctx.fillText('✂ Cut here (Fronts)', exportCanvas.width / 2, startY - 20);
+            ctx.fillText('✂ Cut here (Backs)', exportCanvas.width / 2, startY + scaledH + 120 - 20);
+            
+            // Restore active state
+            state.activeStudentIndex = originalIndex;
+            renderCanvases();
+        }
+
+        const link = document.createElement('a');
+        const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.png` : `ISU_ID_Batch_${studentCount}_Students.png`;
+        link.download = filename;
+        link.href = exportCanvas.toDataURL('image/png');
         link.click();
 
     } catch (err) {
@@ -845,3 +910,287 @@ window.addEventListener('load', () => {
         }, 150);
     }
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   13. STUDENT TABS LOGIC (Batch Print Feature)
+═══════════════════════════════════════════════════════════════════════════ */
+const MAX_STUDENTS = 5;
+
+function renderStudentTabs() {
+    const container = document.getElementById('student-tabs');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    state.students.forEach((student, index) => {
+        const tab = document.createElement('div');
+        tab.className = 'student-tab' + (index === state.activeStudentIndex ? ' active' : '');
+        tab.onclick = (e) => {
+            if (!e.target.closest('.btn-remove-student')) {
+                switchStudent(index);
+            }
+        };
+        
+        let thumbContent = '';
+        if (student.photoDataUrl) {
+            thumbContent = `<img src="${student.photoDataUrl}" class="student-tab-thumb" alt="thumb">`;
+        } else {
+            thumbContent = `<div class="student-tab-thumb" style="display:flex;align-items:center;justify-content:center;font-size:10px;"><i class="ph ph-user"></i></div>`;
+        }
+        
+        let name = student.formData.name || `Student ${index + 1}`;
+        if (name.length > 12) name = name.substring(0, 10) + '...';
+        
+        let removeBtn = '';
+        if (state.students.length > 1) {
+            removeBtn = `<button class="btn-remove-student" onclick="removeStudent(${index})"><i class="ph ph-x"></i></button>`;
+        }
+        
+        tab.innerHTML = `${thumbContent} <span>${name}</span> ${removeBtn}`;
+        container.appendChild(tab);
+    });
+    
+    const addBtn = document.getElementById('add-student-btn');
+    if (addBtn) {
+        addBtn.style.display = state.students.length < MAX_STUDENTS ? 'inline-flex' : 'none';
+    }
+}
+
+function switchStudent(index) {
+    state.activeStudentIndex = index;
+    const student = state.students[index];
+    
+    // Populate form inputs
+    Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = student.formData[stateKey] || '';
+    });
+    
+    // Update photo preview
+    const thumb = document.getElementById('photo-preview-thumb');
+    const placeholder = document.getElementById('photo-placeholder');
+    const wrapper = document.getElementById('photo-preview-wrapper');
+    if (student.photoDataUrl) {
+        thumb.src = student.photoDataUrl;
+        if(wrapper) wrapper.style.display = 'inline-block';
+        if(placeholder) placeholder.style.display = 'none';
+    } else {
+        if(wrapper) wrapper.style.display = 'none';
+        if(placeholder) placeholder.style.display = 'flex';
+    }
+    
+    // Update signature pad
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    const watermark = sigCanvas.parentElement.querySelector('.signature-watermark');
+    if (student.signatureImage) {
+        if (watermark) watermark.style.opacity = '0';
+        sigCtx.drawImage(student.signatureImage, 0, 0, sigCanvas.width, sigCanvas.height);
+    } else {
+        if (watermark) watermark.style.opacity = '1';
+    }
+    
+    renderStudentTabs();
+    renderCanvases();
+}
+
+function addStudent() {
+    if (state.students.length >= MAX_STUDENTS) return;
+    
+    state.students.push({
+        photoImage: null,
+        photoDataUrl: null,
+        rawSourceImage: null,
+        signatureImage: null,
+        signatureDataUrl: null,
+        formData: { name: '', idNumber: '', course: '', dob: '', parentName: '', address: '', telephone: '' }
+    });
+    
+    switchStudent(state.students.length - 1);
+}
+
+function removeStudent(index) {
+    if (state.students.length <= 1) return;
+    state.students.splice(index, 1);
+    if (state.activeStudentIndex >= state.students.length) {
+        switchStudent(state.students.length - 1);
+    } else {
+        switchStudent(state.activeStudentIndex); // Re-render current
+    }
+}
+
+document.getElementById('add-student-btn')?.addEventListener('click', addStudent);
+
+// Call initially
+setTimeout(renderStudentTabs, 100);
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   14. INTERACTIVE PHOTO CROPPER LOGIC
+═══════════════════════════════════════════════════════════════════════════ */
+let cropZoom = 1;
+let isDraggingCrop = false;
+let startDragX = 0, startDragY = 0;
+let imgOffsetX = 0, imgOffsetY = 0;
+
+function openCropper() {
+    const student = state.students[state.activeStudentIndex];
+    if (!student.rawSourceImage) return;
+    
+    document.getElementById('cropper-modal').classList.add('active');
+    const imgEl = document.getElementById('cropper-img');
+    imgEl.src = student.rawSourceImage.src;
+    
+    cropZoom = 1;
+    document.getElementById('cropper-zoom').value = 1;
+    imgOffsetX = 0;
+    imgOffsetY = 0;
+    updateCropperTransform();
+}
+
+function closeCropper() {
+    document.getElementById('cropper-modal').classList.remove('active');
+}
+
+function updateCropperTransform() {
+    const imgEl = document.getElementById('cropper-img');
+    if (imgEl) imgEl.style.transform = `translate(${imgOffsetX}px, ${imgOffsetY}px) scale(${cropZoom})`;
+}
+
+document.getElementById('cropper-zoom')?.addEventListener('input', e => {
+    cropZoom = parseFloat(e.target.value);
+    updateCropperTransform();
+});
+
+const viewport = document.getElementById('cropper-viewport');
+if (viewport) {
+    viewport.addEventListener('mousedown', startCropDrag);
+    viewport.addEventListener('mousemove', doCropDrag);
+    window.addEventListener('mouseup', endCropDrag);
+    viewport.addEventListener('touchstart', startCropDrag, {passive:false});
+    viewport.addEventListener('touchmove', doCropDrag, {passive:false});
+    window.addEventListener('touchend', endCropDrag);
+}
+
+function getEventPos(e) {
+    return e.touches && e.touches.length > 0 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+}
+
+function startCropDrag(e) {
+    isDraggingCrop = true;
+    const p = getEventPos(e);
+    startDragX = p.x - imgOffsetX;
+    startDragY = p.y - imgOffsetY;
+    if(e.cancelable) e.preventDefault();
+}
+
+function doCropDrag(e) {
+    if (!isDraggingCrop) return;
+    const p = getEventPos(e);
+    imgOffsetX = p.x - startDragX;
+    imgOffsetY = p.y - startDragY;
+    updateCropperTransform();
+    if(e.cancelable) e.preventDefault();
+}
+
+function endCropDrag() {
+    isDraggingCrop = false;
+}
+
+document.getElementById('cropper-cancel-btn')?.addEventListener('click', closeCropper);
+document.getElementById('cropper-cancel')?.addEventListener('click', closeCropper);
+
+document.getElementById('cropper-save-btn')?.addEventListener('click', () => {
+    const frame = document.querySelector('.cropper-frame');
+    if (!frame) return;
+    const frameRect = frame.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    
+    // Frame center relative to viewport center
+    const frameCx = frameRect.left + frameRect.width/2 - (vpRect.left + vpRect.width/2);
+    const frameCy = frameRect.top + frameRect.height/2 - (vpRect.top + vpRect.height/2);
+    
+    const cropCnv = document.getElementById('crop-canvas');
+    cropCnv.width = 315;
+    cropCnv.height = 355;
+    const ctx = cropCnv.getContext('2d');
+    
+    const domToNativeX = 315 / frameRect.width;
+    const domToNativeY = 355 / frameRect.height;
+    
+    const student = state.students[state.activeStudentIndex];
+    const rawImage = student.rawSourceImage;
+    if (!rawImage) return;
+
+    ctx.save();
+    ctx.translate(315/2, 355/2); 
+    ctx.translate(imgOffsetX * domToNativeX - frameCx * domToNativeX, imgOffsetY * domToNativeY - frameCy * domToNativeY);
+    ctx.scale(cropZoom * domToNativeX, cropZoom * domToNativeY);
+    ctx.drawImage(rawImage, -rawImage.width/2, -rawImage.height/2);
+    ctx.restore();
+    
+    const dataUrl = cropCnv.toDataURL('image/png');
+    const img = new Image();
+    img.onload = () => {
+        student.photoImage = img;
+        student.photoDataUrl = dataUrl;
+        
+        const thumb = document.getElementById('photo-preview-thumb');
+        const wrapper = document.getElementById('photo-preview-wrapper');
+        const placeholder = document.getElementById('photo-placeholder');
+        if (thumb) thumb.src = dataUrl;
+        if (wrapper) wrapper.style.display = 'inline-block';
+        if (placeholder) placeholder.style.display = 'none';
+        
+        renderCanvases();
+        renderStudentTabs();
+        closeCropper();
+    };
+    img.src = dataUrl;
+});
+
+document.getElementById('recrop-btn')?.addEventListener('click', () => {
+    openCropper();
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   15. EXPORT DROPDOWNS & SAVE AS IMAGE
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Toggle Desktop Dropdown
+document.getElementById('save-image-btn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('export-dropdown-menu')?.classList.toggle('show');
+});
+
+// Hide dropdown on outside click
+document.addEventListener('click', () => {
+    document.getElementById('export-dropdown-menu')?.classList.remove('show');
+});
+
+function showMobileExportMenu() {
+    document.getElementById('mobile-export-sheet')?.classList.add('show');
+}
+function hideMobileExportMenu() {
+    document.getElementById('mobile-export-sheet')?.classList.remove('show');
+}
+
+function saveAsImage(side) {
+    const student = state.students[state.activeStudentIndex];
+    const baseName = `ISU_ID_${(student.formData.name || 'Student').replace(/\s+/g, '_')}`;
+    
+    if (side === 'front' || side === 'both') {
+        const link = document.createElement('a');
+        link.download = `${baseName}_Front.png`;
+        link.href = frontCanvas.toDataURL('image/png');
+        link.click();
+    }
+    
+    if (side === 'back' || side === 'both') {
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.download = `${baseName}_Back.png`;
+            link.href = backCanvas.toDataURL('image/png');
+            link.click();
+        }, side === 'both' ? 500 : 0);
+    }
+}
+
