@@ -762,117 +762,80 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 
     // ── Loading state feedback ──
     const originalHTML = btn.innerHTML;
-    btn.innerHTML = '<i class="ph ph-circle-notch"></i> Generating…';
+    btn.innerHTML = '<i class="ph ph-circle-notch"></i> Generating PDF…';
     btn.classList.add('loading');
 
-    // Yield to browser to paint the loading state before heavy canvas work
+    // Yield to browser to paint the loading state before heavy work
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 50)));
 
     try {
-        const exportCanvas  = document.getElementById('export-canvas');
-        exportCanvas.width  = 2480;   // A4 at 300 dpi
-        exportCanvas.height = 3508;
-        const ctx = exportCanvas.getContext('2d');
-
-        // White page background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+        const { jsPDF } = window.jspdf;
+        // Create an A4 portrait PDF
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
 
         const studentCount = state.students.length;
-        const printWidth  = 638;
-        const printHeight = 1011;
-        const gap = 40;
-        
-        let scale = 1;
-        
-        // Header
-        ctx.font = 'bold 48px Inter, sans-serif';
-        ctx.fillStyle = '#000000';
-        ctx.textAlign = 'center';
-        const dateStr = new Date().toLocaleDateString();
-        ctx.fillText(`ISU Student IDs — ${studentCount} Student${studentCount > 1 ? 's' : ''} — ${dateStr}`, exportCanvas.width / 2, 160);
+        const cardW = 54;      // CR80 standard width (mm)
+        const cardH = 85.6;    // CR80 standard height (mm)
+        const gapX = 10;
+        const gapY = 8;
+        const startX = (210 - (cardW * 2 + gapX)) / 2; // Centered
+        const startY = 20;
 
-        if (studentCount === 1) {
-            // Center single pair
-            const xPos = (exportCanvas.width - printWidth) / 2;
-            const yPosFront = 380;
-            const yPosBack = yPosFront + printHeight + 220;
-            
-            // Front
-            ctx.drawImage(frontCanvas, xPos, yPosFront, printWidth, printHeight);
-            // Back
-            ctx.drawImage(backCanvas, xPos, yPosBack, printWidth, printHeight);
-            
-            ctx.strokeStyle = '#cccccc';
-            ctx.lineWidth = 3;
-            ctx.setLineDash([14, 14]);
-            const p = 4;
-            ctx.strokeRect(xPos - p, yPosFront - p, printWidth + p * 2, printHeight + p * 2);
-            ctx.strokeRect(xPos - p, yPosBack  - p, printWidth + p * 2, printHeight + p * 2);
-            ctx.setLineDash([]);
-            ctx.font = '28px Inter, sans-serif';
-            ctx.fillStyle = '#cccccc';
-            ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosFront - p - 20);
-            ctx.fillText('✂ Cut here', exportCanvas.width / 2, yPosBack  - p - 20);
-            
-        } else {
-            // Batch layout: Fronts on top row, Backs on bottom row
-            const availableW = exportCanvas.width - 200; 
-            const totalW = (printWidth * studentCount) + (gap * (studentCount - 1));
-            if (totalW > availableW) {
-                scale = availableW / totalW;
+        const originalIndex = state.activeStudentIndex;
+
+        for (let i = 0; i < studentCount; i++) {
+            if (i > 0 && i % 3 === 0) {
+                pdf.addPage();
             }
             
-            const scaledW = printWidth * scale;
-            const scaledH = printHeight * scale;
-            const scaledGap = gap * scale;
-            
-            const startX = (exportCanvas.width - (scaledW * studentCount + scaledGap * (studentCount - 1))) / 2;
-            const startY = 380;
+            const rowIndex = i % 3;
+            const y = startY + rowIndex * (cardH + gapY);
 
-            const originalIndex = state.activeStudentIndex;
-            
-            for (let i = 0; i < studentCount; i++) {
-                state.activeStudentIndex = i;
-                renderCanvases(); // render i-th student
-                
-                const x = startX + i * (scaledW + scaledGap);
-                const yF = startY;
-                const yB = startY + scaledH + 120;
-                
-                // Draw Front
-                ctx.drawImage(frontCanvas, x, yF, scaledW, scaledH);
-                // Draw Back
-                ctx.drawImage(backCanvas, x, yB, scaledW, scaledH);
-                
-                ctx.strokeStyle = '#cccccc';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([14, 14]);
-                const p = 4;
-                ctx.strokeRect(x - p, yF - p, scaledW + p * 2, scaledH + p * 2);
-                ctx.strokeRect(x - p, yB - p, scaledW + p * 2, scaledH + p * 2);
-                ctx.setLineDash([]);
+            // Print header on each page
+            if (rowIndex === 0) {
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(14);
+                pdf.setTextColor(0, 0, 0);
+                const dateStr = new Date().toLocaleDateString();
+                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 3) + 1} — ${dateStr}`, 105, 12, { align: 'center' });
             }
+
+            state.activeStudentIndex = i;
+            renderCanvases(); // render i-th student
             
-            // Cut here labels for rows
-            ctx.font = '28px Inter, sans-serif';
-            ctx.fillStyle = '#cccccc';
-            ctx.fillText('✂ Cut here (Fronts)', exportCanvas.width / 2, startY - 20);
-            ctx.fillText('✂ Cut here (Backs)', exportCanvas.width / 2, startY + scaledH + 120 - 20);
+            const frontX = startX;
+            const backX = startX + cardW + gapX;
             
-            // Restore active state
-            state.activeStudentIndex = originalIndex;
-            renderCanvases();
+            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, y, cardW, cardH);
+            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, y, cardW, cardH);
+            
+            // Draw cut lines
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(0.3);
+            pdf.setLineDashPattern([2, 2], 0);
+            const p = 2; // padding around card
+            pdf.rect(frontX - p, y - p, cardW + p * 2, cardH + p * 2);
+            pdf.rect(backX - p, y - p, cardW + p * 2, cardH + p * 2);
+            
+            pdf.setFontSize(8);
+            pdf.setTextColor(150, 150, 150);
+            pdf.text('✂ Cut here', frontX + cardW/2, y - p - 2, { align: 'center' });
+            pdf.text('✂ Cut here', backX + cardW/2, y - p - 2, { align: 'center' });
         }
 
-        const link = document.createElement('a');
-        const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.png` : `ISU_ID_Batch_${studentCount}_Students.png`;
-        link.download = filename;
-        link.href = exportCanvas.toDataURL('image/png');
-        link.click();
+        // Restore active state
+        state.activeStudentIndex = originalIndex;
+        renderCanvases();
+
+        const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.pdf` : `ISU_ID_Batch_${studentCount}_Students.pdf`;
+        pdf.save(filename);
 
     } catch (err) {
-        console.error('[ISU ID] Export failed:', err);
+        console.error('[ISU ID] PDF Export failed:', err);
         alert('Export failed. Please try again.');
     } finally {
         // Restore button state

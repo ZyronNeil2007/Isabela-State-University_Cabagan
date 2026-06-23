@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.0
+# 🎓 Isabela State University Premium ID Generator v3.1
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning Apple-style glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
 
@@ -8,10 +8,14 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ## ✨ Features
 
+### 🆕 v3.1 — Immersive Redesign & PDF Export
+- **🎨 Immersive Hero Layout**: Complete visual overhaul of the hero section featuring a split-screen design, floating 3D cards, particle backgrounds, and dynamic grid layouts. Mobile view has been fully optimized for a perfect "above-the-fold" experience.
+- **📄 Native PDF Export**: Upgraded the print batch engine from generating static PNGs to producing a **proper multi-page A4 PDF document** via `jsPDF`. IDs are precisely sized to **CR80 standard dimensions (3.375" x 2.125")** with accurate cut lines, perfect for ID card printers.
+
 ### 🆕 v3.0 — Batch & Precision Upgrades
 - **👥 Multi-Student Batch Mode**: Generate up to **5 student IDs** in a single session using a tabbed interface. Each student tab maintains its own independent form state, photo, and signature.
 - **✂️ Interactive Photo Cropper**: A modal-based crop editor with **pan, zoom (0.5×–3×),** and a locked **315:355 portrait aspect ratio** — ensuring every photo is perfectly framed before it hits the card.
-- **🗂️ Smart A4 Batch Export**: The export engine dynamically arranges 1–5 student IDs into an optimized grid on a **300 DPI A4 canvas (2480×3508 px)**, with precise dashed cut guides and a page header for professional physical printing.
+- **🗂️ Smart A4 Batch Export**: The export engine dynamically arranges 1–5 student IDs into an optimized grid.
 
 ### ⚡ Core Features
 - **🫧 Premium Glassmorphism UI**: Multi-tier CSS3 glass panels with backdrop blur, saturation layers, and ISU green (`#15B915`) & gold (`#C9A84C`) palette.
@@ -19,7 +23,7 @@ A premium, fully responsive **client-side** web application for generating high-
 - **🔄 Interactive 3D Card Preview**: Real-time mouse-hover 3D tilt (powered by VanillaTilt) with a click-to-flip animation between Front and Back views.
 - **🖼️ Mini Live Preview**: A compact in-header thumbnail syncs in real-time and auto-flips to match the active form step.
 - **✍️ Digital Signature Pad**: Touch & mouse-friendly HTML5 canvas for capturing handwritten signatures, embedded directly on the card.
-- **💾 Save as Image**: Export the Front, Back, or Both card sides individually as PNG images alongside the batch A4 PDF-ready export.
+- **💾 Save as Image**: Export the Front, Back, or Both card sides individually as PNG images.
 
 ---
 
@@ -29,7 +33,7 @@ A premium, fully responsive **client-side** web application for generating high-
 |---|---|
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
 | Styling | Vanilla CSS3 (custom properties, GPU transforms, flexbox/grid) |
-| Logic | Vanilla ES6+ JavaScript (Canvas API, FileReader, Touch Events) |
+| Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
 | 3D Effects | [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
 | Icons | [Phosphor Icons](https://phosphoricons.com/) |
 | Typography | Inter — Google Fonts |
@@ -49,6 +53,12 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## 📋 Changelog
+
+### v3.1.0 *(2026-06-23)*
+- `feat` — Completely redesigned Hero section with split-screen layout, floating 3D cards, and animated particles.
+- `feat` — Converted A4 print export from PNG to an actual PDF using `jsPDF`.
+- `feat` — ID cards strictly conform to standard CR80 (85.6mm x 54mm) size upon export.
+- `ui` — Mobile hero and feature-pills refined for maximum visual appeal on small screens.
 
 ### v3.0.0 *(2026-06-22)*
 - `feat` — Multi-student tab system (up to 5 students) with independent state per tab

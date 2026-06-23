@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature.">
+    <meta name="description"
+        content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature.">
     <meta name="theme-color" content="#021a02">
     <title>ISU Premium ID Generator — Isabela State University</title>
 
@@ -13,7 +14,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
     <!-- Inter (UI) + Roboto Condensed (ID card text) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap"
+        rel="stylesheet">
 
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -42,16 +45,20 @@
 
     <nav id="navbar" class="liquid-glass">
         <div class="nav-container">
-            <div class="logo-container" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})" role="button" tabindex="0" aria-label="Back to home">
+            <div class="logo-container" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})"
+                role="button" tabindex="0" aria-label="Back to home">
                 <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
-                <span class="logo-text">Isabela State University</span>
+                <span class="logo-text">Isabela State University Cabagan </span>
             </div>
             <div class="desktop-menu">
-                <a href="#home" class="nav-link" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
-                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link" target="_blank" rel="noopener noreferrer">Repository</a>
+                <a href="#home" class="nav-link"
+                    onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link"
+                    target="_blank" rel="noopener noreferrer">Repository</a>
             </div>
             <div class="nav-actions">
-                <a href="#generator" class="btn-nav" id="nav-cta-btn" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                <a href="#generator" class="btn-nav" id="nav-cta-btn"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
                     <i class="ph ph-identification-card"></i>
                     <span>Get Your ID</span>
                 </a>
@@ -60,56 +67,134 @@
     </nav>
 
     <!-- ═══════════════════════════════════════════════════════
-         HERO SECTION
+         HERO SECTION — Immersive Split Layout
     ═══════════════════════════════════════════════════════ -->
     <section id="home" class="hero-section">
-        <div class="hero-content glass-panel">
 
-            <div class="hero-badge">
-                <span class="hero-badge-dot"></span>
-                Spatial Edition 2026
-            </div>
-
-            <h1 class="hero-title">
-                The <span class="hero-title-highlight">ISU Digital ID</span><br>
-                <span class="hero-title-sub">Experience</span>
-            </h1>
-
-            <p class="hero-subtitle">
-                Crafted for precision. Designed with spatial aesthetics. Instantly generate your
-                digital and print-ready Isabela State University ID right from your browser —
-                complete with a live digital signature.
-            </p>
-
-            <div class="hero-actions">
-                <a href="#generator" class="btn-primary" id="hero-get-started-btn"
-                   onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
-                    Get Started <i class="ph ph-arrow-right"></i>
-                </a>
-                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan"
-                   class="btn-ghost" target="_blank" rel="noopener noreferrer">
-                    <i class="ph ph-github-logo"></i> Repository
-                </a>
-            </div>
-
-            <div class="hero-stats">
-                <div class="hero-stat">
-                    <span class="hero-stat-value">9</span>
-                    <span class="hero-stat-label">Easy Steps</span>
-                </div>
-                <div class="hero-stat-divider"></div>
-                <div class="hero-stat">
-                    <span class="hero-stat-value">Live</span>
-                    <span class="hero-stat-label">ID Preview</span>
-                </div>
-                <div class="hero-stat-divider"></div>
-                <div class="hero-stat">
-                    <span class="hero-stat-value">A4</span>
-                    <span class="hero-stat-label">Print-Ready</span>
-                </div>
-            </div>
-
+        <!-- Particle grid background -->
+        <div class="hero-particles" aria-hidden="true">
+            <div class="particle-dot" style="--x:8%;--y:15%;--delay:0s;--dur:6s"></div>
+            <div class="particle-dot" style="--x:22%;--y:72%;--delay:1.2s;--dur:8s"></div>
+            <div class="particle-dot" style="--x:35%;--y:30%;--delay:0.5s;--dur:7s"></div>
+            <div class="particle-dot" style="--x:50%;--y:85%;--delay:2s;--dur:5s"></div>
+            <div class="particle-dot" style="--x:65%;--y:20%;--delay:0.8s;--dur:9s"></div>
+            <div class="particle-dot" style="--x:78%;--y:60%;--delay:1.5s;--dur:6s"></div>
+            <div class="particle-dot" style="--x:90%;--y:40%;--delay:0.3s;--dur:7s"></div>
+            <div class="particle-dot" style="--x:15%;--y:50%;--delay:2.5s;--dur:8s"></div>
+            <div class="particle-dot" style="--x:42%;--y:12%;--delay:1s;--dur:6s"></div>
+            <div class="particle-dot" style="--x:85%;--y:80%;--delay:1.8s;--dur:7s"></div>
+            <div class="particle-line" style="--x:20%;--y:25%;--rot:35deg"></div>
+            <div class="particle-line" style="--x:70%;--y:65%;--rot:-20deg"></div>
+            <div class="particle-line" style="--x:45%;--y:80%;--rot:60deg"></div>
         </div>
+
+        <!-- Hero grid wrapper -->
+        <div class="hero-grid">
+
+            <!-- LEFT: Text Content -->
+            <div class="hero-text-col">
+
+                <div class="hero-badge">
+                    <span class="hero-badge-dot"></span>
+                    Spatial Edition 2026
+                </div>
+
+                <h1 class="hero-title">
+                    Generate Your<br>
+                    <span class="hero-title-highlight">ISU Digital ID</span><br>
+                    <span class="hero-title-sub">In Seconds</span>
+                </h1>
+
+                <p class="hero-subtitle">
+                    Precision-crafted with spatial aesthetics. Generate your print-ready
+                    Isabela State University student ID directly from your browser —
+                    complete with live preview and digital signature.
+                </p>
+
+                <div class="hero-actions">
+                    <a href="#generator" class="btn-primary" id="hero-get-started-btn"
+                        onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                        <i class="ph ph-identification-card"></i>
+                        Create Your ID
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                    <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
+                        target="_blank" rel="noopener noreferrer">
+                        <i class="ph ph-github-logo"></i> Source Code
+                    </a>
+                </div>
+
+                <!-- Feature Pills -->
+                <div class="hero-features">
+                    <div class="hero-feature-pill">
+                        <div class="feature-pill-icon"><i class="ph-fill ph-lightning"></i></div>
+                        <div class="feature-pill-text">
+                            <span class="feature-pill-title">Real-time Preview</span>
+                            <span class="feature-pill-desc">Live canvas rendering</span>
+                        </div>
+                    </div>
+                    <div class="hero-feature-pill">
+                        <div class="feature-pill-icon feature-pill-icon--gold"><i class="ph-fill ph-file-pdf"></i></div>
+                        <div class="feature-pill-text">
+                            <span class="feature-pill-title">PDF Export</span>
+                            <span class="feature-pill-desc">CR80 standard print</span>
+                        </div>
+                    </div>
+                    <div class="hero-feature-pill">
+                        <div class="feature-pill-icon feature-pill-icon--cyan"><i class="ph-fill ph-pen-nib"></i></div>
+                        <div class="feature-pill-text">
+                            <span class="feature-pill-title">Digital Signature</span>
+                            <span class="feature-pill-desc">Draw & embed on ID</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: Floating ID Card Showcase -->
+            <div class="hero-card-col">
+
+                <!-- Glow ring behind card -->
+                <div class="hero-card-glow" aria-hidden="true"></div>
+
+                <!-- ISU Seal watermark -->
+                <div class="hero-seal" aria-hidden="true">
+                    <img src="images/isu_logo.png" alt="" class="hero-seal-img">
+                </div>
+
+                <!-- Floating ID card mockup (front) -->
+                <div class="hero-id-card hero-id-front" aria-hidden="true">
+                    <img src="images/front_reference.png" alt="ISU ID Front Preview" class="hero-id-img">
+                    <div class="hero-card-shine"></div>
+                </div>
+
+                <!-- Floating ID card mockup (back, offset) -->
+                <div class="hero-id-card hero-id-back" aria-hidden="true">
+                    <img src="images/back_reference.png" alt="ISU ID Back Preview" class="hero-id-img">
+                    <div class="hero-card-shine"></div>
+                </div>
+
+                <!-- Floating stat badges around the card -->
+                <div class="hero-floating-badge hero-fb-1">
+                    <i class="ph-fill ph-shield-check"></i> ISU Official
+                </div>
+                <div class="hero-floating-badge hero-fb-2">
+                    <i class="ph-fill ph-crop"></i> CR80 Size
+                </div>
+                <div class="hero-floating-badge hero-fb-3">
+                    <i class="ph-fill ph-users-three"></i> Batch Print
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll indicator -->
+        <div class="hero-scroll-indicator"
+            onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+            <span>Scroll to begin</span>
+        </div>
+
     </section>
 
     <!-- ═══════════════════════════════════════════════════════
@@ -127,7 +212,8 @@
                 <div class="student-tabs" id="student-tabs">
                     <!-- Tabs injected by JS -->
                 </div>
-                <button class="add-student-btn" id="add-student-btn" aria-label="Add new student" title="Add Student (Max 5)">
+                <button class="add-student-btn" id="add-student-btn" aria-label="Add new student"
+                    title="Add Student (Max 5)">
                     <i class="ph ph-plus"></i>
                 </button>
             </div>
@@ -173,7 +259,8 @@
                     <p class="subtitle">Fill in your details to generate the live ID preview.</p>
                 </div>
                 <!-- Segmented progress bar — JS injects 9 segments -->
-                <div class="desktop-progress-bar" id="desktop-progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1"></div>
+                <div class="desktop-progress-bar" id="desktop-progress-bar" role="progressbar" aria-valuemin="1"
+                    aria-valuemax="9" aria-valuenow="1"></div>
             </div>
 
             <!-- ─────────────────────────────────────────────
@@ -197,18 +284,22 @@
                         </div>
                         <div class="photo-preview-wrapper" id="photo-preview-wrapper" style="display:none;">
                             <img id="photo-preview-thumb" class="photo-preview-thumb" alt="Profile photo preview">
-                            <button id="recrop-btn" class="recrop-btn" type="button"><i class="ph ph-crop"></i> Re-crop</button>
+                            <button id="recrop-btn" class="recrop-btn" type="button"><i class="ph ph-crop"></i>
+                                Re-crop</button>
                         </div>
                         <input type="file" id="profile-pic" accept="image/*" aria-label="Upload profile picture">
                     </div>
-                    <p class="step-hint"><i class="ph ph-info"></i> Your photo will appear on the front of the ID card.</p>
+                    <p class="step-hint"><i class="ph ph-info"></i> Your photo will appear on the front of the ID card.
+                    </p>
                 </div>
 
                 <!-- Step 2: Full Name -->
                 <div class="form-group" data-step="2" data-step-title="Full Name">
                     <label for="full-name"><i class="ph ph-user"></i> Full Name</label>
-                    <input type="text" id="full-name" placeholder="e.g. JUAN DELA CRUZ" autocomplete="name" spellcheck="false">
-                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the front of your ID. Use your official full name.</p>
+                    <input type="text" id="full-name" placeholder="e.g. JUAN DELA CRUZ" autocomplete="name"
+                        spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the front of your ID. Use your official
+                        full name.</p>
                 </div>
 
                 <!-- Step 3: ID Number -->
@@ -222,7 +313,8 @@
                 <div class="form-group" data-step="4" data-step-title="Course">
                     <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
                     <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
-                    <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear on the ID.</p>
+                    <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear on
+                        the ID.</p>
                 </div>
 
                 <!-- Step 5: DOB -->
@@ -242,7 +334,8 @@
                 <!-- Step 7: Address -->
                 <div class="form-group" data-step="7" data-step-title="Address">
                     <label for="address"><i class="ph ph-map-pin"></i> Home Address</label>
-                    <textarea id="address" placeholder="e.g. Brgy. San Antonio, Cauayan City, Isabela" rows="3" spellcheck="false"></textarea>
+                    <textarea id="address" placeholder="e.g. Brgy. San Antonio, Cauayan City, Isabela" rows="3"
+                        spellcheck="false"></textarea>
                     <p class="step-hint"><i class="ph ph-info"></i> Full home address for your ID record.</p>
                 </div>
 
@@ -265,7 +358,8 @@
                             <i class="ph ph-eraser"></i> Clear Signature
                         </button>
                     </div>
-                    <p class="step-hint"><i class="ph ph-info"></i> Sign inside the box. Your signature appears on the front of the ID.</p>
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign inside the box. Your signature appears on the
+                        front of the ID.</p>
                 </div>
 
             </div><!-- /steps-wrapper -->
@@ -274,21 +368,24 @@
                  STEPPER NAVIGATION (Back / Next / Done)
             ───────────────────────────────────────────────── -->
             <div class="stepper-nav">
-                <button class="stepper-btn stepper-btn-back" id="stepper-back" onclick="stepperBack()" aria-label="Previous step">
+                <button class="stepper-btn stepper-btn-back" id="stepper-back" onclick="stepperBack()"
+                    aria-label="Previous step">
                     <i class="ph ph-arrow-left"></i> Back
                 </button>
-                <button class="stepper-btn stepper-btn-next" id="stepper-next" onclick="stepperNext()" aria-label="Next step">
+                <button class="stepper-btn stepper-btn-next" id="stepper-next" onclick="stepperNext()"
+                    aria-label="Next step">
                     Next <i class="ph ph-arrow-right"></i>
                 </button>
                 <button class="stepper-btn stepper-btn-done" id="stepper-done" style="display:none;"
-                        onclick="showMobileExportMenu()" aria-label="Download ID">
+                    onclick="showMobileExportMenu()" aria-label="Download ID">
                     <i class="ph ph-download-simple"></i> Download ID
                 </button>
             </div>
 
             <!-- Desktop Download Buttons -->
             <div class="export-actions" id="desktop-export-actions">
-                <button id="download-btn" class="btn-primary desktop-download-btn" aria-label="Download print-ready A4 ID">
+                <button id="download-btn" class="btn-primary desktop-download-btn"
+                    aria-label="Download print-ready A4 ID">
                     <i class="ph ph-printer"></i>
                     Print Batch (A4)
                 </button>
@@ -312,7 +409,8 @@
                     <button class="btn-close" onclick="hideMobileExportMenu()"><i class="ph ph-x"></i></button>
                 </div>
                 <div class="sheet-body">
-                    <button class="btn-primary" onclick="document.getElementById('download-btn').click(); hideMobileExportMenu();">
+                    <button class="btn-primary"
+                        onclick="document.getElementById('download-btn').click(); hideMobileExportMenu();">
                         <i class="ph ph-printer"></i> Print Batch (A4)
                     </button>
                     <button class="btn-ghost" onclick="saveAsImage('front'); hideMobileExportMenu();">
@@ -345,12 +443,8 @@
             <div class="card-stage">
                 <div class="card-ambient-glow" aria-hidden="true"></div>
 
-                <div class="flip-card-container" id="card-tilt-wrapper"
-                     onclick="flipCard()"
-                     role="button"
-                     tabindex="0"
-                     aria-label="Click to flip ID card"
-                     onkeydown="if(event.key==='Enter'||event.key===' ')flipCard()">
+                <div class="flip-card-container" id="card-tilt-wrapper" onclick="flipCard()" role="button" tabindex="0"
+                    aria-label="Click to flip ID card" onkeydown="if(event.key==='Enter'||event.key===' ')flipCard()">
                     <div class="flip-card" id="idCard">
                         <div class="flip-card-front id-card-preview">
                             <canvas id="front-canvas"></canvas>
@@ -393,26 +487,26 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v2.0.0 · Premium ID Generator</span>
+                <span>v3.1.0 · Premium ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
                     <i class="ph ph-envelope"></i>
                 </a>
                 <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer"
-                   class="icon-link liquid-glass" aria-label="Facebook">
+                    class="icon-link liquid-glass" aria-label="Facebook">
                     <i class="ph ph-facebook-logo"></i>
                 </a>
                 <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer"
-                   class="icon-link liquid-glass" aria-label="Instagram">
+                    class="icon-link liquid-glass" aria-label="Instagram">
                     <i class="ph ph-instagram-logo"></i>
                 </a>
                 <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer"
-                   class="icon-link liquid-glass" aria-label="TikTok">
+                    class="icon-link liquid-glass" aria-label="TikTok">
                     <i class="ph ph-tiktok-logo"></i>
                 </a>
                 <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer"
-                   class="icon-link liquid-glass" aria-label="GitHub">
+                    class="icon-link liquid-glass" aria-label="GitHub">
                     <i class="ph ph-github-logo"></i>
                 </a>
             </div>
@@ -460,6 +554,8 @@
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
+
 </html>
