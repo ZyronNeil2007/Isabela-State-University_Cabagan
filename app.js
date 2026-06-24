@@ -770,9 +770,9 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 
     try {
         const { jsPDF } = window.jspdf;
-        // Create an A4 portrait PDF
+        // Create an A4 landscape PDF (297mm x 210mm)
         const pdf = new jsPDF({
-            orientation: 'portrait',
+            orientation: 'landscape',
             unit: 'mm',
             format: 'a4'
         });
@@ -780,51 +780,51 @@ document.getElementById('download-btn').addEventListener('click', async () => {
         const studentCount = state.students.length;
         const cardW = 54;      // CR80 standard width (mm)
         const cardH = 85.6;    // CR80 standard height (mm)
-        const gapX = 10;
-        const gapY = 8;
-        const startX = (210 - (cardW * 2 + gapX)) / 2; // Centered
+        const gapX = 3;        // Horizontal gap between cards
+        const gapY = 6;        // Vertical gap between front and back
+        const startX = (297 - (cardW * 5 + gapX * 4)) / 2; // Centered horizontally
         const startY = 20;
 
         const originalIndex = state.activeStudentIndex;
 
         for (let i = 0; i < studentCount; i++) {
-            if (i > 0 && i % 3 === 0) {
+            if (i > 0 && i % 5 === 0) {
                 pdf.addPage();
             }
             
-            const rowIndex = i % 3;
-            const y = startY + rowIndex * (cardH + gapY);
+            const colIndex = i % 5;
+            const frontX = startX + colIndex * (cardW + gapX);
+            const backX = frontX;
+            const frontY = startY;
+            const backY = startY + cardH + gapY;
 
             // Print header on each page
-            if (rowIndex === 0) {
+            if (colIndex === 0) {
                 pdf.setFont("helvetica", "bold");
-                pdf.setFontSize(14);
+                pdf.setFontSize(12);
                 pdf.setTextColor(0, 0, 0);
                 const dateStr = new Date().toLocaleDateString();
-                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 3) + 1} — ${dateStr}`, 105, 12, { align: 'center' });
+                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 5) + 1} — ${dateStr}`, 148.5, 12, { align: 'center' });
             }
 
             state.activeStudentIndex = i;
             renderCanvases(); // render i-th student
             
-            const frontX = startX;
-            const backX = startX + cardW + gapX;
-            
-            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, y, cardW, cardH);
-            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, y, cardW, cardH);
+            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, frontY, cardW, cardH);
+            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, backY, cardW, cardH);
             
             // Draw cut lines
             pdf.setDrawColor(200, 200, 200);
             pdf.setLineWidth(0.3);
             pdf.setLineDashPattern([2, 2], 0);
-            const p = 2; // padding around card
-            pdf.rect(frontX - p, y - p, cardW + p * 2, cardH + p * 2);
-            pdf.rect(backX - p, y - p, cardW + p * 2, cardH + p * 2);
+            const p = 1.5; // padding around card
+            pdf.rect(frontX - p, frontY - p, cardW + p * 2, cardH + p * 2);
+            pdf.rect(backX - p, backY - p, cardW + p * 2, cardH + p * 2);
             
-            pdf.setFontSize(8);
+            pdf.setFontSize(6);
             pdf.setTextColor(150, 150, 150);
-            pdf.text('✂ Cut here', frontX + cardW/2, y - p - 2, { align: 'center' });
-            pdf.text('✂ Cut here', backX + cardW/2, y - p - 2, { align: 'center' });
+            pdf.text('✂ Cut', frontX + cardW/2, frontY - p - 1, { align: 'center' });
+            pdf.text('✂ Cut', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
         }
 
         // Restore active state

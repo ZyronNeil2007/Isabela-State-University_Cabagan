@@ -26,3 +26,17 @@ An instant, client-side signature scanner has been integrated:
 2. **Otsu's Binarization (Auto-Thresholding)**: Integrated the classic Otsu computer vision algorithm inside `app.js` to mathematically calculate the optimal threshold for separating ink strokes from paper background. This automatically adapts to different lighting conditions and gets rid of grey paper shadows.
 3. **Autocrop (Bounding-Box Detection)**: Implemented a pixel scanner that automatically finds the boundary limits of the dark ink pixels and crops the canvas tightly around the signature, removing all excess white paper margins.
 4. **Contrast & Background Removal**: Applies a local contrast booster for sharp ink strokes, strips all white/grey background pixels to transparent, and normalizes the signature ink to a professional black color.
+
+---
+
+## 3. Landscape Print Batch Layout (5 Pairs Max per A4 Page)
+
+### Problem Description
+Previously, the PDF print batch engine output was in portrait layout, fitting a maximum of 3 student card pairs per page. For large-scale batch processing (such as after CSV imports), this led to excessive paper waste and unnecessary page breaks.
+
+### Implemented Solution
+Optimized the print engine layout to support A4 Landscape format:
+1. **A4 Landscape Grid**: Configured `jsPDF` to export in `'landscape'` (297mm x 210mm) format.
+2. **5-Column Alignment**: Aligned up to 5 student pairs (10 cards total) side-by-side on a single sheet.
+3. **Stacked Pairs**: Placed each student's Front card on Row 1 (top) and their Back card directly below on Row 2 (bottom). This guarantees perfect horizontal alignment for easy cutting, folding, or double-sided printing.
+4. **Auto-Pagination**: If the student count exceeds 5, the engine automatically adds a new landscape page for every group of 5 students.
