@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.1
+# 🎓 Isabela State University Premium ID Generator v3.2
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning Apple-style glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
 
@@ -7,6 +7,11 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## ✨ Features
+
+### 🆕 v3.2 — CSV Bulk Import & Unlimited Batches
+- **📥 CSV Bulk Student Import**: Upload a `.csv` file containing 50+ students to auto-generate all ID cards in one click.
+- **♾️ Infinite Batch Mode (CSV-only)**: Bypasses the manual student tab limit of 5, enabling infinite student card creation via CSV import.
+- **🔍 Smart Header Matching**: Automatically maps columns using fuzzy matching for keys like Name, Student Number (ID), Course, Date of Birth, Parent/Guardian, Address, and Telephone.
 
 ### 🆕 v3.1 — Immersive Redesign & PDF Export
 - **🎨 Immersive Hero Layout**: Complete visual overhaul of the hero section featuring a split-screen design, floating 3D cards, particle backgrounds, and dynamic grid layouts. Mobile view has been fully optimized for a perfect "above-the-fold" experience.
@@ -53,6 +58,11 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## 📋 Changelog
+
+### v3.2.0 *(2026-06-24)*
+- `feat` — Added client-side CSV bulk student import to support generating large batches of ID cards.
+- `feat` — Bypassed manual batch limit (5) for CSV uploads, enabling infinite student batches.
+- `feat` — Automated fuzzy column header mapping for Name, ID, Course, DOB, Parent/Guardian, Address, and Telephone.
 
 ### v3.1.0 *(2026-06-23)*
 - `feat` — Completely redesigned Hero section with split-screen layout, floating 3D cards, and animated particles.

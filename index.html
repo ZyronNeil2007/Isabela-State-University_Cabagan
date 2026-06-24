@@ -213,9 +213,13 @@
                     <!-- Tabs injected by JS -->
                 </div>
                 <button class="add-student-btn" id="add-student-btn" aria-label="Add new student"
-                    title="Add Student (Max 5)">
+                    title="Add Student">
                     <i class="ph ph-plus"></i>
                 </button>
+                <label for="csv-upload" class="add-student-btn" title="Bulk Import CSV" style="cursor:pointer; margin-left:8px; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="ph ph-file-csv"></i>
+                    <input type="file" id="csv-upload" accept=".csv" style="display:none;">
+                </label>
             </div>
 
             <!-- ─────────────────────────────────────────────
@@ -487,7 +491,7 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v3.1.0 · Premium ID Generator</span>
+                <span>v3.2.0 · Premium ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
