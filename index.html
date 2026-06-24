@@ -5,9 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature.">
+        content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature and OCR autofill.">
     <meta name="theme-color" content="#021a02">
     <title>ISU Premium ID Generator — Isabela State University</title>
+
+    <!-- DNS prefetch for CDN resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
 
     <!-- Preconnect for fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,17 +21,18 @@
 
     <!-- Inter (UI) + Roboto Condensed (ID card text) -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto+Condensed:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Roboto+Condensed:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Phosphor Icons (deferred — not in the critical paint path) -->
+    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
 
     <!-- VanillaTilt — 3D card hover effect -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
 
     <link rel="stylesheet" href="style.css">
 </head>
+
 
 <body>
 
@@ -67,122 +74,152 @@
     </nav>
 
     <!-- ═══════════════════════════════════════════════════════
-         HERO SECTION — Immersive Split Layout
+         HERO SECTION — Cinematic Full-Width
     ═══════════════════════════════════════════════════════ -->
     <section id="home" class="hero-section">
 
-        <!-- Particle grid background -->
-        <div class="hero-particles" aria-hidden="true">
-            <div class="particle-dot" style="--x:8%;--y:15%;--delay:0s;--dur:6s"></div>
-            <div class="particle-dot" style="--x:22%;--y:72%;--delay:1.2s;--dur:8s"></div>
-            <div class="particle-dot" style="--x:35%;--y:30%;--delay:0.5s;--dur:7s"></div>
-            <div class="particle-dot" style="--x:50%;--y:85%;--delay:2s;--dur:5s"></div>
-            <div class="particle-dot" style="--x:65%;--y:20%;--delay:0.8s;--dur:9s"></div>
-            <div class="particle-dot" style="--x:78%;--y:60%;--delay:1.5s;--dur:6s"></div>
-            <div class="particle-dot" style="--x:90%;--y:40%;--delay:0.3s;--dur:7s"></div>
-            <div class="particle-dot" style="--x:15%;--y:50%;--delay:2.5s;--dur:8s"></div>
-            <div class="particle-dot" style="--x:42%;--y:12%;--delay:1s;--dur:6s"></div>
-            <div class="particle-dot" style="--x:85%;--y:80%;--delay:1.8s;--dur:7s"></div>
-            <div class="particle-line" style="--x:20%;--y:25%;--rot:35deg"></div>
-            <div class="particle-line" style="--x:70%;--y:65%;--rot:-20deg"></div>
-            <div class="particle-line" style="--x:45%;--y:80%;--rot:60deg"></div>
+        <!-- Animated mesh grid background -->
+        <div class="hero-mesh" aria-hidden="true"></div>
+
+        <!-- Morphing ambient glow -->
+        <div class="hero-glow-primary" aria-hidden="true"></div>
+        <div class="hero-glow-gold" aria-hidden="true"></div>
+
+        <!-- ISU Seal watermark -->
+        <div class="hero-seal" aria-hidden="true">
+            <img src="images/isu_logo.png" alt="" class="hero-seal-img" loading="lazy">
         </div>
 
-        <!-- Hero grid wrapper -->
-        <div class="hero-grid">
+        <!-- Main content column -->
+        <div class="hero-content">
 
-            <!-- LEFT: Text Content -->
-            <div class="hero-text-col">
-
-                <div class="hero-badge">
-                    <span class="hero-badge-dot"></span>
-                    Spatial Edition 2026
-                </div>
-
-                <h1 class="hero-title">
-                    Generate Your<br>
-                    <span class="hero-title-highlight">ISU Digital ID</span><br>
-                    <span class="hero-title-sub">In Seconds</span>
-                </h1>
-
-                <p class="hero-subtitle">
-                    Precision-crafted with spatial aesthetics. Generate your print-ready
-                    Isabela State University student ID directly from your browser —
-                    complete with live preview and digital signature.
-                </p>
-
-                <div class="hero-actions">
-                    <a href="#generator" class="btn-primary" id="hero-get-started-btn"
-                        onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
-                        <i class="ph ph-identification-card"></i>
-                        Create Your ID
-                        <i class="ph ph-arrow-right"></i>
-                    </a>
-                    <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
-                        target="_blank" rel="noopener noreferrer">
-                        <i class="ph ph-github-logo"></i> Source Code
-                    </a>
-                </div>
-
-                <!-- Feature Pills -->
-                <div class="hero-features">
-                    <div class="hero-feature-pill">
-                        <div class="feature-pill-icon"><i class="ph-fill ph-lightning"></i></div>
-                        <div class="feature-pill-text">
-                            <span class="feature-pill-title">Real-time Preview</span>
-                            <span class="feature-pill-desc">Live canvas rendering</span>
-                        </div>
-                    </div>
-                    <div class="hero-feature-pill">
-                        <div class="feature-pill-icon feature-pill-icon--gold"><i class="ph-fill ph-file-pdf"></i></div>
-                        <div class="feature-pill-text">
-                            <span class="feature-pill-title">PDF Export</span>
-                            <span class="feature-pill-desc">CR80 standard print</span>
-                        </div>
-                    </div>
-                    <div class="hero-feature-pill">
-                        <div class="feature-pill-icon feature-pill-icon--cyan"><i class="ph-fill ph-pen-nib"></i></div>
-                        <div class="feature-pill-text">
-                            <span class="feature-pill-title">Digital Signature</span>
-                            <span class="feature-pill-desc">Draw & embed on ID</span>
-                        </div>
-                    </div>
-                </div>
+            <!-- Top badge -->
+            <div class="hero-badge" style="--delay:0s">
+                <span class="hero-badge-dot"></span>
+                v3.4.0 &nbsp;&middot;&nbsp; OCR Autofill &nbsp;&middot;&nbsp; Session Save
             </div>
 
-            <!-- RIGHT: Floating ID Card Showcase -->
-            <div class="hero-card-col">
+            <!-- Staggered headline -->
+            <h1 class="hero-title">
+                <span class="hero-word" style="--i:0">Generate</span>
+                <span class="hero-word" style="--i:1">Your</span>
+                <span class="hero-word hero-word--hl" style="--i:2">ISU</span>
+                <span class="hero-word hero-word--hl" style="--i:3">Digital</span>
+                <span class="hero-word hero-word--hl" style="--i:4">ID</span>
+            </h1>
 
-                <!-- Glow ring behind card -->
-                <div class="hero-card-glow" aria-hidden="true"></div>
+            <p class="hero-subtitle" style="--delay:0.55s">
+                Print-ready student ID cards — built entirely in your browser.
+                No server, no install, no account needed.
+            </p>
 
-                <!-- ISU Seal watermark -->
-                <div class="hero-seal" aria-hidden="true">
-                    <img src="images/isu_logo.png" alt="" class="hero-seal-img">
-                </div>
+            <!-- CTA buttons -->
+            <div class="hero-actions" style="--delay:0.7s">
+                <a href="#generator" class="btn-primary hero-cta" id="hero-get-started-btn"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    <i class="ph ph-identification-card"></i>
+                    Create Your ID
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
+                    target="_blank" rel="noopener noreferrer">
+                    <i class="ph ph-github-logo"></i> Source Code
+                </a>
+            </div>
 
-                <!-- Floating ID card mockup (front) -->
+            <!-- 3D Card Stage -->
+            <div class="hero-stage" style="--delay:0.85s">
+                <!-- Pulsing glow ring -->
+                <div class="hero-stage-glow" aria-hidden="true"></div>
+                <div class="hero-stage-glow hero-stage-glow--gold" aria-hidden="true"></div>
+
+                <!-- ID card front -->
                 <div class="hero-id-card hero-id-front" aria-hidden="true">
-                    <img src="images/front_reference.png" alt="ISU ID Front Preview" class="hero-id-img">
+                    <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img" loading="lazy">
                     <div class="hero-card-shine"></div>
                 </div>
 
-                <!-- Floating ID card mockup (back, offset) -->
+                <!-- ID card back -->
                 <div class="hero-id-card hero-id-back" aria-hidden="true">
-                    <img src="images/back_reference.png" alt="ISU ID Back Preview" class="hero-id-img">
+                    <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img" loading="lazy">
                     <div class="hero-card-shine"></div>
                 </div>
 
-                <!-- Floating stat badges around the card -->
+                <!-- Floating badge chips -->
                 <div class="hero-floating-badge hero-fb-1">
                     <i class="ph-fill ph-shield-check"></i> ISU Official
                 </div>
                 <div class="hero-floating-badge hero-fb-2">
-                    <i class="ph-fill ph-crop"></i> CR80 Size
+                    <i class="ph-fill ph-scan"></i> OCR Autofill
                 </div>
                 <div class="hero-floating-badge hero-fb-3">
                     <i class="ph-fill ph-users-three"></i> Batch Print
                 </div>
+                <div class="hero-floating-badge hero-fb-4">
+                    <i class="ph-fill ph-floppy-disk"></i> Auto-Save
+                </div>
+            </div>
+
+            <!-- Animated stats strip -->
+            <div class="hero-stats" style="--delay:1.05s">
+                <div class="hero-stat">
+                    <span class="hero-stat-number">100%</span>
+                    <span class="hero-stat-label">Offline</span>
+                </div>
+                <div class="hero-stat-div"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">CR80</span>
+                    <span class="hero-stat-label">Standard</span>
+                </div>
+                <div class="hero-stat-div"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">5</span>
+                    <span class="hero-stat-label">Max Batch</span>
+                </div>
+                <div class="hero-stat-div"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-number">0</span>
+                    <span class="hero-stat-label">Setup</span>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Marquee feature ticker -->
+        <div class="hero-marquee" aria-hidden="true">
+            <div class="hero-marquee-track">
+                <span><i class="ph-fill ph-lightning"></i> Real-time Preview</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-file-pdf"></i> CR80 PDF Export</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-pen-nib"></i> Digital Signature</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-scan"></i> OCR Autofill</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5×)</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-table"></i> CSV Import</span>
+                <span class="hero-marquee-dot"></span>
+                <!-- duplicate for seamless loop -->
+                <span><i class="ph-fill ph-lightning"></i> Real-time Preview</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-file-pdf"></i> CR80 PDF Export</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-pen-nib"></i> Digital Signature</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-scan"></i> OCR Autofill</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5×)</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-table"></i> CSV Import</span>
             </div>
         </div>
 
@@ -703,8 +740,9 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
+    <!-- jsPDF for PDF batch export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
     <script src="app.js"></script>
 </body>
 

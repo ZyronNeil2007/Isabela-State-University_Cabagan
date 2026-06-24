@@ -74,6 +74,8 @@ A premium, fully responsive **client-side** web application for generating high-
 - `feat` — Auto-save session to `localStorage` on every render; restore banner on next page load.
 - `feat` — OCR Autofill from a printed ID or registration form photo using Tesseract.js (local WASM, no server).
 - `feat` — Smart regex field parser: extracts Name, ID Number, Course, and DOB from raw OCR text.
+- `feat` — Cinematic hero redesign with spatial mesh grid layout and morphing ambient glows.
+- `perf` — Significant performance tuning: debounced canvas rendering, throttled localStorage saves, lazy-loaded Tesseract.js, and strict CSS `contain` isolation.
 - `ux` — Applied results review step in OCR modal before committing to the form; "Apply to Form" only shows post-scan.
 - `ux` — Session restore banner slides in with a spring animation; dismissed silently if session is empty.
 

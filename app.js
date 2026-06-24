@@ -262,20 +262,65 @@ const INPUT_KEY_MAP = {
 
 const UPPERCASE_FIELDS = new Set(['full-name', 'id-number', 'course', 'parent-name', 'address', 'telephone']);
 
+/**
+ * requestAnimationFrame-based debounce.
+ * Coalesces rapid successive calls into one execution per animation frame.
+ * This means typing fast only triggers one canvas draw per ~16 ms,
+ * keeping the UI silky-smooth without any input lag.
+ */
+function rafDebounce(fn) {
+    let rafId = null;
+    return function(...args) {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            rafId = null;
+            fn.apply(this, args);
+        });
+    };
+}
+
+/**
+ * Throttle: at most once per `limit` ms.
+ * Used for saveSessionToStorage to avoid LocalStorage thrash.
+ */
+function throttle(fn, limit = 2000) {
+    let lastRun = 0;
+    let timer = null;
+    return function(...args) {
+        const now = Date.now();
+        const remaining = limit - (now - lastRun);
+        if (remaining <= 0) {
+            clearTimeout(timer);
+            lastRun = now;
+            fn.apply(this, args);
+        } else {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                lastRun = Date.now();
+                fn.apply(this, args);
+            }, remaining);
+        }
+    };
+}
+
+/** Debounced version — used by form inputs for live canvas updates */
+const debouncedRender = rafDebounce(renderCanvases);
+
 Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('input', e => {
         const raw = e.target.value;
         state.students[state.activeStudentIndex].formData[stateKey] = UPPERCASE_FIELDS.has(id) ? raw.toUpperCase() : raw;
-        renderCanvases();
-        
+        debouncedRender();
+
         // Also update tab name if editing full name
         if (stateKey === 'name') {
             renderStudentTabs();
         }
     });
 });
+
 
 // Profile picture — file upload handler
 document.getElementById('profile-pic').addEventListener('change', e => {
@@ -1706,7 +1751,14 @@ const SESSION_KEY = 'isu_id_session_v1';
  * We skip the Image objects (not serialisable) — they are rebuilt from
  * the *DataUrl strings when needed.
  */
-function saveSessionToStorage() {
+/**
+ * Serialise the current students array into localStorage.
+ * We skip the Image objects (not serialisable) — they are rebuilt from
+ * the *DataUrl strings when needed.
+ * Throttled to at most once every 2 s to avoid repeated stringify of large
+ * base64 photo dataUrls on every keystroke.
+ */
+const saveSessionToStorage = throttle(function _saveSession() {
     try {
         const snapshot = state.students.map(s => ({
             photoDataUrl:     s.photoDataUrl     || null,
@@ -1718,7 +1770,8 @@ function saveSessionToStorage() {
         // Quota exceeded or private-mode restriction — fail silently
         console.warn('[ISU ID] Session save failed:', e);
     }
-}
+}, 2000);
+
 
 /**
  * Restore a previously saved session.
@@ -1808,13 +1861,36 @@ function onDiscardSession() {
 
 let ocrRawDataUrl = null;   // Raw photo dataUrl for the OCR modal
 
+let _tesseractLoaded = false;
+
+/**
+ * Lazily inject the Tesseract.js CDN script the first time the modal opens.
+ * This removes ~4 MB WASM from the critical page-load path.
+ */
+function ensureTesseractLoaded() {
+    return new Promise((resolve, reject) => {
+        if (_tesseractLoaded || typeof Tesseract !== 'undefined') {
+            _tesseractLoaded = true;
+            return resolve();
+        }
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js';
+        s.onload  = () => { _tesseractLoaded = true; resolve(); };
+        s.onerror = () => reject(new Error('Failed to load Tesseract.js'));
+        document.head.appendChild(s);
+    });
+}
+
 /** Open the OCR upload modal */
 function openOcrModal() {
     const modal = document.getElementById('ocr-modal');
     if (modal) modal.classList.add('active');
     ocrRawDataUrl = null;
     resetOcrModal();
+    // Pre-load Tesseract in background while the user uploads their photo
+    ensureTesseractLoaded().catch(() => {});
 }
+
 
 /** Close the OCR upload modal */
 function closeOcrModal() {
@@ -1909,12 +1985,11 @@ async function runOcrScan() {
     document.getElementById('ocr-results').style.display = 'none';
 
     try {
-        // Tesseract.js must be loaded via CDN (added to index.html)
-        if (typeof Tesseract === 'undefined') {
-            throw new Error('Tesseract.js not loaded. Please check your internet connection.');
-        }
+        // Ensure Tesseract.js is loaded (lazy-loaded on first OCR modal open)
+        await ensureTesseractLoaded();
 
         setOcrStatus('Recognising text… (this may take 10–30 s)', true);
+
 
         const result = await Tesseract.recognize(
             ocrRawDataUrl,
