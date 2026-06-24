@@ -8,10 +8,10 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ## ✨ Features
 
-### 🆕 v3.3 — AI Signature Scanner & Extractor
-- **🪄 AI-Powered Signature Extraction**: Upload a photo of a signature written on white paper, and let AI (Claude Vision) automatically locate and suggest enhancement/cropping configurations.
-- **Background Removal & Contrast Enhancement**: Automatically crops, enhances brightness/contrast, and filters out white backgrounds using luminance thresholds to place a clean signature directly onto the student ID.
-- **🔄 Dual Signature Capture Modes**: Seamlessly toggle between drawing a signature freehand and uploading a photo for AI extraction.
+### 🆕 v3.3 — Local Signature Scanner & Extractor
+- **🪄 Local Signature Extraction (No APIs)**: Scan or upload a photo of a signature written on white paper, and have it cropped and extracted instantly without external network requests or third-party APIs.
+- **Background Removal & Contrast Enhancement**: Uses mathematical thresholding and custom canvas pixel filters to boost contrast, crop empty margins, and strip grey/white backgrounds to transparent.
+- **🔄 Dual Signature Capture Modes**: Seamlessly toggle between drawing a signature freehand and uploading a photo for instant local scanning.
 
 ### 🆕 v3.2 — CSV Bulk Import & Unlimited Batches
 - **📥 CSV Bulk Student Import**: Upload a `.csv` file containing 50+ students to auto-generate all ID cards in one click.
@@ -65,9 +65,9 @@ A premium, fully responsive **client-side** web application for generating high-
 ## 📋 Changelog
 
 ### v3.3.0 *(2026-06-24)*
-- `feat` — Added AI Signature Scanner/Extractor. Allows uploading signature photos on white paper.
-- `feat` — Integrated Anthropic's Claude Vision API to analyze signature bounds, brightness adjustments, and thresholding.
-- `feat` — Added client-side canvas-based background remover and contrast filter.
+- `feat` — Added 100% client-side Local Signature Scanner/Extractor (no external APIs, offline-compatible).
+- `feat` — Implemented Otsu's Binarization algorithm for adaptive paper thresholding (shadow and grey background removal).
+- `feat` — Implemented automatic content bounding-box detection (autocrop) to trim paper margins.
 - `ui` — Designed glass tab toggles to switch between draw and upload signature modes.
 
 ### v3.2.0 *(2026-06-24)*

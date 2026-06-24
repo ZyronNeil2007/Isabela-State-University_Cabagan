@@ -1425,11 +1425,126 @@ function removeWhiteBackground(canvas, threshold = 210) {
 }
 
 /**
- * Main AI enhancement pipeline:
- *  1. Send the photo to Claude Vision with a prompt to describe the clean signature region.
- *  2. Use the AI's bounding-box guidance to crop tightly (if provided).
- *  3. Run our canvas-based white-background remover.
- *  4. Persist the result to the student state and render on the ID.
+ * Calculates the optimal threshold to separate foreground (ink) from background (paper)
+ * using Otsu's binarization method.
+ * @param {ImageData} imgData
+ * @returns {number} Optimal threshold (0-255)
+ */
+function getOtsuThreshold(imgData) {
+    const d = imgData.data;
+    const len = d.length;
+    
+    // 1. Convert to grayscale and compute histogram
+    const histogram = new Array(256).fill(0);
+    let totalPixels = 0;
+    
+    for (let i = 0; i < len; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
+        if (a < 50) continue; // Skip transparent
+        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        histogram[gray]++;
+        totalPixels++;
+    }
+
+    if (totalPixels === 0) return 128;
+
+    // 2. Run Otsu's algorithm
+    let sum = 0;
+    for (let i = 0; i < 256; i++) {
+        sum += i * histogram[i];
+    }
+
+    let sumB = 0;
+    let wB = 0;
+    let wF = 0;
+    let varMax = 0;
+    let threshold = 128;
+
+    for (let t = 0; t < 256; t++) {
+        wB += histogram[t];
+        if (wB === 0) continue;
+
+        wF = totalPixels - wB;
+        if (wF === 0) break;
+
+        sumB += t * histogram[t];
+
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+
+        // Calculate Between Class Variance
+        const varBetween = wB * wF * (mB - mF) * (mB - mF);
+
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = t;
+        }
+    }
+    
+    return threshold;
+}
+
+/**
+ * Scans the canvas pixels and detects the tight bounding box of ink content
+ * (pixels whose luminance is below the threshold).
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} threshold
+ * @returns {{x: number, y: number, w: number, h: number}} Bounding box
+ */
+function getContentBoundingBox(canvas, threshold = 210) {
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = imgData.data;
+    const w = canvas.width;
+    const h = canvas.height;
+
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let found = false;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const r = d[idx], g = d[idx + 1], b = d[idx + 2], a = d[idx + 3];
+            if (a < 50) continue; // Skip transparent
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            if (lum < threshold) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+                found = true;
+            }
+        }
+    }
+
+    if (!found) {
+        return { x: 0, y: 0, w, h };
+    }
+
+    // Add padding to prevent clipping signature strokes
+    const padding = 10;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(w - 1, maxX + padding);
+    maxY = Math.min(h - 1, maxY + padding);
+
+    return {
+        x: minX,
+        y: minY,
+        w: maxX - minX + 1,
+        h: maxY - minY + 1
+    };
+}
+
+/**
+ * Main signature extraction pipeline:
+ *  1. Load the signature image client-side.
+ *  2. Calculate optimal threshold automatically via Otsu's method.
+ *  3. Autocrop signature to its tight content bounds.
+ *  4. Draw onto destination signature canvas with centered padding.
+ *  5. Enhance contrast and strip background to transparent.
+ *  6. Persist to student state and render on the ID.
  */
 async function enhanceSignatureWithAI() {
     if (!sigRawPhotoDataUrl) return;
@@ -1441,92 +1556,13 @@ async function enhanceSignatureWithAI() {
     enhanceBtn.disabled = true;
     clearBtn.disabled   = true;
     resultPane.style.display = 'none';
-    setAiStatus('Sending photo to Claude AI...', true);
+    setAiStatus('Scanning and extracting signature...', true);
 
     try {
-        /* —— Step 1: Ask Claude to analyse the signature photo —— */
-        const { data: imgData, mediaType } = parseDataUrl(sigRawPhotoDataUrl);
+        // Wait 50ms so UI updates and spinner shows
+        await new Promise(res => setTimeout(res, 50));
 
-        setAiStatus('AI is analysing your signature...', true);
-
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method:  'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model:      'claude-sonnet-4-6',
-                max_tokens: 1000,
-                messages: [{
-                    role: 'user',
-                    content: [
-                        {
-                            type:   'image',
-                            source: { type: 'base64', media_type: mediaType, data: imgData }
-                        },
-                        {
-                            type: 'text',
-                            text: `You are a signature extraction assistant. Analyze this photo of a handwritten signature on white/light paper.
-
-Return ONLY a JSON object (no markdown, no explanation) with these fields:
-{
-  "hasSignature": true/false,
-  "quality": "good" | "fair" | "poor",
-  "cropHint": {
-    "xPct": 0-100,
-    "yPct": 0-100,
-    "wPct": 0-100,
-    "hPct": 0-100
-  },
-  "brightnessAdjust": -50 to 50,
-  "contrastBoost": 0 to 100,
-  "suggestedThreshold": 180 to 240,
-  "notes": "brief note"
-}
-
-cropHint is the bounding box of the signature as percentages of the full image.
-suggestedThreshold is the luminance cutoff (0-255) to separate ink from background.
-If hasSignature is false, still return valid JSON with other fields set to defaults.`
-                        }
-                    ]
-                }]
-            })
-        });
-
-        if (!response.ok) {
-            throw new Error(`API error ${response.status}: ${await response.text()}`);
-        }
-
-        const apiResult = await response.json();
-        let aiGuide = null;
-
-        // Parse AI JSON response
-        try {
-            const rawText = apiResult.content
-                .filter(b => b.type === 'text')
-                .map(b => b.text)
-                .join('');
-            const jsonStr = rawText.replace(/```json|```/g, '').trim();
-            aiGuide = JSON.parse(jsonStr);
-        } catch (_) {
-            // If parsing fails, use safe defaults
-            aiGuide = {
-                hasSignature:        true,
-                cropHint:            { xPct: 5, yPct: 10, wPct: 90, hPct: 80 },
-                brightnessAdjust:    0,
-                contrastBoost:       20,
-                suggestedThreshold:  215
-            };
-        }
-
-        if (!aiGuide.hasSignature) {
-            setAiStatus('No signature detected. Please upload a clearer photo.', true);
-            enhanceBtn.disabled = false;
-            clearBtn.disabled   = false;
-            return;
-        }
-
-        setAiStatus('Processing and removing background...', true);
-
-        /* —— Step 2: Load the source image onto a canvas —— */
+        /* ── Step 1: Load the source image ── */
         const sourceImg = await new Promise((res, rej) => {
             const img = new Image();
             img.onload  = () => res(img);
@@ -1534,14 +1570,35 @@ If hasSignature is false, still return valid JSON with other fields set to defau
             img.src = sigRawPhotoDataUrl;
         });
 
-        // Apply AI crop hint
-        const ch  = aiGuide.cropHint || { xPct: 5, yPct: 5, wPct: 90, hPct: 90 };
-        const srcX = Math.round((ch.xPct / 100) * sourceImg.width);
-        const srcY = Math.round((ch.yPct / 100) * sourceImg.height);
-        const srcW = Math.round((ch.wPct / 100) * sourceImg.width);
-        const srcH = Math.round((ch.hPct / 100) * sourceImg.height);
+        /* ── Step 2: Draw to a normalized scanning canvas ── */
+        const maxScanDim = 1200;
+        let scanW = sourceImg.width;
+        let scanH = sourceImg.height;
+        if (scanW > maxScanDim || scanH > maxScanDim) {
+            if (scanW > scanH) {
+                scanH = Math.round((scanH * maxScanDim) / scanW);
+                scanW = maxScanDim;
+            } else {
+                scanW = Math.round((scanW * maxScanDim) / scanH);
+                scanH = maxScanDim;
+            }
+        }
 
-        // Work at a safe resolution (2x the ID card signature slot)
+        const scanCanvas = document.createElement('canvas');
+        scanCanvas.width  = scanW;
+        scanCanvas.height = scanH;
+        const sCtx = scanCanvas.getContext('2d');
+        sCtx.drawImage(sourceImg, 0, 0, scanW, scanH);
+
+        const scanImgData = sCtx.getImageData(0, 0, scanW, scanH);
+
+        /* ── Step 3: Run Otsu's thresholding to find optimal cutoff ── */
+        const threshold = getOtsuThreshold(scanImgData);
+
+        /* ── Step 4: Detect content bounding box (autocrop) ── */
+        const box = getContentBoundingBox(scanCanvas, threshold);
+
+        /* ── Step 5: Draw cropped signature onto target canvas ── */
         const OUT_W = 638;
         const OUT_H = 240;
 
@@ -1550,32 +1607,38 @@ If hasSignature is false, still return valid JSON with other fields set to defau
         workCanvas.height = OUT_H;
         const wCtx = workCanvas.getContext('2d');
 
-        // Fill white before drawing (needed for contrast adjustments)
+        // Fill white background first (so contrast boost works properly)
         wCtx.fillStyle = '#ffffff';
         wCtx.fillRect(0, 0, OUT_W, OUT_H);
-        wCtx.drawImage(sourceImg, srcX, srcY, srcW, srcH, 0, 0, OUT_W, OUT_H);
 
-        /* —— Step 3: Apply brightness / contrast adjustments —— */
+        // Draw cropped signature with aspect ratio preservation (centered with 90% size)
+        const scale = Math.min(OUT_W / box.w, OUT_H / box.h) * 0.9;
+        const destW = box.w * scale;
+        const destH = box.h * scale;
+        const destX = (OUT_W - destW) / 2;
+        const destY = (OUT_H - destH) / 2;
+
+        wCtx.drawImage(scanCanvas, box.x, box.y, box.w, box.h, destX, destY, destW, destH);
+
+        /* ── Step 6: Apply Contrast Boost for crisp lines ── */
         const imgData2  = wCtx.getImageData(0, 0, OUT_W, OUT_H);
         const pixels    = imgData2.data;
-        const brightness = (aiGuide.brightnessAdjust || 0);
-        const contrast   = (aiGuide.contrastBoost    || 20) / 100;
+        const contrast   = 45 / 100; // Boost contrast by 45% for crisp pen strokes
         const factor     = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
 
         for (let i = 0; i < pixels.length; i += 4) {
             for (let c = 0; c < 3; c++) {
                 let v = pixels[i + c];
-                v = Math.round(factor * (v - 128) + 128 + brightness);
+                v = Math.round(factor * (v - 128) + 128);
                 pixels[i + c] = Math.max(0, Math.min(255, v));
             }
         }
         wCtx.putImageData(imgData2, 0, 0);
 
-        /* —— Step 4: Remove white background using AI-suggested threshold —— */
-        const threshold = aiGuide.suggestedThreshold || 215;
-        removeWhiteBackground(workCanvas, threshold);
+        /* ── Step 7: Remove background using threshold ── */
+        removeWhiteBackground(workCanvas, 220);
 
-        /* —— Step 5: Render result preview —— */
+        /* ── Step 8: Render result preview ── */
         const resultCanvas = document.getElementById('sig-result-canvas');
         resultCanvas.width  = OUT_W;
         resultCanvas.height = OUT_H;
@@ -1586,7 +1649,7 @@ If hasSignature is false, still return valid JSON with other fields set to defau
         setAiStatus('', false);
         resultPane.style.display = 'flex';
 
-        /* —— Step 6: Persist to student state & re-render ID card —— */
+        /* ── Step 9: Persist to student state & re-render ID card ── */
         const finalDataUrl = workCanvas.toDataURL('image/png');
         const finalImg     = new Image();
         finalImg.onload = () => {
@@ -1598,7 +1661,7 @@ If hasSignature is false, still return valid JSON with other fields set to defau
         finalImg.src = finalDataUrl;
 
     } catch (err) {
-        console.error('[ISU ID] AI signature enhancement failed:', err);
+        console.error('[ISU ID] Signature enhancement failed:', err);
         setAiStatus('Enhancement failed. Try again or draw your signature manually.', true);
     } finally {
         enhanceBtn.disabled = false;

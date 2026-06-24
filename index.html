@@ -360,7 +360,7 @@
                             <i class="ph ph-pencil-simple"></i> Draw
                         </button>
                         <button class="sig-mode-tab" id="sig-tab-upload" onclick="switchSigMode('upload')">
-                            <i class="ph ph-sparkle"></i> AI from Photo
+                            <i class="ph ph-sparkle"></i> Scan Photo
                         </button>
                     </div>
 
@@ -399,10 +399,10 @@
                         </div>
                         <div class="sig-ai-status" id="sig-ai-status" style="display:none;">
                             <div class="sig-ai-spinner"></div>
-                            <span id="sig-ai-status-text">Analyzing signature…</span>
+                            <span id="sig-ai-status-text">Processing signature…</span>
                         </div>
                         <div class="sig-result-preview" id="sig-result-preview" style="display:none;">
-                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> AI-enhanced signature ready</div>
+                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> Cleaned signature ready</div>
                             <canvas id="sig-result-canvas" class="sig-result-canvas" aria-label="Processed signature preview"></canvas>
                             <button class="btn-ghost sig-reprocess-btn" onclick="document.getElementById('sig-photo-input').click()">
                                 <i class="ph ph-arrow-counter-clockwise"></i> Use different photo
@@ -410,7 +410,7 @@
                         </div>
                     </div>
 
-                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and AI will clean and extract it automatically.</p>
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and the engine will clean and extract it automatically.</p>
                 </div>
 
             </div><!-- /steps-wrapper -->

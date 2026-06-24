@@ -15,17 +15,14 @@ A client-side CSV bulk student import system has been introduced:
 
 ---
 
-## 2. AI Signature Scanner & Extractor from White Paper
+## 2. Local Signature Scanner & Extractor from White Paper
 
 ### Problem Description
-Drawing a digital signature using a trackpad or mouse can yield poor results. Users prefer signing on a physical sheet of white paper and photographing it, but standard photo uploads preserve paper shadows, grey backgrounds, and misaligned cropping, making the signature look unprofessional on a clean ID card.
+Drawing a digital signature using a trackpad or mouse can yield poor, jagged results. Users prefer signing on a physical sheet of white paper and photographing it, but standard photo uploads preserve paper shadows, grey backgrounds, and misaligned margins. Users also want a solution that doesn't rely on costly external AI APIs or require them to download heavy library packages (like 70MB+ WebAssembly models).
 
 ### Implemented Solution
-An AI signature extraction pipeline has been introduced:
-1. **Dual Signature Modes**: Added toggle tabs in `index.html` allowing users to choose between "Draw" (traditional HTML5 canvas signature pad) and "AI from Photo".
-2. **Claude Vision Analyzer**: Integrated an API call to Anthropic's Claude Vision (`claude-sonnet-4-6`) to evaluate a signature photo, return bounding-box coordinates for tight cropping, suggest brightness/contrast boosts, and set luminance thresholds.
-3. **Automated Background Removal**: Implemented a client-side canvas-based post-processor that:
-   - Crops the signature using the AI-guided percentages.
-   - Adjusts contrast/brightness using pixel factor formulas.
-   - Truncates gray/white background pixels to transparent, leaving only clean dark ink.
-   - Sharpens ink opacity and normalizes color to a professional dark charcoal/black tone.
+An instant, client-side signature scanner has been integrated:
+1. **Dual Signature Modes**: Added toggle tabs in `index.html` allowing users to choose between "Draw" (traditional HTML5 canvas signature pad) and "Scan Photo".
+2. **Otsu's Binarization (Auto-Thresholding)**: Integrated the classic Otsu computer vision algorithm inside `app.js` to mathematically calculate the optimal threshold for separating ink strokes from paper background. This automatically adapts to different lighting conditions and gets rid of grey paper shadows.
+3. **Autocrop (Bounding-Box Detection)**: Implemented a pixel scanner that automatically finds the boundary limits of the dark ink pixels and crops the canvas tightly around the signature, removing all excess white paper margins.
+4. **Contrast & Background Removal**: Applies a local contrast booster for sharp ink strokes, strips all white/grey background pixels to transparent, and normalizes the signature ink to a professional black color.
