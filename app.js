@@ -793,7 +793,12 @@ document.getElementById('download-btn').addEventListener('click', async () => {
             }
             
             const colIndex = i % 5;
-            const frontX = startX + colIndex * (cardW + gapX);
+            const pageIndex = Math.floor(i / 5);
+            const studentsOnThisPage = Math.min(5, studentCount - pageIndex * 5);
+            const gridWidth = studentsOnThisPage * cardW + (studentsOnThisPage - 1) * gapX;
+            const pageStartX = (297 - gridWidth) / 2;
+
+            const frontX = pageStartX + colIndex * (cardW + gapX);
             const backX = frontX;
             const frontY = startY;
             const backY = startY + cardH + gapY;
