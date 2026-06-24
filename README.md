@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.3.2
+# 🎓 Isabela State University Premium ID Generator v3.4.0
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning Apple-style glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
 
@@ -7,6 +7,11 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## ✨ Features
+
+### 🆕 v3.4 — Session Auto-Save & OCR Autofill
+- **💾 Auto-Save Session**: The app now auto-saves your entire session (all students, form data, photos, signatures) to `localStorage` after every change. If you close the tab by accident, a restore banner will appear on the next visit.
+- **🔍 OCR Autofill from Photo**: Snap or upload a photo of any printed ID or registration form. Powered by **Tesseract.js** (local, runs in the browser), the system reads Name, ID Number, Course, and Date of Birth and pre-fills the form fields — skipping tedious manual entry for re-prints.
+- **🟢 Smart Field Parsing**: Regex-based post-processing converts extracted dates to `YYYY-MM-DD` format and normalises names to uppercase automatically.
 
 ### 🆕 v3.3 — Local Signature Scanner & Extractor
 - **🪄 Local Signature Extraction (No APIs)**: Scan or upload a photo of a signature written on white paper, and have it cropped and extracted instantly without external network requests or third-party APIs.
@@ -44,11 +49,12 @@ A premium, fully responsive **client-side** web application for generating high-
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
 | Styling | Vanilla CSS3 (custom properties, GPU transforms, flexbox/grid) |
 | Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
+| OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline, WASM) |
 | 3D Effects | [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
 | Icons | [Phosphor Icons](https://phosphoricons.com/) |
 | Typography | Inter — Google Fonts |
 
-> **Zero dependencies** at runtime. No npm, no bundler, no backend.
+> **Zero runtime dependencies** on your server. No npm, no bundler, no backend.
 
 ---
 
@@ -63,6 +69,13 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## 📋 Changelog
+
+### v3.4.0 *(2026-06-24)*
+- `feat` — Auto-save session to `localStorage` on every render; restore banner on next page load.
+- `feat` — OCR Autofill from a printed ID or registration form photo using Tesseract.js (local WASM, no server).
+- `feat` — Smart regex field parser: extracts Name, ID Number, Course, and DOB from raw OCR text.
+- `ux` — Applied results review step in OCR modal before committing to the form; "Apply to Form" only shows post-scan.
+- `ux` — Session restore banner slides in with a spring animation; dismissed silently if session is empty.
 
 ### v3.3.2 *(2026-06-24)*
 - `fix` — Dynamically centers the cards on the A4 page for incomplete batches (e.g., exactly 1 student or 4 students).

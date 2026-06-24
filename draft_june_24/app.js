@@ -17,8 +17,6 @@
  * 10.  NAVBAR         — scroll-shrink behaviour
  * 11.  EXPORT         — A4 print PNG download
  * 12.  BOOT           — initialise everything on load
- * 17.  SESSION SAVE   — localStorage auto-save & restore
- * 18.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -503,9 +501,6 @@ function renderCanvases() {
 
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
-
-    // ── Session Auto-Save ─────────────────────────────────────
-    saveSessionToStorage();
 }
 
 /** Copy the main canvases into the small mini-preview thumbnails */
@@ -775,9 +770,9 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 
     try {
         const { jsPDF } = window.jspdf;
-        // Create an A4 landscape PDF (297mm x 210mm)
+        // Create an A4 portrait PDF
         const pdf = new jsPDF({
-            orientation: 'landscape',
+            orientation: 'portrait',
             unit: 'mm',
             format: 'a4'
         });
@@ -785,56 +780,51 @@ document.getElementById('download-btn').addEventListener('click', async () => {
         const studentCount = state.students.length;
         const cardW = 54;      // CR80 standard width (mm)
         const cardH = 85.6;    // CR80 standard height (mm)
-        const gapX = 3;        // Horizontal gap between cards
-        const gapY = 6;        // Vertical gap between front and back
-        const startX = (297 - (cardW * 5 + gapX * 4)) / 2; // Centered horizontally
+        const gapX = 10;
+        const gapY = 8;
+        const startX = (210 - (cardW * 2 + gapX)) / 2; // Centered
         const startY = 20;
 
         const originalIndex = state.activeStudentIndex;
 
         for (let i = 0; i < studentCount; i++) {
-            if (i > 0 && i % 5 === 0) {
+            if (i > 0 && i % 3 === 0) {
                 pdf.addPage();
             }
             
-            const colIndex = i % 5;
-            const pageIndex = Math.floor(i / 5);
-            const studentsOnThisPage = Math.min(5, studentCount - pageIndex * 5);
-            const gridWidth = studentsOnThisPage * cardW + (studentsOnThisPage - 1) * gapX;
-            const pageStartX = (297 - gridWidth) / 2;
-
-            const frontX = pageStartX + colIndex * (cardW + gapX);
-            const backX = frontX;
-            const frontY = startY;
-            const backY = startY + cardH + gapY;
+            const rowIndex = i % 3;
+            const y = startY + rowIndex * (cardH + gapY);
 
             // Print header on each page
-            if (colIndex === 0) {
+            if (rowIndex === 0) {
                 pdf.setFont("helvetica", "bold");
-                pdf.setFontSize(12);
+                pdf.setFontSize(14);
                 pdf.setTextColor(0, 0, 0);
                 const dateStr = new Date().toLocaleDateString();
-                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 5) + 1} — ${dateStr}`, 148.5, 12, { align: 'center' });
+                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 3) + 1} — ${dateStr}`, 105, 12, { align: 'center' });
             }
 
             state.activeStudentIndex = i;
             renderCanvases(); // render i-th student
             
-            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, frontY, cardW, cardH);
-            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, backY, cardW, cardH);
+            const frontX = startX;
+            const backX = startX + cardW + gapX;
+            
+            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, y, cardW, cardH);
+            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, y, cardW, cardH);
             
             // Draw cut lines
             pdf.setDrawColor(200, 200, 200);
             pdf.setLineWidth(0.3);
             pdf.setLineDashPattern([2, 2], 0);
-            const p = 1.5; // padding around card
-            pdf.rect(frontX - p, frontY - p, cardW + p * 2, cardH + p * 2);
-            pdf.rect(backX - p, backY - p, cardW + p * 2, cardH + p * 2);
+            const p = 2; // padding around card
+            pdf.rect(frontX - p, y - p, cardW + p * 2, cardH + p * 2);
+            pdf.rect(backX - p, y - p, cardW + p * 2, cardH + p * 2);
             
-            pdf.setFontSize(6);
+            pdf.setFontSize(8);
             pdf.setTextColor(150, 150, 150);
-            pdf.text('✂ Cut', frontX + cardW/2, frontY - p - 1, { align: 'center' });
-            pdf.text('✂ Cut', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
+            pdf.text('✂ Cut here', frontX + cardW/2, y - p - 2, { align: 'center' });
+            pdf.text('✂ Cut here', backX + cardW/2, y - p - 2, { align: 'center' });
         }
 
         // Restore active state
@@ -861,21 +851,6 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 window.addEventListener('load', () => {
     // Load ID card templates & render
     loadTemplates();
-
-    // Check if a previous session exists and show restore banner
-    (() => {
-        try {
-            const raw = localStorage.getItem(SESSION_KEY);
-            if (raw) {
-                const snapshot = JSON.parse(raw);
-                // Only show banner when there is meaningful data (non-empty name or photo)
-                const hasMeaningfulData = Array.isArray(snapshot) && snapshot.some(s =>
-                    (s.formData && s.formData.name) || s.photoDataUrl
-                );
-                if (hasMeaningfulData) showRestoreBanner();
-            }
-        } catch { /* ignore parse errors */ }
-    })();
 
     // Boot stepper
     initStepper();
@@ -1194,110 +1169,9 @@ function saveAsImage(side) {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   16. CSV BULK IMPORT
-═══════════════════════════════════════════════════════════════════════════ */
-document.getElementById('csv-upload')?.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = event => {
-        const text = event.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-        if (lines.length <= 1) {
-            alert('CSV file is empty or missing headers.');
-            return;
-        }
-
-        // Simple CSV parser supporting quotes
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"' && line[i+1] === '"') {
-                    current += '"';
-                    i++;
-                } else if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim());
-            return result;
-        }
-
-        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
-        
-        // Find indices for common headers
-        const getIndex = (possibleNames) => {
-            for (const name of possibleNames) {
-                const idx = headers.findIndex(h => h.includes(name));
-                if (idx !== -1) return idx;
-            }
-            return -1;
-        };
-
-        const idxName = getIndex(['name', 'full']);
-        const idxId = getIndex(['id', 'student', 'number']);
-        const idxCourse = getIndex(['course', 'program', 'degree']);
-        const idxDob = getIndex(['dob', 'birth', 'date']);
-        const idxParent = getIndex(['parent', 'guardian']);
-        const idxAddress = getIndex(['address', 'home']);
-        const idxTel = getIndex(['tel', 'phone', 'mobile', 'contact']);
-
-        let addedCount = 0;
-
-        for (let i = 1; i < lines.length; i++) {
-            const row = parseCSVLine(lines[i]);
-            if (row.length < 2) continue; // Skip empty/malformed rows
-
-            const newStudent = {
-                photoImage: null,
-                photoDataUrl: null,
-                rawSourceImage: null,
-                signatureImage: null,
-                signatureDataUrl: null,
-                formData: {
-                    name: idxName !== -1 ? (row[idxName] || '').toUpperCase() : '',
-                    idNumber: idxId !== -1 ? (row[idxId] || '').toUpperCase() : '',
-                    course: idxCourse !== -1 ? (row[idxCourse] || '').toUpperCase() : '',
-                    dob: idxDob !== -1 ? (row[idxDob] || '') : '', // Expected YYYY-MM-DD
-                    parentName: idxParent !== -1 ? (row[idxParent] || '').toUpperCase() : '',
-                    address: idxAddress !== -1 ? (row[idxAddress] || '').toUpperCase() : '',
-                    telephone: idxTel !== -1 ? (row[idxTel] || '').toUpperCase() : ''
-                }
-            };
-            
-            // If the first tab is empty and it's our first add, replace it
-            if (state.students.length === 1 && state.students[0].formData.name === '' && state.students[0].formData.idNumber === '' && !state.students[0].photoDataUrl) {
-                state.students[0] = newStudent;
-            } else {
-                state.students.push(newStudent);
-            }
-            addedCount++;
-        }
-
-        if (addedCount > 0) {
-            // Switch to the first newly added student
-            switchStudent(state.students.length - addedCount);
-            alert(`Successfully imported ${addedCount} student(s) from CSV.`);
-        } else {
-            alert('No valid student rows found in the CSV.');
-        }
-    };
-    reader.readAsText(file);
-    e.target.value = ''; // Reset file input
-});
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   17. AI SIGNATURE — Photo upload → Claude Vision → BG removal → ID
+   16. AI SIGNATURE — Photo upload → Claude Vision → BG removal → ID
 ═══════════════════════════════════════════════════════════════════════════ */
 
 /** Currently loaded raw signature photo (before AI processing) */
@@ -1450,126 +1324,11 @@ function removeWhiteBackground(canvas, threshold = 210) {
 }
 
 /**
- * Calculates the optimal threshold to separate foreground (ink) from background (paper)
- * using Otsu's binarization method.
- * @param {ImageData} imgData
- * @returns {number} Optimal threshold (0-255)
- */
-function getOtsuThreshold(imgData) {
-    const d = imgData.data;
-    const len = d.length;
-    
-    // 1. Convert to grayscale and compute histogram
-    const histogram = new Array(256).fill(0);
-    let totalPixels = 0;
-    
-    for (let i = 0; i < len; i += 4) {
-        const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
-        if (a < 50) continue; // Skip transparent
-        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
-        histogram[gray]++;
-        totalPixels++;
-    }
-
-    if (totalPixels === 0) return 128;
-
-    // 2. Run Otsu's algorithm
-    let sum = 0;
-    for (let i = 0; i < 256; i++) {
-        sum += i * histogram[i];
-    }
-
-    let sumB = 0;
-    let wB = 0;
-    let wF = 0;
-    let varMax = 0;
-    let threshold = 128;
-
-    for (let t = 0; t < 256; t++) {
-        wB += histogram[t];
-        if (wB === 0) continue;
-
-        wF = totalPixels - wB;
-        if (wF === 0) break;
-
-        sumB += t * histogram[t];
-
-        const mB = sumB / wB;
-        const mF = (sum - sumB) / wF;
-
-        // Calculate Between Class Variance
-        const varBetween = wB * wF * (mB - mF) * (mB - mF);
-
-        if (varBetween > varMax) {
-            varMax = varBetween;
-            threshold = t;
-        }
-    }
-    
-    return threshold;
-}
-
-/**
- * Scans the canvas pixels and detects the tight bounding box of ink content
- * (pixels whose luminance is below the threshold).
- * @param {HTMLCanvasElement} canvas
- * @param {number} threshold
- * @returns {{x: number, y: number, w: number, h: number}} Bounding box
- */
-function getContentBoundingBox(canvas, threshold = 210) {
-    const ctx = canvas.getContext('2d');
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const d = imgData.data;
-    const w = canvas.width;
-    const h = canvas.height;
-
-    let minX = w, minY = h, maxX = 0, maxY = 0;
-    let found = false;
-
-    for (let y = 0; y < h; y++) {
-        for (let x = 0; x < w; x++) {
-            const idx = (y * w + x) * 4;
-            const r = d[idx], g = d[idx + 1], b = d[idx + 2], a = d[idx + 3];
-            if (a < 50) continue; // Skip transparent
-            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-            
-            if (lum < threshold) {
-                if (x < minX) minX = x;
-                if (x > maxX) maxX = x;
-                if (y < minY) minY = y;
-                if (y > maxY) maxY = y;
-                found = true;
-            }
-        }
-    }
-
-    if (!found) {
-        return { x: 0, y: 0, w, h };
-    }
-
-    // Add padding to prevent clipping signature strokes
-    const padding = 10;
-    minX = Math.max(0, minX - padding);
-    minY = Math.max(0, minY - padding);
-    maxX = Math.min(w - 1, maxX + padding);
-    maxY = Math.min(h - 1, maxY + padding);
-
-    return {
-        x: minX,
-        y: minY,
-        w: maxX - minX + 1,
-        h: maxY - minY + 1
-    };
-}
-
-/**
- * Main signature extraction pipeline:
- *  1. Load the signature image client-side.
- *  2. Calculate optimal threshold automatically via Otsu's method.
- *  3. Autocrop signature to its tight content bounds.
- *  4. Draw onto destination signature canvas with centered padding.
- *  5. Enhance contrast and strip background to transparent.
- *  6. Persist to student state and render on the ID.
+ * Main AI enhancement pipeline:
+ *  1. Send the photo to Claude Vision with a prompt to describe the clean signature region.
+ *  2. Use the AI's bounding-box guidance to crop tightly (if provided).
+ *  3. Run our canvas-based white-background remover.
+ *  4. Persist the result to the student state and render on the ID.
  */
 async function enhanceSignatureWithAI() {
     if (!sigRawPhotoDataUrl) return;
@@ -1581,13 +1340,92 @@ async function enhanceSignatureWithAI() {
     enhanceBtn.disabled = true;
     clearBtn.disabled   = true;
     resultPane.style.display = 'none';
-    setAiStatus('Scanning and extracting signature...', true);
+    setAiStatus('Sending photo to Claude AI…', true);
 
     try {
-        // Wait 50ms so UI updates and spinner shows
-        await new Promise(res => setTimeout(res, 50));
+        /* ── Step 1: Ask Claude to analyse the signature photo ── */
+        const { data: imgData, mediaType } = parseDataUrl(sigRawPhotoDataUrl);
 
-        /* ── Step 1: Load the source image ── */
+        setAiStatus('AI is analysing your signature…', true);
+
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model:      'claude-sonnet-4-6',
+                max_tokens: 1000,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type:   'image',
+                            source: { type: 'base64', media_type: mediaType, data: imgData }
+                        },
+                        {
+                            type: 'text',
+                            text: `You are a signature extraction assistant. Analyze this photo of a handwritten signature on white/light paper.
+
+Return ONLY a JSON object (no markdown, no explanation) with these fields:
+{
+  "hasSignature": true/false,
+  "quality": "good" | "fair" | "poor",
+  "cropHint": {
+    "xPct": 0-100,
+    "yPct": 0-100,
+    "wPct": 0-100,
+    "hPct": 0-100
+  },
+  "brightnessAdjust": -50 to 50,
+  "contrastBoost": 0 to 100,
+  "suggestedThreshold": 180 to 240,
+  "notes": "brief note"
+}
+
+cropHint is the bounding box of the signature as percentages of the full image.
+suggestedThreshold is the luminance cutoff (0-255) to separate ink from background.
+If hasSignature is false, still return valid JSON with other fields set to defaults.`
+                        }
+                    ]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error ${response.status}: ${await response.text()}`);
+        }
+
+        const apiResult = await response.json();
+        let aiGuide = null;
+
+        // Parse AI JSON response
+        try {
+            const rawText = apiResult.content
+                .filter(b => b.type === 'text')
+                .map(b => b.text)
+                .join('');
+            const jsonStr = rawText.replace(/```json|```/g, '').trim();
+            aiGuide = JSON.parse(jsonStr);
+        } catch (_) {
+            // If parsing fails, use safe defaults
+            aiGuide = {
+                hasSignature:        true,
+                cropHint:            { xPct: 5, yPct: 10, wPct: 90, hPct: 80 },
+                brightnessAdjust:    0,
+                contrastBoost:       20,
+                suggestedThreshold:  215
+            };
+        }
+
+        if (!aiGuide.hasSignature) {
+            setAiStatus('No signature detected. Please upload a clearer photo.', true);
+            enhanceBtn.disabled = false;
+            clearBtn.disabled   = false;
+            return;
+        }
+
+        setAiStatus('Processing and removing background…', true);
+
+        /* ── Step 2: Load the source image onto a canvas ── */
         const sourceImg = await new Promise((res, rej) => {
             const img = new Image();
             img.onload  = () => res(img);
@@ -1595,35 +1433,14 @@ async function enhanceSignatureWithAI() {
             img.src = sigRawPhotoDataUrl;
         });
 
-        /* ── Step 2: Draw to a normalized scanning canvas ── */
-        const maxScanDim = 1200;
-        let scanW = sourceImg.width;
-        let scanH = sourceImg.height;
-        if (scanW > maxScanDim || scanH > maxScanDim) {
-            if (scanW > scanH) {
-                scanH = Math.round((scanH * maxScanDim) / scanW);
-                scanW = maxScanDim;
-            } else {
-                scanW = Math.round((scanW * maxScanDim) / scanH);
-                scanH = maxScanDim;
-            }
-        }
+        // Apply AI crop hint
+        const ch  = aiGuide.cropHint || { xPct: 5, yPct: 5, wPct: 90, hPct: 90 };
+        const srcX = Math.round((ch.xPct / 100) * sourceImg.width);
+        const srcY = Math.round((ch.yPct / 100) * sourceImg.height);
+        const srcW = Math.round((ch.wPct / 100) * sourceImg.width);
+        const srcH = Math.round((ch.hPct / 100) * sourceImg.height);
 
-        const scanCanvas = document.createElement('canvas');
-        scanCanvas.width  = scanW;
-        scanCanvas.height = scanH;
-        const sCtx = scanCanvas.getContext('2d');
-        sCtx.drawImage(sourceImg, 0, 0, scanW, scanH);
-
-        const scanImgData = sCtx.getImageData(0, 0, scanW, scanH);
-
-        /* ── Step 3: Run Otsu's thresholding to find optimal cutoff ── */
-        const threshold = getOtsuThreshold(scanImgData);
-
-        /* ── Step 4: Detect content bounding box (autocrop) ── */
-        const box = getContentBoundingBox(scanCanvas, threshold);
-
-        /* ── Step 5: Draw cropped signature onto target canvas ── */
+        // Work at a safe resolution (2× the ID card signature slot)
         const OUT_W = 638;
         const OUT_H = 240;
 
@@ -1632,38 +1449,32 @@ async function enhanceSignatureWithAI() {
         workCanvas.height = OUT_H;
         const wCtx = workCanvas.getContext('2d');
 
-        // Fill white background first (so contrast boost works properly)
+        // Fill white before drawing (needed for contrast adjustments)
         wCtx.fillStyle = '#ffffff';
         wCtx.fillRect(0, 0, OUT_W, OUT_H);
+        wCtx.drawImage(sourceImg, srcX, srcY, srcW, srcH, 0, 0, OUT_W, OUT_H);
 
-        // Draw cropped signature with aspect ratio preservation (centered with 90% size)
-        const scale = Math.min(OUT_W / box.w, OUT_H / box.h) * 0.9;
-        const destW = box.w * scale;
-        const destH = box.h * scale;
-        const destX = (OUT_W - destW) / 2;
-        const destY = (OUT_H - destH) / 2;
-
-        wCtx.drawImage(scanCanvas, box.x, box.y, box.w, box.h, destX, destY, destW, destH);
-
-        /* ── Step 6: Apply Contrast Boost for crisp lines ── */
+        /* ── Step 3: Apply brightness / contrast adjustments ── */
         const imgData2  = wCtx.getImageData(0, 0, OUT_W, OUT_H);
         const pixels    = imgData2.data;
-        const contrast   = 45 / 100; // Boost contrast by 45% for crisp pen strokes
+        const brightness = (aiGuide.brightnessAdjust || 0);
+        const contrast   = (aiGuide.contrastBoost    || 20) / 100;
         const factor     = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
 
         for (let i = 0; i < pixels.length; i += 4) {
             for (let c = 0; c < 3; c++) {
                 let v = pixels[i + c];
-                v = Math.round(factor * (v - 128) + 128);
+                v = Math.round(factor * (v - 128) + 128 + brightness);
                 pixels[i + c] = Math.max(0, Math.min(255, v));
             }
         }
         wCtx.putImageData(imgData2, 0, 0);
 
-        /* ── Step 7: Remove background using threshold ── */
-        removeWhiteBackground(workCanvas, 220);
+        /* ── Step 4: Remove white background using AI-suggested threshold ── */
+        const threshold = aiGuide.suggestedThreshold || 215;
+        removeWhiteBackground(workCanvas, threshold);
 
-        /* ── Step 8: Render result preview ── */
+        /* ── Step 5: Render result preview ── */
         const resultCanvas = document.getElementById('sig-result-canvas');
         resultCanvas.width  = OUT_W;
         resultCanvas.height = OUT_H;
@@ -1674,7 +1485,7 @@ async function enhanceSignatureWithAI() {
         setAiStatus('', false);
         resultPane.style.display = 'flex';
 
-        /* ── Step 9: Persist to student state & re-render ID card ── */
+        /* ── Step 6: Persist to student state & re-render ID card ── */
         const finalDataUrl = workCanvas.toDataURL('image/png');
         const finalImg     = new Image();
         finalImg.onload = () => {
@@ -1686,7 +1497,7 @@ async function enhanceSignatureWithAI() {
         finalImg.src = finalDataUrl;
 
     } catch (err) {
-        console.error('[ISU ID] Signature enhancement failed:', err);
+        console.error('[ISU ID] AI signature enhancement failed:', err);
         setAiStatus('Enhancement failed. Try again or draw your signature manually.', true);
     } finally {
         enhanceBtn.disabled = false;
@@ -1694,350 +1505,3 @@ async function enhanceSignatureWithAI() {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   17. SESSION SAVE — Auto-persist students[] to localStorage after every render
-       Serialises formData + dataUrl strings (images are already base64).
-       On load, a restore banner lets the user resume or start fresh.
-═══════════════════════════════════════════════════════════════════════════ */
-const SESSION_KEY = 'isu_id_session_v1';
-
-/**
- * Serialise the current students array into localStorage.
- * We skip the Image objects (not serialisable) — they are rebuilt from
- * the *DataUrl strings when needed.
- */
-function saveSessionToStorage() {
-    try {
-        const snapshot = state.students.map(s => ({
-            photoDataUrl:     s.photoDataUrl     || null,
-            signatureDataUrl: s.signatureDataUrl || null,
-            formData:         { ...s.formData }
-        }));
-        localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
-    } catch (e) {
-        // Quota exceeded or private-mode restriction — fail silently
-        console.warn('[ISU ID] Session save failed:', e);
-    }
-}
-
-/**
- * Restore a previously saved session.
- * Rebuilds Image objects from stored dataUrls.
- */
-async function restoreSessionFromStorage() {
-    const raw = localStorage.getItem(SESSION_KEY);
-    if (!raw) return false;
-
-    let snapshot;
-    try { snapshot = JSON.parse(raw); } catch { return false; }
-    if (!Array.isArray(snapshot) || snapshot.length === 0) return false;
-
-    // Rebuild students array with Image objects rehydrated
-    const rebuilt = await Promise.all(snapshot.map(async s => {
-        const student = {
-            photoImage:       null,
-            photoDataUrl:     s.photoDataUrl || null,
-            rawSourceImage:   null,
-            signatureImage:   null,
-            signatureDataUrl: s.signatureDataUrl || null,
-            formData:         { ...s.formData }
-        };
-
-        if (s.photoDataUrl) {
-            student.photoImage = await loadImageFromDataUrl(s.photoDataUrl);
-        }
-        if (s.signatureDataUrl) {
-            student.signatureImage = await loadImageFromDataUrl(s.signatureDataUrl);
-        }
-
-        return student;
-    }));
-
-    state.students = rebuilt;
-    return true;
-}
-
-/** Promise-wrapper to create an Image from a data URL */
-function loadImageFromDataUrl(dataUrl) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.onload  = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = dataUrl;
-    });
-}
-
-/** Wipe saved session */
-function clearSavedSession() {
-    localStorage.removeItem(SESSION_KEY);
-}
-
-/** Show / hide the session restore banner */
-function showRestoreBanner() {
-    const banner = document.getElementById('session-restore-banner');
-    if (banner) banner.classList.add('show');
-}
-
-function hideRestoreBanner() {
-    const banner = document.getElementById('session-restore-banner');
-    if (banner) banner.classList.remove('show');
-}
-
-/** Called by the "Restore" button on the banner */
-async function onRestoreSession() {
-    hideRestoreBanner();
-    const ok = await restoreSessionFromStorage();
-    if (ok) {
-        switchStudent(0);   // Reload first student into the form
-        renderStudentTabs();
-    }
-}
-
-/** Called by the "Discard" button on the banner */
-function onDiscardSession() {
-    clearSavedSession();
-    hideRestoreBanner();
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   18. OCR AUTOFILL — Snap or upload a printed ID / registration form photo.
-       Tesseract.js extracts text → regex patterns pull name, ID, course, DOB.
-       Fields are pre-filled and the form re-renders instantly.
-═══════════════════════════════════════════════════════════════════════════ */
-
-let ocrRawDataUrl = null;   // Raw photo dataUrl for the OCR modal
-
-/** Open the OCR upload modal */
-function openOcrModal() {
-    const modal = document.getElementById('ocr-modal');
-    if (modal) modal.classList.add('active');
-    ocrRawDataUrl = null;
-    resetOcrModal();
-}
-
-/** Close the OCR upload modal */
-function closeOcrModal() {
-    const modal = document.getElementById('ocr-modal');
-    if (modal) modal.classList.remove('active');
-}
-
-/** Reset all UI inside the OCR modal to its initial state */
-function resetOcrModal() {
-    const preview     = document.getElementById('ocr-preview-img');
-    const placeholder = document.getElementById('ocr-placeholder');
-    const scanBtn     = document.getElementById('ocr-scan-btn');
-    const statusPane  = document.getElementById('ocr-status');
-    const resultsPane = document.getElementById('ocr-results');
-
-    if (preview)     { preview.style.display = 'none'; preview.src = ''; }
-    if (placeholder) placeholder.style.display = 'flex';
-    if (scanBtn)     scanBtn.style.display = 'none';
-    if (statusPane)  statusPane.style.display = 'none';
-    if (resultsPane) resultsPane.style.display = 'none';
-}
-
-/** File selected in the OCR modal */
-document.getElementById('ocr-file-input')?.addEventListener('change', e => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = ev => {
-        ocrRawDataUrl = ev.target.result;
-
-        const preview     = document.getElementById('ocr-preview-img');
-        const placeholder = document.getElementById('ocr-placeholder');
-        const scanBtn     = document.getElementById('ocr-scan-btn');
-        const resultsPane = document.getElementById('ocr-results');
-        const statusPane  = document.getElementById('ocr-status');
-
-        if (preview)     { preview.src = ocrRawDataUrl; preview.style.display = 'block'; }
-        if (placeholder) placeholder.style.display = 'none';
-        if (scanBtn)     scanBtn.style.display = 'inline-flex';
-        if (resultsPane) resultsPane.style.display = 'none';
-        if (statusPane)  statusPane.style.display = 'none';
-    };
-    reader.readAsDataURL(file);
-    e.target.value = '';
-});
-
-/** Allow clicking the OCR upload zone */
-document.getElementById('ocr-upload-zone')?.addEventListener('click', e => {
-    if (e.target.id === 'ocr-upload-zone' || e.target.closest('.ocr-placeholder')) {
-        document.getElementById('ocr-file-input').click();
-    }
-});
-
-/**
- * Set status message inside the OCR modal.
- * @param {string} msg
- * @param {boolean} show
- */
-function setOcrStatus(msg, show = true) {
-    const pane = document.getElementById('ocr-status');
-    const text = document.getElementById('ocr-status-text');
-    if (pane) pane.style.display = show ? 'flex' : 'none';
-    if (text) text.textContent = msg;
-}
-
-/**
- * Try to extract a value from OCR text using an array of regex patterns.
- * Returns the first non-empty captured group or null.
- * @param {string} text
- * @param {RegExp[]} patterns
- * @returns {string|null}
- */
-function ocrExtract(text, patterns) {
-    for (const re of patterns) {
-        const m = text.match(re);
-        if (m && m[1] && m[1].trim()) return m[1].trim();
-    }
-    return null;
-}
-
-/**
- * Run Tesseract OCR on the loaded photo, then parse the result to fill form fields.
- */
-async function runOcrScan() {
-    if (!ocrRawDataUrl) return;
-
-    const scanBtn = document.getElementById('ocr-scan-btn');
-    if (scanBtn) { scanBtn.disabled = true; }
-
-    setOcrStatus('Loading OCR engine…', true);
-    document.getElementById('ocr-results').style.display = 'none';
-
-    try {
-        // Tesseract.js must be loaded via CDN (added to index.html)
-        if (typeof Tesseract === 'undefined') {
-            throw new Error('Tesseract.js not loaded. Please check your internet connection.');
-        }
-
-        setOcrStatus('Recognising text… (this may take 10–30 s)', true);
-
-        const result = await Tesseract.recognize(
-            ocrRawDataUrl,
-            'eng',          // Language
-            { logger: m => {
-                if (m.status === 'recognizing text') {
-                    setOcrStatus(`Recognising text… ${Math.round(m.progress * 100)}%`, true);
-                }
-            }}
-        );
-
-        const raw = result.data.text;
-        console.log('[ISU ID OCR] Raw text:', raw);
-
-        /* ── Field extraction ── */
-        // Name: look for a full-caps line or label
-        const extractedName = ocrExtract(raw, [
-            /Name[:\s]+([A-Z][A-Z\s,.-]{4,60})/im,
-            /Student[:\s]+([A-Z][A-Z\s,.-]{4,60})/im,
-            // Fallback: longest ALL-CAPS line (likely the name)
-            /^([A-Z]{2}[A-Z,\s.-]{6,50})$/m
-        ]);
-
-        // ID Number: common formats like 25-00001, 2025-00001, 2025-BSCS-001
-        const extractedId = ocrExtract(raw, [
-            /(?:ID|Student)\s*(?:No|Number|#)?[:\s]+([0-9]{2,4}[-—][0-9A-Z]{3,10})/im,
-            /\b(20\d{2}[-—]\d{4,6})\b/,
-            /\b(\d{2}[-—]\d{4,6})\b/
-        ]);
-
-        // Course / Degree
-        const extractedCourse = ocrExtract(raw, [
-            /(?:Course|Program|Degree)[:\s]+([A-Za-z\s]{5,60})/im,
-            /\b(Bachelor\s+of\s+[A-Za-z\s]{4,50})/im,
-            /\b(BS[CS]?\s+[A-Za-z\s]{3,40})/im
-        ]);
-
-        // Date of Birth: various date formats
-        const extractedDob = ocrExtract(raw, [
-            /(?:DOB|Birth(?:day|\s*Date)?|Born)[:\s]+(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/im,
-            /(?:DOB|Birth(?:day|\s*Date)?|Born)[:\s]+(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/im,
-            /\b(\d{4}-\d{2}-\d{2})\b/  // ISO 8601 fallback
-        ]);
-
-        /* ── Display extracted results in modal ── */
-        const fillField = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val || '—';
-        };
-        fillField('ocr-result-name',   extractedName);
-        fillField('ocr-result-id',     extractedId);
-        fillField('ocr-result-course', extractedCourse);
-        fillField('ocr-result-dob',    extractedDob);
-
-        setOcrStatus('', false);
-        document.getElementById('ocr-results').style.display = 'block';
-        const applyBtn = document.getElementById('ocr-apply-btn');
-        if (applyBtn) applyBtn.style.display = 'inline-flex';
-
-        // Store for apply step
-        document.getElementById('ocr-results').dataset.name   = extractedName   || '';
-        document.getElementById('ocr-results').dataset.id     = extractedId     || '';
-        document.getElementById('ocr-results').dataset.course = extractedCourse || '';
-        document.getElementById('ocr-results').dataset.dob    = extractedDob    || '';
-
-    } catch (err) {
-        console.error('[ISU ID OCR] Failed:', err);
-        setOcrStatus('OCR failed: ' + err.message, true);
-    } finally {
-        if (scanBtn) scanBtn.disabled = false;
-    }
-}
-
-/**
- * Apply the OCR-extracted values to the active student's form fields and re-render.
- */
-function applyOcrResults() {
-    const resultsEl = document.getElementById('ocr-results');
-    if (!resultsEl) return;
-
-    const student = state.students[state.activeStudentIndex];
-
-    const name   = resultsEl.dataset.name   || '';
-    const id     = resultsEl.dataset.id     || '';
-    const course = resultsEl.dataset.course || '';
-    const dob    = resultsEl.dataset.dob    || '';
-
-    if (name) {
-        student.formData.name = name.toUpperCase();
-        const el = document.getElementById('full-name');
-        if (el) el.value = student.formData.name;
-    }
-    if (id) {
-        student.formData.idNumber = id.toUpperCase();
-        const el = document.getElementById('id-number');
-        if (el) el.value = student.formData.idNumber;
-    }
-    if (course) {
-        student.formData.course = course.toUpperCase();
-        const el = document.getElementById('course');
-        if (el) el.value = student.formData.course;
-    }
-    if (dob) {
-        // Try to convert to YYYY-MM-DD for the date input
-        let iso = dob;
-        const mdy = dob.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
-        if (mdy) {
-            const y = mdy[3].length === 2 ? '20' + mdy[3] : mdy[3];
-            iso = `${y}-${mdy[1].padStart(2,'0')}-${mdy[2].padStart(2,'0')}`;
-        }
-        student.formData.dob = iso;
-        const el = document.getElementById('dob');
-        if (el) el.value = iso;
-    }
-
-    renderStudentTabs();
-    renderCanvases();
-    closeOcrModal();
-
-    // Jump to next unfilled step
-    if (!name) goToStep(2);
-    else if (!id) goToStep(3);
-    else if (!course) goToStep(4);
-    else if (!dob) goToStep(5);
-    else goToStep(1);
-}

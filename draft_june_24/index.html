@@ -198,24 +198,6 @@
     </section>
 
     <!-- ═══════════════════════════════════════════════════════
-         SESSION RESTORE BANNER
-    ═══════════════════════════════════════════════════════ -->
-    <div id="session-restore-banner" class="session-banner" role="alert" aria-live="polite">
-        <div class="session-banner-inner">
-            <i class="ph ph-clock-counter-clockwise"></i>
-            <span>You have an unsaved session from a previous visit. Restore it?</span>
-            <div class="session-banner-actions">
-                <button class="btn-primary btn-sm" onclick="onRestoreSession()">
-                    <i class="ph ph-arrow-counter-clockwise"></i> Restore
-                </button>
-                <button class="btn-ghost btn-sm" onclick="onDiscardSession()">
-                    <i class="ph ph-trash"></i> Discard
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════════════════
          MAIN GENERATOR — SPLIT LAYOUT
     ═══════════════════════════════════════════════════════ -->
     <main class="container" id="generator">
@@ -231,16 +213,8 @@
                     <!-- Tabs injected by JS -->
                 </div>
                 <button class="add-student-btn" id="add-student-btn" aria-label="Add new student"
-                    title="Add Student">
+                    title="Add Student (Max 5)">
                     <i class="ph ph-plus"></i>
-                </button>
-                <label for="csv-upload" class="add-student-btn" title="Bulk Import CSV" style="cursor:pointer; margin-left:8px; display:inline-flex; align-items:center; justify-content:center;">
-                    <i class="ph ph-file-csv"></i>
-                    <input type="file" id="csv-upload" accept=".csv" style="display:none;">
-                </label>
-                <button class="add-student-btn" title="Autofill from Photo (OCR)" onclick="openOcrModal()"
-                    aria-label="Scan printed ID or form to autofill fields" style="margin-left:8px;">
-                    <i class="ph ph-scan"></i>
                 </button>
             </div>
 
@@ -382,7 +356,7 @@
                             <i class="ph ph-pencil-simple"></i> Draw
                         </button>
                         <button class="sig-mode-tab" id="sig-tab-upload" onclick="switchSigMode('upload')">
-                            <i class="ph ph-sparkle"></i> Scan Photo
+                            <i class="ph ph-sparkle"></i> AI from Photo
                         </button>
                     </div>
 
@@ -421,10 +395,10 @@
                         </div>
                         <div class="sig-ai-status" id="sig-ai-status" style="display:none;">
                             <div class="sig-ai-spinner"></div>
-                            <span id="sig-ai-status-text">Processing signature…</span>
+                            <span id="sig-ai-status-text">Analyzing signature…</span>
                         </div>
                         <div class="sig-result-preview" id="sig-result-preview" style="display:none;">
-                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> Cleaned signature ready</div>
+                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> AI-enhanced signature ready</div>
                             <canvas id="sig-result-canvas" class="sig-result-canvas" aria-label="Processed signature preview"></canvas>
                             <button class="btn-ghost sig-reprocess-btn" onclick="document.getElementById('sig-photo-input').click()">
                                 <i class="ph ph-arrow-counter-clockwise"></i> Use different photo
@@ -432,7 +406,7 @@
                         </div>
                     </div>
 
-                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and the engine will clean and extract it automatically.</p>
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and AI will clean and extract it automatically.</p>
                 </div>
 
             </div><!-- /steps-wrapper -->
@@ -560,7 +534,7 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v3.4.0 · Premium ID Generator</span>
+                <span>v3.1.0 · Premium ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
@@ -590,82 +564,6 @@
     <canvas id="export-canvas" style="display:none;" aria-hidden="true"></canvas>
     <!-- Hidden crop canvas -->
     <canvas id="crop-canvas" style="display:none;" aria-hidden="true"></canvas>
-
-    <!-- ═══════════════════════════════════════════════════════
-         OCR AUTOFILL MODAL
-    ═══════════════════════════════════════════════════════ -->
-    <div class="cropper-modal-overlay" id="ocr-modal" aria-modal="true" role="dialog" aria-label="Scan printed ID or form">
-        <div class="cropper-modal glass-panel ocr-modal-panel">
-            <div class="cropper-header">
-                <div class="ocr-header-icon"><i class="ph ph-scan"></i></div>
-                <div>
-                    <h3>Autofill from Photo</h3>
-                    <p class="ocr-header-sub">Snap or upload a printed ID / registration form</p>
-                </div>
-                <button class="btn-close" onclick="closeOcrModal()" aria-label="Close">
-                    <i class="ph ph-x"></i>
-                </button>
-            </div>
-
-            <div class="ocr-body">
-                <!-- Upload zone -->
-                <div class="ocr-upload-zone" id="ocr-upload-zone">
-                    <div class="ocr-placeholder" id="ocr-placeholder">
-                        <i class="ph ph-camera"></i>
-                        <span>Click or tap to upload / snap a photo</span>
-                        <small>Photo of existing printed ID or registration form</small>
-                    </div>
-                    <img id="ocr-preview-img" class="ocr-preview-img" style="display:none;" alt="Uploaded photo for OCR">
-                    <input type="file" id="ocr-file-input" accept="image/*" capture="environment" style="display:none;">
-                </div>
-
-                <!-- Status bar -->
-                <div class="sig-ai-status" id="ocr-status" style="display:none;">
-                    <div class="sig-ai-spinner"></div>
-                    <span id="ocr-status-text">Loading OCR engine…</span>
-                </div>
-
-                <!-- Scan button -->
-                <div class="ocr-scan-row">
-                    <button class="btn-ai-enhance" id="ocr-scan-btn" onclick="runOcrScan()" style="display:none;">
-                        <i class="ph ph-magnifying-glass"></i>
-                        <span>Scan &amp; Extract Fields</span>
-                    </button>
-                </div>
-
-                <!-- Extracted results -->
-                <div class="ocr-results" id="ocr-results" style="display:none;">
-                    <h4 class="ocr-results-title"><i class="ph ph-check-circle"></i> Extracted Fields</h4>
-                    <div class="ocr-results-grid">
-                        <div class="ocr-field">
-                            <span class="ocr-field-label"><i class="ph ph-user"></i> Name</span>
-                            <span class="ocr-field-value" id="ocr-result-name">—</span>
-                        </div>
-                        <div class="ocr-field">
-                            <span class="ocr-field-label"><i class="ph ph-hash"></i> ID Number</span>
-                            <span class="ocr-field-value" id="ocr-result-id">—</span>
-                        </div>
-                        <div class="ocr-field">
-                            <span class="ocr-field-label"><i class="ph ph-graduation-cap"></i> Course</span>
-                            <span class="ocr-field-value" id="ocr-result-course">—</span>
-                        </div>
-                        <div class="ocr-field">
-                            <span class="ocr-field-label"><i class="ph ph-cake"></i> Date of Birth</span>
-                            <span class="ocr-field-value" id="ocr-result-dob">—</span>
-                        </div>
-                    </div>
-                    <p class="ocr-disclaimer"><i class="ph ph-info"></i> Review the results above before applying. OCR may not be 100% accurate.</p>
-                </div>
-            </div>
-
-            <div class="cropper-footer">
-                <div class="cropper-actions">
-                    <button class="btn-ghost" onclick="closeOcrModal()">Cancel</button>
-                    <button class="btn-primary" id="ocr-apply-btn" onclick="applyOcrResults()" style="display:none;">Apply to Form</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- ═══════════════════════════════════════════════════════
          PHOTO CROPPER MODAL
@@ -703,7 +601,6 @@
         </div>
     </div>
 
-    <script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="app.js"></script>
 </body>
