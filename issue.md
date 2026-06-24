@@ -40,3 +40,13 @@ Optimized the print engine layout to support A4 Landscape format:
 2. **5-Column Alignment**: Aligned up to 5 student pairs (10 cards total) side-by-side on a single sheet.
 3. **Stacked Pairs**: Placed each student's Front card on Row 1 (top) and their Back card directly below on Row 2 (bottom). This guarantees perfect horizontal alignment for easy cutting, folding, or double-sided printing.
 4. **Auto-Pagination**: If the student count exceeds 5, the engine automatically adds a new landscape page for every group of 5 students.
+
+---
+
+## 4. Future Roadmap: College / Campus Color Theme Selector
+
+### Description
+Isabela State University (ISU) has multiple campuses across the region (Cabagan, Cauayan, Echague, etc.), each using distinct college color schemes and template accent palettes. Currently, the generator only supports the Cabagan style. Implementing a theme selector that swaps template images and matches accents would make the application useful university-wide.
+
+### Rationale
+As a solo, introverted computer science student developing this project, I currently lack official resources, color guidelines, and channels of communication with other ISU campuses. Opening this issue invites student developers and campus admins from Echague, Cauayan, and other sites to contribute assets, color specifications, and feedback to help scale the ID generator for all ISU branches!
