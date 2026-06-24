@@ -352,18 +352,65 @@
 
                 <!-- Step 9: Signature -->
                 <div class="form-group clearfix" data-step="9" data-step-title="Signature">
-                    <label><i class="ph ph-pen-nib"></i> Digital Signature</label>
-                    <div class="signature-container">
-                        <canvas id="signature-pad" aria-label="Draw your signature"></canvas>
-                        <div class="signature-watermark">Draw your signature here</div>
-                    </div>
-                    <div class="signature-actions">
-                        <button id="clear-signature" class="btn-clear">
-                            <i class="ph ph-eraser"></i> Clear Signature
+                    <label><i class="ph ph-pen-nib"></i> Signature</label>
+
+                    <!-- Signature Mode Toggle -->
+                    <div class="sig-mode-tabs">
+                        <button class="sig-mode-tab active" id="sig-tab-draw" onclick="switchSigMode('draw')">
+                            <i class="ph ph-pencil-simple"></i> Draw
+                        </button>
+                        <button class="sig-mode-tab" id="sig-tab-upload" onclick="switchSigMode('upload')">
+                            <i class="ph ph-sparkle"></i> AI from Photo
                         </button>
                     </div>
-                    <p class="step-hint"><i class="ph ph-info"></i> Sign inside the box. Your signature appears on the
-                        front of the ID.</p>
+
+                    <!-- Draw Mode -->
+                    <div id="sig-draw-mode">
+                        <div class="signature-container">
+                            <canvas id="signature-pad" aria-label="Draw your signature"></canvas>
+                            <div class="signature-watermark">Draw your signature here</div>
+                        </div>
+                        <div class="signature-actions">
+                            <button id="clear-signature" class="btn-clear">
+                                <i class="ph ph-eraser"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Upload Mode -->
+                    <div id="sig-upload-mode" style="display:none;">
+                        <div class="sig-upload-area" id="sig-upload-area">
+                            <div class="sig-upload-placeholder" id="sig-upload-placeholder">
+                                <i class="ph ph-camera"></i>
+                                <span>Take a photo or upload your signature on white paper</span>
+                                <small>JPG · PNG · WEBP supported</small>
+                            </div>
+                            <img id="sig-upload-preview" class="sig-upload-preview" style="display:none;" alt="Signature photo preview">
+                            <input type="file" id="sig-photo-input" accept="image/*" aria-label="Upload signature photo" capture="environment">
+                        </div>
+                        <div class="sig-upload-actions">
+                            <button class="btn-ai-enhance" id="sig-enhance-btn" onclick="enhanceSignatureWithAI()" style="display:none;">
+                                <i class="ph ph-magic-wand"></i>
+                                <span>Enhance &amp; Remove Background</span>
+                            </button>
+                            <button class="btn-clear" id="sig-upload-clear" onclick="clearUploadedSig()" style="display:none;">
+                                <i class="ph ph-trash"></i> Clear
+                            </button>
+                        </div>
+                        <div class="sig-ai-status" id="sig-ai-status" style="display:none;">
+                            <div class="sig-ai-spinner"></div>
+                            <span id="sig-ai-status-text">Analyzing signature…</span>
+                        </div>
+                        <div class="sig-result-preview" id="sig-result-preview" style="display:none;">
+                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> AI-enhanced signature ready</div>
+                            <canvas id="sig-result-canvas" class="sig-result-canvas" aria-label="Processed signature preview"></canvas>
+                            <button class="btn-ghost sig-reprocess-btn" onclick="document.getElementById('sig-photo-input').click()">
+                                <i class="ph ph-arrow-counter-clockwise"></i> Use different photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and AI will clean and extract it automatically.</p>
                 </div>
 
             </div><!-- /steps-wrapper -->
@@ -491,7 +538,7 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v3.2.0 · Premium ID Generator</span>
+                <span>v3.3.0 · Premium ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">

@@ -1270,3 +1270,338 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
     reader.readAsText(file);
     e.target.value = ''; // Reset file input
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   17. AI SIGNATURE — Photo upload → Claude Vision → BG removal → ID
+═══════════════════════════════════════════════════════════════════════════ */
+
+/** Currently loaded raw signature photo (before AI processing) */
+let sigRawPhotoDataUrl = null;
+
+/**
+ * Switch between "Draw" and "AI from Photo" signature modes.
+ * @param {'draw'|'upload'} mode
+ */
+function switchSigMode(mode) {
+    const drawMode   = document.getElementById('sig-draw-mode');
+    const uploadMode = document.getElementById('sig-upload-mode');
+    const tabDraw    = document.getElementById('sig-tab-draw');
+    const tabUpload  = document.getElementById('sig-tab-upload');
+
+    if (mode === 'draw') {
+        drawMode.style.display   = '';
+        uploadMode.style.display = 'none';
+        tabDraw.classList.add('active');
+        tabUpload.classList.remove('active');
+    } else {
+        drawMode.style.display   = 'none';
+        uploadMode.style.display = '';
+        tabDraw.classList.remove('active');
+        tabUpload.classList.add('active');
+    }
+}
+
+/** Handle file selection from the signature photo input */
+document.getElementById('sig-photo-input')?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        sigRawPhotoDataUrl = ev.target.result;
+
+        // Show preview image
+        const preview     = document.getElementById('sig-upload-preview');
+        const placeholder = document.getElementById('sig-upload-placeholder');
+        const enhanceBtn  = document.getElementById('sig-enhance-btn');
+        const clearBtn    = document.getElementById('sig-upload-clear');
+        const resultPane  = document.getElementById('sig-result-preview');
+        const statusPane  = document.getElementById('sig-ai-status');
+
+        preview.src             = sigRawPhotoDataUrl;
+        preview.style.display   = 'block';
+        placeholder.style.display = 'none';
+        enhanceBtn.style.display  = 'inline-flex';
+        clearBtn.style.display    = 'inline-flex';
+        resultPane.style.display  = 'none';
+        statusPane.style.display  = 'none';
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // allow re-upload of same file
+});
+
+/** Allow clicking the upload area (but not the buttons/preview inside it) */
+document.getElementById('sig-upload-area')?.addEventListener('click', e => {
+    if (e.target.id === 'sig-upload-area' || e.target.closest('.sig-upload-placeholder')) {
+        document.getElementById('sig-photo-input').click();
+    }
+});
+
+/** Clear uploaded signature photo and reset UI */
+function clearUploadedSig() {
+    sigRawPhotoDataUrl = null;
+
+    const preview     = document.getElementById('sig-upload-preview');
+    const placeholder = document.getElementById('sig-upload-placeholder');
+    const enhanceBtn  = document.getElementById('sig-enhance-btn');
+    const clearBtn    = document.getElementById('sig-upload-clear');
+    const resultPane  = document.getElementById('sig-result-preview');
+    const statusPane  = document.getElementById('sig-ai-status');
+
+    preview.style.display     = 'none';
+    placeholder.style.display = 'flex';
+    enhanceBtn.style.display  = 'none';
+    clearBtn.style.display    = 'none';
+    resultPane.style.display  = 'none';
+    statusPane.style.display  = 'none';
+
+    // Clear from student state too
+    const student = state.students[state.activeStudentIndex];
+    student.signatureImage    = null;
+    student.signatureDataUrl  = null;
+    renderCanvases();
+}
+
+/**
+ * Extract the base64 data (without the "data:image/...;base64," prefix)
+ * and the media type from a data URL.
+ */
+function parseDataUrl(dataUrl) {
+    const [header, data] = dataUrl.split(',');
+    const mediaType = header.match(/data:([^;]+)/)[1];
+    return { data, mediaType };
+}
+
+/**
+ * Set the AI processing status message shown below the photo.
+ * @param {string} msg  - Status text
+ * @param {boolean} show - Whether to show the status bar
+ */
+function setAiStatus(msg, show = true) {
+    const bar  = document.getElementById('sig-ai-status');
+    const text = document.getElementById('sig-ai-status-text');
+    if (bar)  bar.style.display  = show ? 'flex' : 'none';
+    if (text) text.textContent   = msg;
+}
+
+/**
+ * Remove the near-white background from a canvas in place.
+ * Works by setting pixels whose lightness is above a threshold to transparent.
+ *
+ * Strategy:
+ *  1. Convert each pixel to its luminance.
+ *  2. Pixels brighter than the threshold → alpha = 0 (transparent).
+ *  3. Dark pixels (ink) → kept; alpha boosted toward 255 for crispness.
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} threshold  - Luminance cutoff 0-255 (default 210)
+ */
+function removeWhiteBackground(canvas, threshold = 210) {
+    const ctx      = canvas.getContext('2d');
+    const imgData  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d        = imgData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        // Perceived luminance
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        if (lum > threshold) {
+            // Near-white → fully transparent
+            d[i + 3] = 0;
+        } else {
+            // Ink pixel — boost opacity proportionally to how dark it is
+            const inkStrength = 1 - lum / threshold;
+            d[i + 3] = Math.min(255, Math.round(inkStrength * 320));
+            // Tint ink toward pure black for a clean look on the ID card
+            const mix = 0.35;
+            d[i]     = Math.round(r * (1 - mix));
+            d[i + 1] = Math.round(g * (1 - mix));
+            d[i + 2] = Math.round(b * (1 - mix));
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+/**
+ * Main AI enhancement pipeline:
+ *  1. Send the photo to Claude Vision with a prompt to describe the clean signature region.
+ *  2. Use the AI's bounding-box guidance to crop tightly (if provided).
+ *  3. Run our canvas-based white-background remover.
+ *  4. Persist the result to the student state and render on the ID.
+ */
+async function enhanceSignatureWithAI() {
+    if (!sigRawPhotoDataUrl) return;
+
+    const enhanceBtn = document.getElementById('sig-enhance-btn');
+    const clearBtn   = document.getElementById('sig-upload-clear');
+    const resultPane = document.getElementById('sig-result-preview');
+
+    enhanceBtn.disabled = true;
+    clearBtn.disabled   = true;
+    resultPane.style.display = 'none';
+    setAiStatus('Sending photo to Claude AI...', true);
+
+    try {
+        /* —— Step 1: Ask Claude to analyse the signature photo —— */
+        const { data: imgData, mediaType } = parseDataUrl(sigRawPhotoDataUrl);
+
+        setAiStatus('AI is analysing your signature...', true);
+
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model:      'claude-sonnet-4-6',
+                max_tokens: 1000,
+                messages: [{
+                    role: 'user',
+                    content: [
+                        {
+                            type:   'image',
+                            source: { type: 'base64', media_type: mediaType, data: imgData }
+                        },
+                        {
+                            type: 'text',
+                            text: `You are a signature extraction assistant. Analyze this photo of a handwritten signature on white/light paper.
+
+Return ONLY a JSON object (no markdown, no explanation) with these fields:
+{
+  "hasSignature": true/false,
+  "quality": "good" | "fair" | "poor",
+  "cropHint": {
+    "xPct": 0-100,
+    "yPct": 0-100,
+    "wPct": 0-100,
+    "hPct": 0-100
+  },
+  "brightnessAdjust": -50 to 50,
+  "contrastBoost": 0 to 100,
+  "suggestedThreshold": 180 to 240,
+  "notes": "brief note"
+}
+
+cropHint is the bounding box of the signature as percentages of the full image.
+suggestedThreshold is the luminance cutoff (0-255) to separate ink from background.
+If hasSignature is false, still return valid JSON with other fields set to defaults.`
+                        }
+                    ]
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`API error ${response.status}: ${await response.text()}`);
+        }
+
+        const apiResult = await response.json();
+        let aiGuide = null;
+
+        // Parse AI JSON response
+        try {
+            const rawText = apiResult.content
+                .filter(b => b.type === 'text')
+                .map(b => b.text)
+                .join('');
+            const jsonStr = rawText.replace(/```json|```/g, '').trim();
+            aiGuide = JSON.parse(jsonStr);
+        } catch (_) {
+            // If parsing fails, use safe defaults
+            aiGuide = {
+                hasSignature:        true,
+                cropHint:            { xPct: 5, yPct: 10, wPct: 90, hPct: 80 },
+                brightnessAdjust:    0,
+                contrastBoost:       20,
+                suggestedThreshold:  215
+            };
+        }
+
+        if (!aiGuide.hasSignature) {
+            setAiStatus('No signature detected. Please upload a clearer photo.', true);
+            enhanceBtn.disabled = false;
+            clearBtn.disabled   = false;
+            return;
+        }
+
+        setAiStatus('Processing and removing background...', true);
+
+        /* —— Step 2: Load the source image onto a canvas —— */
+        const sourceImg = await new Promise((res, rej) => {
+            const img = new Image();
+            img.onload  = () => res(img);
+            img.onerror = () => rej(new Error('Failed to load image'));
+            img.src = sigRawPhotoDataUrl;
+        });
+
+        // Apply AI crop hint
+        const ch  = aiGuide.cropHint || { xPct: 5, yPct: 5, wPct: 90, hPct: 90 };
+        const srcX = Math.round((ch.xPct / 100) * sourceImg.width);
+        const srcY = Math.round((ch.yPct / 100) * sourceImg.height);
+        const srcW = Math.round((ch.wPct / 100) * sourceImg.width);
+        const srcH = Math.round((ch.hPct / 100) * sourceImg.height);
+
+        // Work at a safe resolution (2x the ID card signature slot)
+        const OUT_W = 638;
+        const OUT_H = 240;
+
+        const workCanvas = document.createElement('canvas');
+        workCanvas.width  = OUT_W;
+        workCanvas.height = OUT_H;
+        const wCtx = workCanvas.getContext('2d');
+
+        // Fill white before drawing (needed for contrast adjustments)
+        wCtx.fillStyle = '#ffffff';
+        wCtx.fillRect(0, 0, OUT_W, OUT_H);
+        wCtx.drawImage(sourceImg, srcX, srcY, srcW, srcH, 0, 0, OUT_W, OUT_H);
+
+        /* —— Step 3: Apply brightness / contrast adjustments —— */
+        const imgData2  = wCtx.getImageData(0, 0, OUT_W, OUT_H);
+        const pixels    = imgData2.data;
+        const brightness = (aiGuide.brightnessAdjust || 0);
+        const contrast   = (aiGuide.contrastBoost    || 20) / 100;
+        const factor     = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                let v = pixels[i + c];
+                v = Math.round(factor * (v - 128) + 128 + brightness);
+                pixels[i + c] = Math.max(0, Math.min(255, v));
+            }
+        }
+        wCtx.putImageData(imgData2, 0, 0);
+
+        /* —— Step 4: Remove white background using AI-suggested threshold —— */
+        const threshold = aiGuide.suggestedThreshold || 215;
+        removeWhiteBackground(workCanvas, threshold);
+
+        /* —— Step 5: Render result preview —— */
+        const resultCanvas = document.getElementById('sig-result-canvas');
+        resultCanvas.width  = OUT_W;
+        resultCanvas.height = OUT_H;
+        const rCtx = resultCanvas.getContext('2d');
+        rCtx.clearRect(0, 0, OUT_W, OUT_H);
+        rCtx.drawImage(workCanvas, 0, 0);
+
+        setAiStatus('', false);
+        resultPane.style.display = 'flex';
+
+        /* —— Step 6: Persist to student state & re-render ID card —— */
+        const finalDataUrl = workCanvas.toDataURL('image/png');
+        const finalImg     = new Image();
+        finalImg.onload = () => {
+            const student = state.students[state.activeStudentIndex];
+            student.signatureImage   = finalImg;
+            student.signatureDataUrl = finalDataUrl;
+            renderCanvases();
+        };
+        finalImg.src = finalDataUrl;
+
+    } catch (err) {
+        console.error('[ISU ID] AI signature enhancement failed:', err);
+        setAiStatus('Enhancement failed. Try again or draw your signature manually.', true);
+    } finally {
+        enhanceBtn.disabled = false;
+        clearBtn.disabled   = false;
+    }
+}

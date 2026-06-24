@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.2
+# 🎓 Isabela State University Premium ID Generator v3.3
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning Apple-style glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
 
@@ -7,6 +7,11 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## ✨ Features
+
+### 🆕 v3.3 — AI Signature Scanner & Extractor
+- **🪄 AI-Powered Signature Extraction**: Upload a photo of a signature written on white paper, and let AI (Claude Vision) automatically locate and suggest enhancement/cropping configurations.
+- **Background Removal & Contrast Enhancement**: Automatically crops, enhances brightness/contrast, and filters out white backgrounds using luminance thresholds to place a clean signature directly onto the student ID.
+- **🔄 Dual Signature Capture Modes**: Seamlessly toggle between drawing a signature freehand and uploading a photo for AI extraction.
 
 ### 🆕 v3.2 — CSV Bulk Import & Unlimited Batches
 - **📥 CSV Bulk Student Import**: Upload a `.csv` file containing 50+ students to auto-generate all ID cards in one click.
@@ -58,6 +63,12 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## 📋 Changelog
+
+### v3.3.0 *(2026-06-24)*
+- `feat` — Added AI Signature Scanner/Extractor. Allows uploading signature photos on white paper.
+- `feat` — Integrated Anthropic's Claude Vision API to analyze signature bounds, brightness adjustments, and thresholding.
+- `feat` — Added client-side canvas-based background remover and contrast filter.
+- `ui` — Designed glass tab toggles to switch between draw and upload signature modes.
 
 ### v3.2.0 *(2026-06-24)*
 - `feat` — Added client-side CSV bulk student import to support generating large batches of ID cards.
