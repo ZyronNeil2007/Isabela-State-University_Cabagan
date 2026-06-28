@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.4.1
+# 🎓 Isabela State University Premium ID Generator v3.4.2
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
 
@@ -69,6 +69,13 @@ A premium, fully responsive **client-side** web application for generating high-
 ---
 
 ## 📋 Changelog
+
+### v3.4.2 *(2026-06-28)*
+- `fix` — Resolved 14 critical issues spanning bugs, UI desyncs, and edge-case exceptions.
+- `fix` — Corrected activeStudentIndex mutation error when PDF exports fail midway.
+- `fix` — Replaced obtrusive `alert()` dialogs in CSV import with native glassmorphism toast notifications.
+- `perf` — Upgraded session `localStorage` to check file quota and prevent browser crash limits.
+- `sec` — Secured Tesseract.js WASM imports by pinning CDN to v5.1.1 and adding SHA-384 Subresource Integrity hashes.
 
 ### v3.4.1 *(2026-06-26)*
 - `fix` — Fixed hero stage card clipping on mobile viewports by enabling visible overflow and percentage-based transforms.

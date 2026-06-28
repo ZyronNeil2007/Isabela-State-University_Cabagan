@@ -50,3 +50,27 @@ Isabela State University (ISU) has multiple campuses across the region (Cabagan,
 
 ### Rationale
 As a solo, introverted computer science student developing this project, I currently lack official resources, color guidelines, and channels of communication with other ISU campuses. Opening this issue invites student developers and campus admins from Echague, Cauayan, and other sites to contribute assets, color specifications, and feedback to help scale the ID generator for all ISU branches!
+
+---
+
+## 5. v3.4.2 Comprehensive Bug Fixes (2026-06-28)
+
+### Problem Description
+The previous versions accumulated 14 minor bugs, UX issues, logic gaps, and performance risks, such as the PDF export not restoring the UI state upon failure, `alert()` dialogs interrupting the flow, Tesseract.js loading without Subresource Integrity hashes, and `localStorage` potentially exceeding quota during auto-saves.
+
+### Implemented Solution
+A comprehensive sweep was performed to resolve all 14 issues:
+1. **PDF Export State Recovery**: Wrapped the export logic in a `try...finally` block to guarantee restoration of the `activeStudentIndex`.
+2. **Date Format Standardization**: Added strict string parsing using `new Date()` to enforce `DD-MM-YYYY` formats globally.
+3. **Canvas Resize Integrity**: Signature canvas redraws the stored `signatureImage` when window resizes clear the pixel buffer.
+4. **Strict CSV Header Matching**: Upgraded the `includes()` fuzzy match to a word-boundary regex (`\b`) to prevent false-positive column mapping (e.g., "address" matching "id").
+5. **Smart OCR Navigation**: `applyOcrResults` checks all fields sequentially before jumping, preserving user progress.
+6. **Dynamic Hero Stats**: The Max Batch stat badge now updates dynamically past '5' if a larger CSV is imported.
+7. **Destructive Action Protection**: Added a `confirm()` dialog before deleting any student tab containing inputted data.
+8. **Broadened Camera Support**: Removed the hardcoded `capture="environment"` attribute to support file gallery uploads for signatures.
+9. **Glassmorphism Toasts**: Replaced all jarring native `alert()` calls with an animated, non-blocking `showToast()` notification system.
+10. **Card Flip Synchronization**: Enforced tight coupling between `shouldFlip`, `idCard`, and `miniCard` classes to prevent face desyncs when toggling manually.
+11. **Codebase Maintenance**: Corrected module header numbers in `app.js`.
+12. **Cropper Dimensional Accuracy**: Deferred the `baseScale` calculation via `requestAnimationFrame` to ensure the modal is painted before scaling.
+13. **Quota Overflow Protection**: Bounded the `saveSessionToStorage` serialized payload to a safe 4.5MB limit, dropping saves and warning the user if the images are too large.
+14. **Security Hardening**: Pinned Tesseract.js to `v5.1.1` and embedded cryptographic `sha384` Subresource Integrity hashes into the dynamic script tags to prevent supply-chain attacks.

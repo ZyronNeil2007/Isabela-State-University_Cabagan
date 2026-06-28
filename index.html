@@ -30,7 +30,7 @@
     <!-- VanillaTilt — 3D card hover effect -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
 
-    <link rel="stylesheet" href="style.css?v=3.4.1">
+    <link rel="stylesheet" href="style.css?v=3.4.2">
 </head>
 
 
@@ -96,7 +96,7 @@
             <!-- Top badge -->
             <div class="hero-badge" style="--delay:0s">
                 <span class="hero-badge-dot"></span>
-                v3.4.1 &nbsp;&middot;&nbsp; OCR Autofill &nbsp;&middot;&nbsp; Session Save
+                v3.4.2 &nbsp;&middot;&nbsp; OCR Autofill &nbsp;&middot;&nbsp; Session Save
             </div>
 
             <!-- Staggered headline -->
@@ -173,7 +173,7 @@
                 </div>
                 <div class="hero-stat-div"></div>
                 <div class="hero-stat">
-                    <span class="hero-stat-number">5</span>
+                    <span class="hero-stat-number" id="hero-batch-limit">5</span>
                     <span class="hero-stat-label">Max Batch</span>
                 </div>
                 <div class="hero-stat-div"></div>
@@ -445,7 +445,7 @@
                                 <small>JPG · PNG · WEBP supported</small>
                             </div>
                             <img id="sig-upload-preview" class="sig-upload-preview" style="display:none;" alt="Signature photo preview">
-                            <input type="file" id="sig-photo-input" accept="image/*" aria-label="Upload signature photo" capture="environment">
+                            <input type="file" id="sig-photo-input" accept="image/*" aria-label="Upload signature photo">
                         </div>
                         <div class="sig-upload-actions">
                             <button class="btn-ai-enhance" id="sig-enhance-btn" onclick="enhanceSignatureWithAI()" style="display:none;">

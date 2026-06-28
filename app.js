@@ -17,8 +17,8 @@
  * 10.  NAVBAR         — scroll-shrink behaviour
  * 11.  EXPORT         — A4 print PNG download
  * 12.  BOOT           — initialise everything on load
- * 17.  SESSION SAVE   — localStorage auto-save & restore
- * 18.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
+ * 18.  SESSION SAVE   — localStorage auto-save & restore
+ * 19.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -166,6 +166,13 @@ function initSignaturePad() {
     sigCtx.lineCap     = 'round';
     sigCtx.lineJoin    = 'round';
     sigCtx.strokeStyle = '#111111';
+
+    if (state.students && state.students[state.activeStudentIndex]) {
+        const img = state.students[state.activeStudentIndex].signatureImage;
+        if (img) {
+            sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+        }
+    }
 }
 
 /** Normalise pointer position for both mouse and touch events */
@@ -539,12 +546,19 @@ function renderCanvases() {
         'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
     renderText(backCtx, CONFIG.text.telephone,
         'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
-    renderText(backCtx, CONFIG.text.dob,
-        'Birth Date: ' + (
-            student.formData.dob
-                ? student.formData.dob.split('-').reverse().join('-')
-                : '01-01-2000'
-        ));
+    let dobText = '01-01-2000';
+    if (student.formData.dob) {
+        const d = new Date(student.formData.dob);
+        if (!isNaN(d.getTime())) {
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            dobText = `${dd}-${mm}-${yyyy}`;
+        } else {
+            dobText = student.formData.dob.split('-').reverse().join('-');
+        }
+    }
+    renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
 
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
@@ -708,13 +722,9 @@ function goToStep(n) {
     const shouldFlip = currentStep >= 5;
 
     if (idCard) {
-        const isCurrentlyFlipped = idCard.classList.contains('is-flipped');
-        if (shouldFlip && !isCurrentlyFlipped) {
-            idCard.classList.add('is-flipped');
-            if (flipTitle) flipTitle.textContent = 'Back Side';
-        } else if (!shouldFlip && isCurrentlyFlipped) {
-            idCard.classList.remove('is-flipped');
-            if (flipTitle) flipTitle.textContent = 'Front Side';
+        idCard.classList.toggle('is-flipped', shouldFlip);
+        if (flipTitle) {
+            flipTitle.textContent = shouldFlip ? 'Back Side' : 'Front Side';
         }
     }
 
@@ -740,11 +750,14 @@ function flipCard() {
     const flipTitle = document.getElementById('flip-title');
     if (!idCard) return;
     idCard.classList.toggle('is-flipped');
+    
+    const isFlipped = idCard.classList.contains('is-flipped');
     if (flipTitle) {
-        flipTitle.textContent = idCard.classList.contains('is-flipped')
-            ? 'Back Side'
-            : 'Front Side';
+        flipTitle.textContent = isFlipped ? 'Back Side' : 'Front Side';
     }
+    
+    const miniCard = document.getElementById('mini-card');
+    if (miniCard) miniCard.classList.toggle('is-flipped', isFlipped);
 }
 
 /* ── Resize: re-apply stepper at current step ────────────── */
@@ -803,6 +816,64 @@ function initNavbar() {
     observer.observe(heroSection);
 }
 
+
+/**
+ * Display a temporary glassmorphism toast notification.
+ * @param {string} message 
+ * @param {'success'|'error'|'warning'} type 
+ */
+function showToast(message, type = 'success') {
+    let toast = document.getElementById('isu-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'isu-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    let icon = 'ph-info';
+    let color = '#fff';
+    if (type === 'success') { icon = 'ph-check-circle'; color = '#4ade80'; }
+    if (type === 'error') { icon = 'ph-x-circle'; color = '#f87171'; }
+    if (type === 'warning') { icon = 'ph-warning'; color = '#fbbf24'; }
+    
+    toast.innerHTML = `<i class="ph ${icon}" style="color: ${color}; font-size: 18px;"></i> <span>${message}</span>`;
+    
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        toast.style.opacity = '1';
+    });
+    
+    // Auto-hide
+    if (toast._timer) clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 3000);
+}
 
 /* ═══════════════════════════════════════════════════════════════════════════
    11. EXPORT — Generate A4 print-ready PNG and trigger download
@@ -882,17 +953,17 @@ document.getElementById('download-btn').addEventListener('click', async () => {
             pdf.text('✂ Cut', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
         }
 
-        // Restore active state
-        state.activeStudentIndex = originalIndex;
-        renderCanvases();
-
         const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.pdf` : `ISU_ID_Batch_${studentCount}_Students.pdf`;
         pdf.save(filename);
 
     } catch (err) {
         console.error('[ISU ID] PDF Export failed:', err);
-        alert('Export failed. Please try again.');
+        showToast('Export failed. Please try again.', 'error');
     } finally {
+        // Restore active state
+        state.activeStudentIndex = originalIndex;
+        renderCanvases();
+
         // Restore button state
         btn.innerHTML = originalHTML;
         btn.classList.remove('loading');
@@ -1042,6 +1113,13 @@ function addStudent() {
 
 function removeStudent(index) {
     if (state.students.length <= 1) return;
+    
+    const s = state.students[index];
+    const hasData = s.formData.name || s.formData.idNumber || s.photoDataUrl || s.signatureDataUrl;
+    if (hasData && !confirm("Remove student and all their data?")) {
+        return;
+    }
+    
     state.students.splice(index, 1);
     if (state.activeStudentIndex >= state.students.length) {
         switchStudent(state.students.length - 1);
@@ -1073,22 +1151,24 @@ function openCropper() {
     const imgEl = document.getElementById('cropper-img');
     imgEl.src = student.rawSourceImage.src;
     
-    // Calculate base scale so the image covers the frame initially
-    const frame = document.querySelector('.cropper-frame');
-    if (frame && student.rawSourceImage.width) {
-        const frameRect = frame.getBoundingClientRect();
-        const scaleX = frameRect.width / student.rawSourceImage.width;
-        const scaleY = frameRect.height / student.rawSourceImage.height;
-        baseScale = Math.max(scaleX, scaleY);
-    } else {
-        baseScale = 1;
-    }
-    
-    cropZoom = 1;
-    document.getElementById('cropper-zoom').value = 1;
-    imgOffsetX = 0;
-    imgOffsetY = 0;
-    updateCropperTransform();
+    // Calculate base scale after modal is painted
+    requestAnimationFrame(() => {
+        const frame = document.querySelector('.cropper-frame');
+        if (frame && student.rawSourceImage.width) {
+            const frameRect = frame.getBoundingClientRect();
+            const scaleX = frameRect.width / student.rawSourceImage.width;
+            const scaleY = frameRect.height / student.rawSourceImage.height;
+            baseScale = Math.max(scaleX, scaleY);
+        } else {
+            baseScale = 1;
+        }
+        
+        cropZoom = 1;
+        document.getElementById('cropper-zoom').value = 1;
+        imgOffsetX = 0;
+        imgOffsetY = 0;
+        updateCropperTransform();
+    });
 }
 
 function closeCropper() {
@@ -1251,7 +1331,7 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
         const text = event.target.result;
         const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
         if (lines.length <= 1) {
-            alert('CSV file is empty or missing headers.');
+            showToast('CSV file is empty or missing headers.', 'error');
             return;
         }
 
@@ -1283,7 +1363,7 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
         // Find indices for common headers
         const getIndex = (possibleNames) => {
             for (const name of possibleNames) {
-                const idx = headers.findIndex(h => h.includes(name));
+                const idx = headers.findIndex(h => new RegExp(`\\b${name}\\b`, 'i').test(h));
                 if (idx !== -1) return idx;
             }
             return -1;
@@ -1330,11 +1410,17 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
         }
 
         if (addedCount > 0) {
+            // Update Max Batch stats if exceeded
+            const batchLimitEl = document.getElementById('hero-batch-limit');
+            if (batchLimitEl && state.students.length > 5) {
+                batchLimitEl.textContent = state.students.length + '+';
+            }
+            
             // Switch to the first newly added student
             switchStudent(state.students.length - addedCount);
-            alert(`Successfully imported ${addedCount} student(s) from CSV.`);
+            showToast(`Successfully imported ${addedCount} student(s) from CSV.`, 'success');
         } else {
-            alert('No valid student rows found in the CSV.');
+            showToast('No valid student rows found in the CSV.', 'error');
         }
     };
     reader.readAsText(file);
@@ -1765,9 +1851,18 @@ const saveSessionToStorage = throttle(function _saveSession() {
             signatureDataUrl: s.signatureDataUrl || null,
             formData:         { ...s.formData }
         }));
-        localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot));
+        const json = JSON.stringify(snapshot);
+        if (json.length > 4.5 * 1024 * 1024) {
+            console.warn('[ISU ID] Session too large, skipping save to avoid quota error.');
+            if (!state._quotaWarned) {
+                showToast("Batch is too large to auto-save.", "warning");
+                state._quotaWarned = true;
+            }
+            return;
+        }
+        localStorage.setItem(SESSION_KEY, json);
     } catch (e) {
-        // Quota exceeded or private-mode restriction — fail silently
+        // Quota exceeded or private-mode restriction
         console.warn('[ISU ID] Session save failed:', e);
     }
 }, 2000);
@@ -1874,7 +1969,9 @@ function ensureTesseractLoaded() {
             return resolve();
         }
         const s = document.createElement('script');
-        s.src = 'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js';
+        s.src = 'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js';
+        s.integrity = 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F';
+        s.crossOrigin = 'anonymous';
         s.onload  = () => { _tesseractLoaded = true; resolve(); };
         s.onerror = () => reject(new Error('Failed to load Tesseract.js'));
         document.head.appendChild(s);
@@ -2110,9 +2207,11 @@ function applyOcrResults() {
     closeOcrModal();
 
     // Jump to next unfilled step
-    if (!name) goToStep(2);
-    else if (!id) goToStep(3);
-    else if (!course) goToStep(4);
-    else if (!dob) goToStep(5);
-    else goToStep(1);
+    if (!student.formData.name) goToStep(2);
+    else if (!student.formData.idNumber) goToStep(3);
+    else if (!student.formData.course) goToStep(4);
+    else if (!student.formData.dob) goToStep(5);
+    else if (!student.formData.parentName) goToStep(6);
+    else if (!student.formData.address) goToStep(7);
+    else if (!student.formData.telephone) goToStep(8);
 }
