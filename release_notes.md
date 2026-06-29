@@ -1,0 +1,14 @@
+### v3.4.2 Comprehensive Bug Fixes
+- PDF Export State Recovery
+- Date Format Standardization
+- Canvas Resize Integrity
+- Strict CSV Header Matching
+- Smart OCR Navigation
+- Dynamic Hero Stats
+- Destructive Action Protection
+- Broadened Camera Support
+- Glassmorphism Toasts
+- Card Flip Synchronization
+- Cropper Dimensional Accuracy
+- Quota Overflow Protection
+- Tesseract SRI Security Hardening
