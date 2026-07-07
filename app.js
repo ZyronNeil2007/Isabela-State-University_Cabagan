@@ -15,8 +15,13 @@
  *  8.  STEPPER        — step navigation, progress, dots
  *  9.  TILT EFFECT    — VanillaTilt 3D card hover
  * 10.  NAVBAR         — scroll-shrink behaviour
- * 11.  EXPORT         — A4 print PNG download
+ * 11.  EXPORT         — jsPDF A4 landscape batch print
  * 12.  BOOT           — initialise everything on load
+ * 13.  STUDENT TABS   — multi-student batch management
+ * 14.  PHOTO CROPPER  — interactive crop & zoom modal
+ * 15.  SAVE AS IMAGE  — PNG front/back export
+ * 16.  CSV IMPORT     — bulk student import from CSV
+ * 17.  AI SIGNATURE   — photo scan → background removal
  * 18.  SESSION SAVE   — localStorage auto-save & restore
  * 19.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
  * ═══════════════════════════════════════════════════════════════════════════
