@@ -3778,3 +3778,167 @@ footer {
         scroll-behavior: auto !important;
     }
 }
+
+
+/* ───────────────────────────────────────────────────────────────────────────
+   23. ID VERSION TOGGLE + SELECT FIELD
+─────────────────────────────────────────────────────────────────────────── */
+
+/* Version toggle group — two cards stacked vertically */
+.version-toggle-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+/* Individual version button card */
+.version-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+    text-align: left;
+    color: var(--text-secondary);
+    position: relative;
+    overflow: hidden;
+}
+
+.version-toggle-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--green-glow), transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.version-toggle-btn:hover {
+    border-color: rgba(21, 185, 21, 0.35);
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateY(-1px);
+    color: var(--text-primary);
+}
+
+.version-toggle-btn:hover::before {
+    opacity: 1;
+}
+
+.version-toggle-btn.active {
+    border-color: var(--green-500);
+    background: rgba(21, 185, 21, 0.08);
+    box-shadow: 0 0 0 1px var(--green-500),
+                0 4px 20px rgba(21, 185, 21, 0.2);
+    color: var(--text-primary);
+}
+
+.version-toggle-btn.active::before {
+    opacity: 1;
+}
+
+/* Icon circle */
+.version-btn-icon {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: var(--text-secondary);
+    transition: all 0.25s ease;
+}
+
+.version-btn-icon--new {
+    background: rgba(21, 185, 21, 0.12);
+    border-color: rgba(21, 185, 21, 0.3);
+    color: var(--green-400);
+}
+
+.version-toggle-btn.active .version-btn-icon {
+    background: rgba(21, 185, 21, 0.15);
+    border-color: rgba(21, 185, 21, 0.4);
+    color: var(--green-400);
+}
+
+/* Label text */
+.version-btn-label {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.version-btn-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.version-btn-sub {
+    font-size: 12px;
+    color: var(--text-secondary);
+    opacity: 0.75;
+}
+
+/* Checkmark icon — hidden until active */
+.version-check {
+    font-size: 20px;
+    color: var(--green-500);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+.version-toggle-btn.active .version-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ── Select field — styled to match existing inputs ── */
+.select-field {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.select-field:focus {
+    border-color: var(--green-500);
+    box-shadow: 0 0 0 3px var(--green-glow);
+    background-color: rgba(255, 255, 255, 0.07);
+}
+
+.select-field option {
+    background: #0d1f0d;
+    color: #ffffff;
+    padding: 8px;
+}
+
+.select-field option[value=""] {
+    color: #888;
+}

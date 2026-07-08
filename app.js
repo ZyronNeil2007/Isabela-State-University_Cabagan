@@ -112,14 +112,190 @@ const CONFIG = {
     }
 };
 
+/**
+ * CONFIG for the 2026 New ID template.
+ * Front: 675 × 1050 px   Back: 704 × 1050 px
+ *
+ * All coordinates measured pixel-by-pixel from:
+ *   - new_template_front.id.png  (the blank template)
+ *   - front_reference.png        (the filled reference)
+ *   - new_template_back.id.png   (the blank template)
+ *   - back_reference.png         (the filled reference)
+ *
+ * FRONT pixel math
+ * ─────────────────
+ *  Blue photo box outer (includes 4px green border):
+ *    left=172  top=225  right=508  bottom=558  → w=336 h=333
+ *  Photo FILL area (inside border, 4px inset each side):
+ *    x=176 y=229 w=328 h=325  (corner-radius ≈ 18px)
+ *
+ *  "NAME" label (small caps in template) center: x=337 y=729
+ *  Student name rendered ABOVE that label:
+ *    font-size 36px → half-height ~18px → center y = 729 - 18 - 14 = 697
+ *
+ *  "STUDENT NUMBER" label center: x=337 y=813
+ *  Student ID rendered ABOVE that label:
+ *    font-size 42px → half-height ~21px → center y = 813 - 21 - 11 = 781
+ *
+ *  Department block (below "STUDENT NUMBER"):
+ *    3 lines × 28px line-height, block top ~840  → center y = 840 + 28 = 868
+ *    (center of 3-line block = top + lineHeight + 0.5*lineHeight = 840+14=854)
+ *    Adjust to observed position: y = 880
+ *
+ * BACK pixel math (canvas 704 × 1050)
+ * ─────────────────────────────────────
+ *  Labels at left edge, bold values follow on same row.
+ *  Label font in template: 13.5px bold Arial uppercase
+ *    at 13.5px bold, avg uppercase char width ≈ 9.5px
+ *
+ *  "CONTACT PERSON"  (14 chars) ≈ 133px wide, starts x=30
+ *     → ends at x=163, value starts x=173, y=108
+ *
+ *  "ADRESS"  (6 chars) ≈ 57px wide, starts x=30
+ *     → ends at x=87, value starts x=97, y=152
+ *
+ *  "CONTACT NO"  (10 chars) ≈ 95px wide, starts x=30
+ *     → ends at x=125, value starts x=135, y=195
+ *
+ *  "BIRTH DATE"  (10 chars) ≈ 95px wide, starts x=30
+ *     → ends at x=125, value starts x=135, y=238
+ */
+const CONFIG_2026 = {
+    scaleMultiplier: 1,
+
+    /**
+     * Photo FILL area: strictly inside the green border.
+     */
+    photo: { x: 181, y: 249, width: 336, height: 315, borderRadius: 14 },
+
+    /** Signature placement above the name */
+    signature: { x: 176, y: 565, width: 328, height: 100 },
+
+    text: {
+        /**
+         * Student NAME — large bold caps, rendered ABOVE the printed "NAME" label.
+         * Increased font size to 42px to match the prominent text in the reference.
+         * Center y: 690.
+         */
+        name: {
+            x: 319, y: 690,
+            align: 'center',
+            font: "42px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /**
+         * STUDENT NUMBER — extra-large bold, rendered ABOVE printed "STUDENT NUMBER".
+         * Increased font size to 52px.
+         * Center y: 780.
+         */
+        idNumber: {
+            x: 319, y: 780,
+            align: 'center',
+            font: "52px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /**
+         * DEPARTMENT full name — bold, dark green, multi-line (split on '\n').
+         * Center y: 890, increased font size to 26px.
+         */
+        department: {
+            x: 319, y: 890,
+            align: 'center',
+            font: "26px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000', // Changed to black to match reference image text
+            strokeStyle: 'transparent',
+            maxWidth: 600,
+            lineHeight: 34
+        },
+
+        /* ══════════════════════════════════════════════════════════════
+         * BACK FACE — Canvas 704 × 1050 px
+         *
+         * Spacing matches reference: wider row spacing (~60px)
+         * Values are larger (26px) and bold, sitting precisely after the labels.
+         * ═════════════════════════════════════════════════════════════ */
+
+        /** CONTACT PERSON value — y=120 (row 1), x=240 */
+        parentName: {
+            x: 240, y: 120,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /** ADRESS value — y=180 (row 2), x=135 */
+        address: {
+            x: 135, y: 180,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent',
+            maxWidth: 380
+        },
+
+        /** CONTACT NO value — y=240 (row 3), x=175 */
+        telephone: {
+            x: 175, y: 240,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /** BIRTH DATE value — y=300 (row 4), x=170 */
+        dob: {
+            x: 170, y: 300,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        }
+    }
+};
+
+/** Lookup for 2026 department abbreviation → full college name for rendering */
+const DEPARTMENT_LABELS = {
+    'CBM':    'COLLEGE OF BUSINESS AND MANAGEMENT',
+    'CCJE':   'COLLEGE OF CRIMINAL JUSTICE EDUCATION',
+    'CAST':   'COLLEGE OF AGRICULTURAL,\nSCIENCE AND TECHNOLOGY',
+    'CCSICT': 'COLLEGE OF COMPUTING STUDIES,\nINFORMATION COMMUNICATION\nTECHNOLOGY',
+    'COE':    'COLLEGE OF EDUCATION',
+    'CED':    'COLLEGE OF EDUCATION',
+    'CFEM':   'COLLEGE OF FORESTRY AND\nENVIRONMENTAL MANAGEMENT',
+    'CCSS':   'COLLEGE OF COMMUNICATION\nAND SOCIAL SCIENCES',
+    'CS':     'COLLEGE OF SCIENCE'
+};
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    2. STATE — Single reactive data store
 ═══════════════════════════════════════════════════════════════════════════ */
 const state = {
-    frontTemplate:  null,
-    backTemplate:   null,
+    frontTemplate:     null,
+    backTemplate:      null,
+    front2026Template: null,
+    back2026Template:  null,
     activeStudentIndex: 0,
+    idVersion: 'old',   // 'old' | '2026'
     students: [
         {
             photoImage:     null,
@@ -130,6 +306,7 @@ const state = {
                 name:       '',
                 idNumber:   '',
                 course:     '',
+                department: '',
                 dob:        '',
                 parentName: '',
                 address:    '',
@@ -334,6 +511,46 @@ Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
 });
 
 
+/**
+ * Switch the ID version between 'old' and '2026'.
+ * Updates state, toggles the active button UI, shows/hides form fields,
+ * and re-renders the card.
+ *
+ * @param {'old'|'2026'} version
+ * @param {boolean} silent - If true, skip DOM toggle (used during session restore)
+ */
+function setIdVersion(version, silent = false) {
+    state.idVersion = version;
+
+    if (!silent) {
+        // Toggle button active states
+        const btnOld  = document.getElementById('btn-old-id');
+        const btn2026 = document.getElementById('btn-2026-id');
+        if (btnOld)  btnOld.classList.toggle('active',  version === 'old');
+        if (btn2026) btn2026.classList.toggle('active', version === '2026');
+    }
+
+    // Show/hide course vs department fields
+    const courseWrapper = document.getElementById('course-field-wrapper');
+    const deptWrapper   = document.getElementById('department-field-wrapper');
+    if (courseWrapper) courseWrapper.style.display = version === 'old' ? '' : 'none';
+    if (deptWrapper)   deptWrapper.style.display   = version === '2026' ? '' : 'none';
+
+    // Update step 5 label dynamically
+    const stepGroup = document.querySelector('.form-group[data-step="5"]');
+    if (stepGroup) {
+        stepGroup.dataset.stepTitle = version === '2026' ? 'Department' : 'Course';
+    }
+
+    renderCanvases();
+}
+
+// Department dropdown — bind change event
+document.getElementById('department')?.addEventListener('change', e => {
+    state.students[state.activeStudentIndex].formData.department = e.target.value;
+    renderCanvases();
+});
+
 // Profile picture — file upload handler
 document.getElementById('profile-pic').addEventListener('change', e => {
     const file = e.target.files[0];
@@ -366,15 +583,19 @@ function loadImage(src) {
 }
 
 async function loadTemplates() {
-    const [front, back] = await Promise.all([
+    const [front, back, front2026, back2026] = await Promise.all([
         loadImage('images/template_front.id.png'),
-        loadImage('images/template_back.id.png')
+        loadImage('images/template_back.id.png'),
+        loadImage('images/2026_id/new_template_front.id.png'),
+        loadImage('images/2026_id/new_template_back.id.png')
     ]);
 
-    state.frontTemplate = front;
-    state.backTemplate  = back;
+    state.frontTemplate     = front;
+    state.backTemplate      = back;
+    state.front2026Template = front2026;
+    state.back2026Template  = back2026;
 
-    // Set canvas intrinsic sizes from the loaded images
+    // Set canvas intrinsic sizes from the loaded images (use old template as default)
     frontCanvas.width  = front ? front.width  : 638;
     frontCanvas.height = front ? front.height : 1013;
     backCanvas.width   = back  ? back.width   : 638;
@@ -481,95 +702,234 @@ function formatCourseText(course) {
  */
 function renderCanvases() {
     const student = state.students[state.activeStudentIndex];
+    const is2026  = state.idVersion === '2026';
+    const cfg     = is2026 ? CONFIG_2026 : CONFIG;
+
+    // ── Resize canvases to match the active template ────────
+    if (is2026) {
+        const ft = state.front2026Template;
+        const bt = state.back2026Template;
+        frontCanvas.width  = ft ? ft.width  : 675;
+        frontCanvas.height = ft ? ft.height : 1050;
+        backCanvas.width   = bt ? bt.width  : 704;
+        backCanvas.height  = bt ? bt.height : 1050;
+    } else {
+        const ft = state.frontTemplate;
+        const bt = state.backTemplate;
+        frontCanvas.width  = ft ? ft.width  : 638;
+        frontCanvas.height = ft ? ft.height : 1013;
+        backCanvas.width   = bt ? bt.width  : 638;
+        backCanvas.height  = bt ? bt.height : 1013;
+    }
+    if (miniCanvasFront) { miniCanvasFront.width = frontCanvas.width; miniCanvasFront.height = frontCanvas.height; }
+    if (miniCanvasBack)  { miniCanvasBack.width  = backCanvas.width;  miniCanvasBack.height  = backCanvas.height; }
 
     // ── Front Face ──────────────────────────────────────────
     frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
 
-    if (state.frontTemplate) {
-        frontCtx.drawImage(state.frontTemplate, 0, 0, frontCanvas.width, frontCanvas.height);
-    } else {
-        frontCtx.fillStyle = '#d4e8d4';
+    const frontTpl = is2026 ? state.front2026Template : state.frontTemplate;
+
+    if (is2026) {
+        // ── 2026: PHOTO FIRST, then template on top ──────────
+        // This ensures the green border (part of the template PNG) draws
+        // OVER the photo, so the border is always visible.
+
+        // 1. Draw a white base
+        frontCtx.fillStyle = '#ffffff';
         frontCtx.fillRect(0, 0, frontCanvas.width, frontCanvas.height);
-    }
 
-    // Photo: cover-fit into the defined box
-    if (student.photoImage) {
-        const { x, y, width, height } = CONFIG.photo;
-        frontCtx.save();
-        frontCtx.beginPath();
-        frontCtx.rect(x, y, width, height);
-        frontCtx.clip();
-
-        const imgRatio = student.photoImage.width / student.photoImage.height;
-        const boxRatio = width / height;
-        let dw = width, dh = height, dx = x, dy = y;
-
-        if (imgRatio > boxRatio) {
-            dw = height * imgRatio;
-            dx = x - (dw - width) / 2;
-        } else {
-            dh = width / imgRatio;
-            dy = y - (dh - height) / 2;
+        // 2. Draw the template FIRST (because it has a solid background)
+        if (frontTpl) {
+            frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
         }
 
-        frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
-        frontCtx.restore();
+        // 3. Draw photo ON TOP (clipped perfectly inside the frame)
+        if (student.photoImage) {
+            const { x, y, width, height, borderRadius: r = 18 } = cfg.photo;
+            frontCtx.save();
+            frontCtx.beginPath();
+            frontCtx.moveTo(x + r, y);
+            frontCtx.lineTo(x + width - r, y);
+            frontCtx.arcTo(x + width, y,         x + width, y + r,          r);
+            frontCtx.lineTo(x + width, y + height - r);
+            frontCtx.arcTo(x + width, y + height, x + width - r, y + height, r);
+            frontCtx.lineTo(x + r, y + height);
+            frontCtx.arcTo(x,        y + height, x, y + height - r,          r);
+            frontCtx.lineTo(x, y + r);
+            frontCtx.arcTo(x, y,                 x + r, y,                   r);
+            frontCtx.closePath();
+            frontCtx.clip();
+
+            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const boxRatio = width / height;
+            let dw = width, dh = height, dx = x, dy = y;
+            if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
+            else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
+
+            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.restore();
+        }
+
+    } else {
+        // ── Old ID: template first, photo on top ─────────────
+        if (frontTpl) {
+            frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
+        } else {
+            frontCtx.fillStyle = '#d4e8d4';
+            frontCtx.fillRect(0, 0, frontCanvas.width, frontCanvas.height);
+        }
+
+        if (student.photoImage) {
+            const { x, y, width, height } = cfg.photo;
+            frontCtx.save();
+            frontCtx.beginPath();
+            frontCtx.rect(x, y, width, height);
+            frontCtx.clip();
+
+            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const boxRatio = width / height;
+            let dw = width, dh = height, dx = x, dy = y;
+            if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
+            else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
+
+            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.restore();
+        }
     }
 
-    // Signature
-    if (student.signatureImage) {
-        const { x, y, width, height } = CONFIG.signature;
+    // Signature (drawn for both versions if defined in config)
+    if (student.signatureImage && cfg.signature) {
+        const { x, y, width, height } = cfg.signature;
         frontCtx.drawImage(student.signatureImage, x, y, width, height);
     }
 
-    // Text fields on front face
-    renderText(frontCtx, CONFIG.text.name,
-        student.formData.name || 'JUAN DELA CRUZ');
-    renderText(frontCtx, CONFIG.text.idNumber,
-        student.formData.idNumber || '25-00001');
-    renderText(frontCtx, CONFIG.text.course,
-        formatCourseText(student.formData.course || 'Bachelor of Science in Computer Science'));
+    try {
+        // Text fields on front face
+        if (is2026) {
+            // 2026: draw text AFTER the template (so text appears above the template image)
+            renderText2026(frontCtx, cfg.text.name, student.formData.name || 'JUAN DELA CRUZ');
+            renderText2026(frontCtx, cfg.text.idNumber, student.formData.idNumber || '25-00001');
+            const deptKey   = student.formData.department || '';
+            const deptLabel = deptKey ? (DEPARTMENT_LABELS[deptKey] || deptKey) : 'COLLEGE / DEPARTMENT';
+            renderText2026(frontCtx, cfg.text.department, deptLabel);
+        } else {
+            renderText(frontCtx, CONFIG.text.name,
+                student.formData.name || 'JUAN DELA CRUZ');
+            renderText(frontCtx, CONFIG.text.idNumber,
+                student.formData.idNumber || '25-00001');
+            renderText(frontCtx, CONFIG.text.course,
+                formatCourseText(student.formData.course || 'Bachelor of Science in Computer Science'));
+        }
+    } catch (e) {
+        console.error('[ISU ID] Error rendering front text:', e);
+    }
 
     // ── Back Face ───────────────────────────────────────────
     backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height);
 
-    if (state.backTemplate) {
-        backCtx.drawImage(state.backTemplate, 0, 0, backCanvas.width, backCanvas.height);
+    const backTpl = is2026 ? state.back2026Template : state.backTemplate;
+    if (backTpl) {
+        backCtx.drawImage(backTpl, 0, 0, backCanvas.width, backCanvas.height);
     } else {
         backCtx.fillStyle = '#ffffff';
         backCtx.fillRect(0, 0, backCanvas.width, backCanvas.height);
     }
 
-    // White rectangle to clear the info area before writing text
-    backCtx.fillStyle = '#ffffff';
-    backCtx.fillRect(60, 170, 500, 120);
+    if (is2026) {
+        // 2026 back: render text inline at the label positions
+        renderText2026(backCtx, cfg.text.parentName,
+            student.formData.parentName || 'JANE DELA CRUZ');
+        renderText2026(backCtx, cfg.text.address,
+            student.formData.address || 'BARUCBOC, QUEZON, ISABELA');
+        renderText2026(backCtx, cfg.text.telephone,
+            student.formData.telephone || '09123456789');
 
-    // Text fields on back face
-    renderText(backCtx, CONFIG.text.parentName,
-        student.formData.parentName || 'JANE DELA CRUZ');
-    renderText(backCtx, CONFIG.text.address,
-        'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
-    renderText(backCtx, CONFIG.text.telephone,
-        'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
-    let dobText = '01-01-2000';
-    if (student.formData.dob) {
-        const d = new Date(student.formData.dob);
-        if (!isNaN(d.getTime())) {
-            const yyyy = d.getFullYear();
-            const mm = String(d.getMonth() + 1).padStart(2, '0');
-            const dd = String(d.getDate()).padStart(2, '0');
-            dobText = `${dd}-${mm}-${yyyy}`;
-        } else {
-            dobText = student.formData.dob.split('-').reverse().join('-');
+        let dobText = '01/01/2000';
+        if (student.formData.dob) {
+            const d = new Date(student.formData.dob);
+            if (!isNaN(d.getTime())) {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                dobText = `${mm}/${dd}/${yyyy}`;
+            } else {
+                dobText = student.formData.dob;
+            }
         }
+        renderText2026(backCtx, cfg.text.dob, dobText);
+    } else {
+        // Old ID back: white clear rect + text overlay
+        backCtx.fillStyle = '#ffffff';
+        backCtx.fillRect(60, 170, 500, 120);
+
+        renderText(backCtx, CONFIG.text.parentName,
+            student.formData.parentName || 'JANE DELA CRUZ');
+        renderText(backCtx, CONFIG.text.address,
+            'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
+        renderText(backCtx, CONFIG.text.telephone,
+            'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
+        let dobText = '01-01-2000';
+        if (student.formData.dob) {
+            const d = new Date(student.formData.dob);
+            if (!isNaN(d.getTime())) {
+                const yyyy = d.getFullYear();
+                const mm = String(d.getMonth() + 1).padStart(2, '0');
+                const dd = String(d.getDate()).padStart(2, '0');
+                dobText = `${dd}-${mm}-${yyyy}`;
+            } else {
+                dobText = student.formData.dob.split('-').reverse().join('-');
+            }
+        }
+        renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
     }
-    renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
 
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
 
     // ── Session Auto-Save ─────────────────────────────────────
     saveSessionToStorage();
+}
+
+/**
+ * Draw text for the 2026 template (no scale multiplier — coordinates are native px).
+ * Supports multi-line via '\n'. Uses textConfig.lineHeight if set, otherwise
+ * falls back to fontSize × 1.35.
+ * The y coordinate is the CENTER of the entire multi-line block.
+ */
+function renderText2026(ctx, textConfig, textValue) {
+    if (!textValue) return;
+    textValue = String(textValue); // Ensure it's always a string so .split() doesn't fail
+
+    ctx.save();
+    // Avoid prepending 'bold' twice when the font string already includes it
+    const fontStr = textConfig.font.trim();
+    ctx.font        = (textConfig.isBold && !fontStr.startsWith('bold'))
+                        ? 'bold ' + fontStr
+                        : fontStr;
+    ctx.textAlign   = textConfig.align;
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle   = textConfig.fillStyle;
+
+    const lines      = textValue.split('\n');
+    // Parse font-size: handles "bold 16px Arial" and "16px Arial" correctly
+    const fontSizeMatch = fontStr.match(/(\d+(\.\d+)?)px/);
+    const fontSize   = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 14;
+    const lineHeight = textConfig.lineHeight || (fontSize * 1.35);
+
+    // Center the whole block on textConfig.y
+    const totalHeight = (lines.length - 1) * lineHeight;
+    const startY      = textConfig.y - totalHeight / 2;
+
+    lines.forEach((line, i) => {
+        const y = startY + i * lineHeight;
+        if (textConfig.maxWidth) {
+            ctx.fillText(line, textConfig.x, y, textConfig.maxWidth);
+        } else {
+            ctx.fillText(line, textConfig.x, y);
+        }
+    });
+
+    ctx.restore();
 }
 
 /** Copy the main canvases into the small mini-preview thumbnails */
@@ -588,17 +948,18 @@ function updateMiniCanvas() {
 /* ═══════════════════════════════════════════════════════════════════════════
    8. STEPPER — Step navigation, progress bar & dot indicator
 ═══════════════════════════════════════════════════════════════════════════ */
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 const STEP_TITLES = [
-    'Upload Photo',       // 1
-    'Full Name',          // 2
-    'ID Number',          // 3
-    'Degree Program',     // 4
-    'Date of Birth',      // 5
-    'Parent / Guardian',  // 6
-    'Home Address',       // 7
-    'Telephone',          // 8
-    'Signature'           // 9
+    'Choose ID Version', // 1
+    'Upload Photo',      // 2
+    'Full Name',         // 3
+    'ID Number',         // 4
+    'Course / Dept.',    // 5
+    'Date of Birth',     // 6
+    'Parent / Guardian', // 7
+    'Home Address',      // 8
+    'Telephone',         // 9
+    'Signature'          // 10
 ];
 
 let currentStep = 1;
@@ -720,11 +1081,11 @@ function goToStep(n) {
     }
 
     // ── Card face flip ──
-    // Steps 1-4 = front face, steps 5-9 = back face
+    // Steps 1-5 = front face, steps 6-10 = back face
     const idCard    = document.getElementById('idCard');
     const flipTitle = document.getElementById('flip-title');
     const miniCard  = document.getElementById('mini-card');
-    const shouldFlip = currentStep >= 5;
+    const shouldFlip = currentStep >= 6;
 
     if (idCard) {
         idCard.classList.toggle('is-flipped', shouldFlip);
@@ -988,7 +1349,9 @@ window.addEventListener('load', () => {
         try {
             const raw = localStorage.getItem(SESSION_KEY);
             if (raw) {
-                const snapshot = JSON.parse(raw);
+                const parsed = JSON.parse(raw);
+                // Support both old (array) and new ({ version, students }) formats
+                const snapshot = Array.isArray(parsed) ? parsed : (parsed && parsed.students);
                 // Only show banner when there is meaningful data (non-empty name or photo)
                 const hasMeaningfulData = Array.isArray(snapshot) && snapshot.some(s =>
                     (s.formData && s.formData.name) || s.photoDataUrl
@@ -1073,6 +1436,10 @@ function switchStudent(index) {
         const el = document.getElementById(id);
         if (el) el.value = student.formData[stateKey] || '';
     });
+
+    // Sync department dropdown
+    const deptEl = document.getElementById('department');
+    if (deptEl) deptEl.value = student.formData.department || '';
     
     // Update photo preview
     const thumb = document.getElementById('photo-preview-thumb');
@@ -1110,7 +1477,7 @@ function addStudent() {
         rawSourceImage: null,
         signatureImage: null,
         signatureDataUrl: null,
-        formData: { name: '', idNumber: '', course: '', dob: '', parentName: '', address: '', telephone: '' }
+        formData: { name: '', idNumber: '', course: '', department: '', dob: '', parentName: '', address: '', telephone: '' }
     });
     
     switchStudent(state.students.length - 1);
@@ -1398,6 +1765,7 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
                     name: idxName !== -1 ? (row[idxName] || '').toUpperCase() : '',
                     idNumber: idxId !== -1 ? (row[idxId] || '').toUpperCase() : '',
                     course: idxCourse !== -1 ? (row[idxCourse] || '').toUpperCase() : '',
+                    department: '',
                     dob: idxDob !== -1 ? (row[idxDob] || '') : '', // Expected YYYY-MM-DD
                     parentName: idxParent !== -1 ? (row[idxParent] || '').toUpperCase() : '',
                     address: idxAddress !== -1 ? (row[idxAddress] || '').toUpperCase() : '',
@@ -1856,7 +2224,9 @@ const saveSessionToStorage = throttle(function _saveSession() {
             signatureDataUrl: s.signatureDataUrl || null,
             formData:         { ...s.formData }
         }));
-        const json = JSON.stringify(snapshot);
+        // Also save the global version setting
+        const payload = { version: state.idVersion, students: snapshot };
+        const json = JSON.stringify(payload);
         if (json.length > 4.5 * 1024 * 1024) {
             console.warn('[ISU ID] Session too large, skipping save to avoid quota error.');
             if (!state._quotaWarned) {
@@ -1881,9 +2251,28 @@ async function restoreSessionFromStorage() {
     const raw = localStorage.getItem(SESSION_KEY);
     if (!raw) return false;
 
-    let snapshot;
-    try { snapshot = JSON.parse(raw); } catch { return false; }
-    if (!Array.isArray(snapshot) || snapshot.length === 0) return false;
+    let payload;
+    try { payload = JSON.parse(raw); } catch { return false; }
+
+    // Support both old format (array) and new format ({ version, students })
+    let snapshot, savedVersion;
+    if (Array.isArray(payload)) {
+        snapshot = payload;
+        savedVersion = 'old';
+    } else if (payload && Array.isArray(payload.students)) {
+        snapshot = payload.students;
+        savedVersion = payload.version || 'old';
+    } else {
+        return false;
+    }
+
+    if (snapshot.length === 0) return false;
+
+    // Restore global version state
+    if (savedVersion) {
+        state.idVersion = savedVersion;
+        setIdVersion(savedVersion, /*silent=*/true);
+    }
 
     // Rebuild students array with Image objects rehydrated
     const rebuilt = await Promise.all(snapshot.map(async s => {

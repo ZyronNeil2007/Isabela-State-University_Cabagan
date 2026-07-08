@@ -30,7 +30,7 @@
     <!-- VanillaTilt — 3D card hover effect -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
 
-    <link rel="stylesheet" href="style.css?v=3.4.3">
+    <link rel="stylesheet" href="style.css?v=3.5.0">
 </head>
 
 
@@ -96,7 +96,7 @@
             <!-- Top badge -->
             <div class="hero-badge" style="--delay:0s">
                 <span class="hero-badge-dot"></span>
-                v3.4.3 &nbsp;&middot;&nbsp; OCR Autofill &nbsp;&middot;&nbsp; Session Save
+                v3.5.0 &nbsp;&middot;&nbsp; 2026 New ID &nbsp;&middot;&nbsp; Session Save
             </div>
 
             <!-- Staggered headline -->
@@ -300,7 +300,7 @@
                 <div class="stepper-meta">
                     <div class="stepper-step-label">
                         <span id="stepper-step-name">Upload Photo</span>
-                        <span class="stepper-step-count" id="stepper-count">1 / 9</span>
+                        <span class="stepper-step-count" id="stepper-count">1 / 10</span>
                     </div>
                     <div class="stepper-progress-track">
                         <div class="stepper-progress-fill" id="stepper-progress"></div>
@@ -316,14 +316,14 @@
                 <div class="desktop-form-header-top">
                     <div class="desktop-step-badge" id="desktop-step-badge">
                         <i class="ph ph-number-one"></i>
-                        Step 1 of 9
+                        Step 1 of 10
                     </div>
-                    <h2 class="desktop-step-title" id="desktop-step-title">Upload Photo</h2>
+                    <h2 class="desktop-step-title" id="desktop-step-title">Choose ID Version</h2>
                     <p class="subtitle">Fill in your details to generate the live ID preview.</p>
                 </div>
                 <!-- Segmented progress bar — JS injects 9 segments -->
                 <div class="desktop-progress-bar" id="desktop-progress-bar" role="progressbar" aria-valuemin="1"
-                    aria-valuemax="9" aria-valuenow="1"></div>
+                    aria-valuemax="10" aria-valuenow="1"></div>
             </div>
 
             <!-- ─────────────────────────────────────────────
@@ -332,8 +332,32 @@
             ───────────────────────────────────────────────── -->
             <div class="steps-wrapper">
 
-                <!-- Step 1: Photo -->
-                <div class="form-group" data-step="1" data-step-title="Upload Photo">
+                <!-- Step 1: ID Version -->
+                <div class="form-group" data-step="1" data-step-title="Choose ID Version">
+                    <label><i class="ph ph-cards"></i> ID Template Version</label>
+                    <p class="step-hint" style="margin-bottom:16px;"><i class="ph ph-info"></i> Select which ID design you want to generate.</p>
+                    <div class="version-toggle-group" id="version-toggle-group">
+                        <button class="version-toggle-btn active" id="btn-old-id" onclick="setIdVersion('old')">
+                            <div class="version-btn-icon"><i class="ph ph-identification-card"></i></div>
+                            <div class="version-btn-label">
+                                <span class="version-btn-title">Old ID</span>
+                                <span class="version-btn-sub">Classic template with course</span>
+                            </div>
+                            <i class="ph ph-check-circle version-check"></i>
+                        </button>
+                        <button class="version-toggle-btn" id="btn-2026-id" onclick="setIdVersion('2026')">
+                            <div class="version-btn-icon version-btn-icon--new"><i class="ph ph-sparkle"></i></div>
+                            <div class="version-btn-label">
+                                <span class="version-btn-title">2026 New ID</span>
+                                <span class="version-btn-sub">Modern template with department</span>
+                            </div>
+                            <i class="ph ph-check-circle version-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Photo -->
+                <div class="form-group" data-step="2" data-step-title="Upload Photo">
                     <label for="profile-pic">
                         <i class="ph ph-camera"></i> Profile Picture
                     </label>
@@ -356,8 +380,8 @@
                     </p>
                 </div>
 
-                <!-- Step 2: Full Name -->
-                <div class="form-group" data-step="2" data-step-title="Full Name">
+                <!-- Step 3: Full Name -->
+                <div class="form-group" data-step="3" data-step-title="Full Name">
                     <label for="full-name"><i class="ph ph-user"></i> Full Name</label>
                     <input type="text" id="full-name" placeholder="e.g. JUAN DELA CRUZ" autocomplete="name"
                         spellcheck="false">
@@ -365,52 +389,71 @@
                         full name.</p>
                 </div>
 
-                <!-- Step 3: ID Number -->
-                <div class="form-group" data-step="3" data-step-title="ID Number">
+                <!-- Step 4: ID Number -->
+                <div class="form-group" data-step="4" data-step-title="ID Number">
                     <label for="id-number"><i class="ph ph-hash"></i> ID / Student Number</label>
                     <input type="text" id="id-number" placeholder="e.g. 25-00001" spellcheck="false">
                     <p class="step-hint"><i class="ph ph-info"></i> Your official student identification number.</p>
                 </div>
 
-                <!-- Step 4: Course -->
-                <div class="form-group" data-step="4" data-step-title="Course">
-                    <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
-                    <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
-                    <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear on
-                        the ID.</p>
+                <!-- Step 5: Course / Department -->
+                <div class="form-group" data-step="5" data-step-title="Course / Department">
+                    <!-- OLD ID: Course text input -->
+                    <div id="course-field-wrapper">
+                        <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
+                        <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
+                        <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear on the ID.</p>
+                    </div>
+                    <!-- 2026 ID: Department select -->
+                    <div id="department-field-wrapper" style="display:none;">
+                        <label for="department"><i class="ph ph-buildings"></i> College / Department</label>
+                        <select id="department" class="select-field">
+                            <option value="">— Select your college —</option>
+                            <option value="CBM">CBM – College of Business and Management</option>
+                            <option value="CCJE">CCJE – College of Criminal Justice Education</option>
+                            <option value="CAST">CAST – College of Agricultural, Science and Technology</option>
+                            <option value="CCSICT">CCSICT – College of Computing Studies, Information and Communication Technology</option>
+                            <option value="COE">COE – College of Education</option>
+                            <option value="CED">CED – College of Education</option>
+                            <option value="CFEM">CFEM – College of Forestry and Environmental Management</option>
+                            <option value="CCSS">CCSS – College of Communication and Social Sciences</option>
+                            <option value="CS">CS – College of Science</option>
+                        </select>
+                        <p class="step-hint"><i class="ph ph-info"></i> Select the college your department belongs to. This will appear on your 2026 ID.</p>
+                    </div>
                 </div>
 
-                <!-- Step 5: DOB -->
-                <div class="form-group" data-step="5" data-step-title="Date of Birth">
+                <!-- Step 6: DOB -->
+                <div class="form-group" data-step="6" data-step-title="Date of Birth">
                     <label for="dob"><i class="ph ph-cake"></i> Date of Birth</label>
                     <input type="date" id="dob">
                     <p class="step-hint"><i class="ph ph-info"></i> Appears on the back of the ID card.</p>
                 </div>
 
-                <!-- Step 6: Parent / Guardian -->
-                <div class="form-group" data-step="6" data-step-title="Parent / Guardian">
+                <!-- Step 7: Parent / Guardian -->
+                <div class="form-group" data-step="7" data-step-title="Parent / Guardian">
                     <label for="parent-name"><i class="ph ph-users"></i> Parent / Guardian Name</label>
                     <input type="text" id="parent-name" placeholder="e.g. JANE DELA CRUZ" spellcheck="false">
                     <p class="step-hint"><i class="ph ph-info"></i> Person to notify in case of emergency.</p>
                 </div>
 
-                <!-- Step 7: Address -->
-                <div class="form-group" data-step="7" data-step-title="Address">
+                <!-- Step 8: Address -->
+                <div class="form-group" data-step="8" data-step-title="Address">
                     <label for="address"><i class="ph ph-map-pin"></i> Home Address</label>
                     <textarea id="address" placeholder="e.g. Brgy. San Antonio, Cauayan City, Isabela" rows="3"
                         spellcheck="false"></textarea>
                     <p class="step-hint"><i class="ph ph-info"></i> Full home address for your ID record.</p>
                 </div>
 
-                <!-- Step 8: Telephone -->
-                <div class="form-group" data-step="8" data-step-title="Telephone">
+                <!-- Step 9: Telephone -->
+                <div class="form-group" data-step="9" data-step-title="Telephone">
                     <label for="telephone"><i class="ph ph-phone"></i> Telephone / Mobile</label>
                     <input type="text" id="telephone" placeholder="e.g. +63 912 345 6789" spellcheck="false">
                     <p class="step-hint"><i class="ph ph-info"></i> Emergency contact number printed on the back.</p>
                 </div>
 
-                <!-- Step 9: Signature -->
-                <div class="form-group clearfix" data-step="9" data-step-title="Signature">
+                <!-- Step 10: Signature -->
+                <div class="form-group clearfix" data-step="10" data-step-title="Signature">
                     <label><i class="ph ph-pen-nib"></i> Signature</label>
 
                     <!-- Signature Mode Toggle -->
@@ -597,7 +640,7 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v3.4.1 · Premium ID Generator</span>
+                <span>v3.5.0 · 2026 ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
