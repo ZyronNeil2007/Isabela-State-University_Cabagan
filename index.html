@@ -75,9 +75,51 @@
                     <i class="ph ph-identification-card"></i>
                     <span>Get Your ID</span>
                 </a>
+                <!-- Hamburger (mobile only) -->
+                <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-drawer">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MOBILE NAVIGATION DRAWER
+    ═══════════════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" aria-hidden="true"></div>
+    <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
+        <div class="mobile-drawer-header">
+            <div class="mobile-drawer-brand">
+                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <span class="logo-text">ISU ID Generator</span>
+            </div>
+            <button class="btn-close" id="mobile-drawer-close" aria-label="Close navigation menu">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="#home" class="mobile-nav-link" data-section="home">
+                <i class="ph-fill ph-house"></i> Home
+            </a>
+            <a href="#features" class="mobile-nav-link" data-section="features">
+                <i class="ph-fill ph-star-four"></i> Features
+            </a>
+            <a href="#how-it-works" class="mobile-nav-link" data-section="how-it-works">
+                <i class="ph-fill ph-path"></i> How It Works
+            </a>
+            <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="mobile-nav-link" target="_blank" rel="noopener noreferrer">
+                <i class="ph-fill ph-github-logo"></i> Repository
+            </a>
+        </nav>
+        <div class="mobile-drawer-cta">
+            <a href="#generator" class="btn-primary" style="width:100%;justify-content:center;">
+                <i class="ph ph-identification-card"></i> Get Your ID
+                <i class="ph ph-arrow-right"></i>
+            </a>
+        </div>
+    </div>
 
     <!-- ═══════════════════════════════════════════════════════
          HERO SECTION — Cinematic Full-Width
@@ -971,6 +1013,78 @@
         </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════ -->
+    <footer class="site-footer" id="footer">
+        <div class="footer-glow" aria-hidden="true"></div>
+        <div class="footer-inner section-inner">
+
+            <!-- Top row: brand + links -->
+            <div class="footer-top">
+
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
+                        <div class="footer-logo-text">
+                            <span class="footer-logo-name">ISU ID Generator</span>
+                            <span class="footer-logo-sub">Isabela State University · Cabagan</span>
+                        </div>
+                    </div>
+                    <p class="footer-tagline">Generate print-ready student IDs entirely in your browser — no server, no account, no compromise.</p>
+                    <div class="footer-badges">
+                        <span class="footer-badge"><i class="ph-fill ph-lock"></i> 100% Private</span>
+                        <span class="footer-badge"><i class="ph-fill ph-wifi-slash"></i> Works Offline</span>
+                        <span class="footer-badge"><i class="ph-fill ph-open-source-logo"></i> Open Source</span>
+                    </div>
+                </div>
+
+                <!-- Nav columns -->
+                <div class="footer-links-grid">
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Navigate</h4>
+                        <a href="#home" class="footer-link" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
+                        <a href="#features" class="footer-link" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+                        <a href="#how-it-works" class="footer-link" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How It Works</a>
+                        <a href="#generator" class="footer-link" onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">Generator</a>
+                    </div>
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Resources</h4>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="footer-link" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/wiki" class="footer-link" target="_blank" rel="noopener noreferrer">Documentation</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/releases" class="footer-link" target="_blank" rel="noopener noreferrer">Release Notes</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/issues" class="footer-link" target="_blank" rel="noopener noreferrer">Report an Issue</a>
+                    </div>
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Built With</h4>
+                        <a href="https://phosphoricons.com" class="footer-link" target="_blank" rel="noopener noreferrer">Phosphor Icons</a>
+                        <a href="https://fonts.google.com" class="footer-link" target="_blank" rel="noopener noreferrer">Google Fonts</a>
+                        <a href="https://tesseract.projectnaptha.com" class="footer-link" target="_blank" rel="noopener noreferrer">Tesseract.js</a>
+                        <a href="https://github.com/parall.ax/parallax" class="footer-link" target="_blank" rel="noopener noreferrer">VanillaTilt.js</a>
+                    </div>
+                </div>
+
+            </div><!-- /footer-top -->
+
+            <!-- Divider -->
+            <div class="footer-rule" aria-hidden="true"></div>
+
+            <!-- Bottom row: copyright + version -->
+            <div class="footer-bottom">
+                <p class="footer-copy">
+                    &copy; <span id="footer-year">2026</span> Isabela State University · Cabagan Campus.
+                    Open-source under the <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/blob/main/LICENSE" class="footer-copy-link" target="_blank" rel="noopener noreferrer">MIT License</a>.
+                </p>
+                <div class="footer-version">
+                    <span class="footer-version-badge">v3.5.0</span>
+                    <span class="footer-version-label">UI/UX Pro Max</span>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
     <!-- jsPDF for PDF batch export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
@@ -997,6 +1111,76 @@
         }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
 
         document.querySelectorAll('.sr').forEach(el => srObserver.observe(el));
+
+        // ── Mobile Drawer ──
+        const hamburger = document.getElementById('nav-hamburger');
+        const drawer    = document.getElementById('mobile-drawer');
+        const overlay   = document.getElementById('mobile-drawer-overlay');
+        const drawerClose = document.getElementById('mobile-drawer-close');
+
+        function openDrawer() {
+            drawer.classList.add('is-open');
+            overlay.classList.add('is-open');
+            hamburger.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDrawer() {
+            drawer.classList.remove('is-open');
+            overlay.classList.remove('is-open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        if (hamburger) hamburger.addEventListener('click', openDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+        if (overlay) overlay.addEventListener('click', closeDrawer);
+
+        // Close drawer on mobile nav link click
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const section = link.dataset.section;
+                if (section) {
+                    e.preventDefault();
+                    closeDrawer();
+                    setTimeout(() => {
+                        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                } else {
+                    closeDrawer();
+                }
+            });
+        });
+
+        // Close drawer on mobile CTA click
+        const mobileDrawerCta = drawer ? drawer.querySelector('.btn-primary') : null;
+        if (mobileDrawerCta) mobileDrawerCta.addEventListener('click', () => {
+            closeDrawer();
+            setTimeout(() => document.getElementById('generator')?.scrollIntoView({ behavior: 'smooth' }), 300);
+        });
+
+        // ── Active Nav Scrollspy ──
+        const navLinks = document.querySelectorAll('.nav-link[href^="#"], .desktop-menu .nav-link');
+        const sections = ['home', 'features', 'how-it-works', 'generator'];
+
+        const spyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navLinks.forEach(link => {
+                        link.classList.toggle('nav-link--active', link.getAttribute('href') === `#${id}`);
+                    });
+                }
+            });
+        }, { threshold: 0.35, rootMargin: '-60px 0px -30% 0px' });
+
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) spyObserver.observe(el);
+        });
+
+        // ── Dynamic Copyright Year ──
+        const yearEl = document.getElementById('footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
     </script>
 
     <script src="app.js"></script>
