@@ -596,13 +596,16 @@ footer {
 .hero-content {
     position: relative;
     z-index: 1;
+    /* Mobile: single column, everything centered */
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: clamp(1.2rem, 2.5vw, 2rem);
+    gap: clamp(1rem, 2vw, 1.5rem);
     width: 100%;
-    padding: clamp(2rem, 5vw, 4rem) 1rem clamp(1rem, 2vw, 2rem);
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: clamp(5.5rem, 12vw, 8rem) clamp(1.25rem, 5vw, 2.5rem) clamp(3rem, 6vw, 5rem);
     animation: heroFadeUp 0.9s var(--ease-out) both;
 }
 
@@ -704,15 +707,18 @@ footer {
 /* ── Hero CTA action buttons ─────────────────────────────────────────── */
 .hero-actions {
     display: flex;
+    flex-direction: row;
     gap: 0.75rem;
     flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     animation: heroFadeUp 0.8s var(--delay, 0.7s) var(--ease-out) both;
 }
 
 .hero-actions .btn-primary,
 .hero-actions .btn-ghost {
     width: auto;
+    flex-shrink: 0;
 }
 
 .hero-cta {
@@ -4322,7 +4328,7 @@ a[aria-label="Email"]:hover {
    HERO — 2-Column Split Layout
 ────────────────────────────────────────────────────────────────────────── */
 
-/* On desktop, hero-content becomes a 2-column grid */
+/* ─── HERO: 2-column desktop layout ≥ 960px ──────────────────────────────── */
 @media (min-width: 960px) {
     .hero-section {
         min-height: 100svh;
@@ -4336,42 +4342,45 @@ a[aria-label="Email"]:hover {
         grid-template-columns: 1fr 1fr;
         gap: clamp(2rem, 5vw, 5rem);
         align-items: center;
-        max-width: var(--container-max);
-        margin: 0 auto;
+        text-align: left; /* default left on desktop */
         padding: 0 clamp(1.5rem, 4vw, 3rem);
-        width: 100%;
+        padding-top: 6rem; /* navbar clearance */
+        padding-bottom: 3rem;
+        animation: none; /* children animate individually */
     }
 
     .hero-left-col {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+        gap: clamp(1rem, 2vw, 1.5rem);
         text-align: left;
+        animation: heroFadeUp 0.9s 0.1s var(--ease-out) both;
     }
 
-    /* Left col: override centering from original hero-content */
-    .hero-left-col .hero-badge,
-    .hero-left-col .hero-title,
-    .hero-left-col .hero-subtitle,
-    .hero-left-col .hero-actions,
-    .hero-left-col .hero-stats,
-    .hero-left-col .hero-feature-pills {
-        animation: heroFadeUp 0.7s var(--delay, 0s) var(--ease-out) both;
-    }
-
+    /* Override centered defaults from mobile */
     .hero-left-col .hero-title {
         font-size: var(--text-hero);
         text-align: left;
         justify-content: flex-start;
     }
 
+    .hero-left-col .hero-badge {
+        align-self: flex-start;
+    }
+
+    .hero-left-col .hero-subtitle {
+        text-align: left;
+    }
+
     .hero-left-col .hero-actions {
         flex-direction: row;
         justify-content: flex-start;
-        width: auto;
+        align-items: center;
     }
 
-    .hero-left-col .hero-actions .btn-primary {
+    .hero-left-col .hero-actions .btn-primary,
+    .hero-left-col .hero-actions .btn-ghost {
         width: auto;
     }
 
@@ -4379,16 +4388,20 @@ a[aria-label="Email"]:hover {
         align-self: flex-start;
     }
 
+    .hero-left-col .hero-feature-pills {
+        justify-content: flex-start;
+    }
+
     .hero-right-col {
         display: flex;
         align-items: center;
         justify-content: center;
-        animation: heroFadeUp 0.8s var(--delay, 0.85s) var(--ease-out) both;
+        animation: heroFadeUp 0.8s 0.35s var(--ease-out) both;
     }
 
     .hero-right-col .hero-stage {
-        width: clamp(300px, 40vw, 480px);
-        height: clamp(300px, 45vw, 520px);
+        width: clamp(300px, 40vw, 500px);
+        height: clamp(300px, 44vw, 540px);
     }
 }
 
@@ -4796,11 +4809,16 @@ a[aria-label="Email"]:hover {
     }
 }
 
-@media (max-width: 960px) {
-    .hero-left-col,
-    .hero-right-col {
-        text-align: center;
+/* ─── HERO: mobile overrides (< 960px) ────────────────────────────────────
+   These ONLY apply below 960px and restore centered, stacked layout.        */
+@media (max-width: 959px) {
+    .hero-left-col {
+        display: flex;
+        flex-direction: column;
         align-items: center;
+        text-align: center;
+        gap: clamp(0.85rem, 2vw, 1.2rem);
+        width: 100%;
     }
 
     .hero-left-col .hero-title {
@@ -4808,15 +4826,35 @@ a[aria-label="Email"]:hover {
         text-align: center;
     }
 
-    .hero-left-col .hero-actions {
-        justify-content: center;
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
+    .hero-left-col .hero-subtitle {
+        text-align: center;
     }
 
-    .hero-left-col .hero-actions .btn-primary {
-        width: 100%;
+    .hero-left-col .hero-badge {
+        align-self: center;
+    }
+
+    .hero-left-col .hero-feature-pills {
+        justify-content: center;
+    }
+
+    .hero-left-col .hero-actions {
+        justify-content: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    /* Buttons stay auto-width on mobile — no stretching */
+    .hero-left-col .hero-actions .btn-primary,
+    .hero-left-col .hero-actions .btn-ghost {
+        width: auto;
+        flex-shrink: 0;
+    }
+
+    .hero-left-col .hero-stats {
+        align-self: center;
     }
 }
 
@@ -5028,37 +5066,39 @@ a[aria-label="Email"]:hover {
 /* ──────────────────────────────────────────────────────────────────────────
    HERO — Mobile Right-Column Fix
 ────────────────────────────────────────────────────────────────────────── */
+/* ─── HERO: mobile right-col stacking fix ─────────────────────────────────
+   Overrides the desktop grid to re-stack columns vertically.               */
 @media (max-width: 959px) {
-    .hero-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3rem;
-        padding: clamp(5rem, 10vw, 8rem) clamp(1rem, 4vw, 2rem) 4rem;
-    }
-
-    .hero-left-col {
-        align-items: center;
-        text-align: center;
-        width: 100%;
-    }
-
     .hero-right-col {
         width: 100%;
         display: flex;
         justify-content: center;
-        animation: heroFadeUp 0.8s 0.7s var(--ease-out) both;
+        animation: heroFadeUp 0.8s 0.45s var(--ease-out) both;
     }
 
     .hero-right-col .hero-stage {
-        width: clamp(260px, 80vw, 380px);
-        height: clamp(280px, 85vw, 420px);
+        width: clamp(240px, 78vw, 380px);
+        height: clamp(260px, 82vw, 420px);
     }
 
-    /* Badges: keep them but smaller */
+    /* Floating badges: smaller on mobile */
     .hero-floating-badge {
-        font-size: 0.72rem;
-        padding: 0.3rem 0.65rem;
+        font-size: 0.7rem;
+        padding: 0.28rem 0.6rem;
+        gap: 0.3rem;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .hero-actions .btn-primary,
+    .hero-actions .btn-ghost {
+        width: 100%;
+        justify-content: center;
     }
 }
 
