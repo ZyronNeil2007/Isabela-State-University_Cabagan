@@ -322,11 +322,12 @@ footer {
     top: 16px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(92%, 860px);
+    width: min(96%, 1200px);
     z-index: 1000;
     border-radius: var(--radius-full) !important;
     transition: top var(--dur-base) var(--ease-smooth),
-        box-shadow var(--dur-base) var(--ease-smooth);
+        box-shadow var(--dur-base) var(--ease-smooth),
+        width var(--dur-slow) var(--ease-smooth);
     will-change: transform;
 }
 
@@ -340,8 +341,9 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.6rem 1.5rem;
+    padding: 0.55rem 1.25rem;
     gap: 1rem;
+    min-height: 56px;
 }
 
 .logo-container {
@@ -385,18 +387,26 @@ footer {
 }
 
 .desktop-menu {
-    display: none;
+    display: none; /* hidden below 861px; shown via media query below */
     align-items: center;
-    gap: 2rem;
+    gap: 1.75rem;
 }
 
 .nav-link {
     font-size: 0.875rem;
-    font-weight: 400;
+    font-weight: 500;
     color: var(--text-secondary);
     letter-spacing: 0.01em;
     transition: color var(--dur-fast) ease;
     position: relative;
+    padding: 0.3rem 0.1rem;
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+}
+
+.nav-link:focus-visible {
+    outline: 2px solid var(--green-400);
+    outline-offset: 4px;
 }
 
 .nav-link::after {
@@ -421,6 +431,9 @@ footer {
 
 .nav-actions {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 /* Navbar CTA button */
@@ -2743,8 +2756,8 @@ footer {
    22. RESPONSIVE BREAKPOINTS
 ─────────────────────────────────────────────────────────────────────────── */
 
-/* ═══ DESKTOP MENU ═══════════════════════════════════════════ */
-@media (min-width: 768px) {
+/* ═══ DESKTOP NAV — show at ≥861px ════════════════════════════ */
+@media (min-width: 861px) {
     .logo-container {
         flex: 1;
     }
@@ -2758,6 +2771,16 @@ footer {
     .nav-actions {
         flex: 1;
         justify-content: flex-end;
+    }
+
+    /* Ensure hamburger hidden on desktop */
+    .nav-hamburger {
+        display: none !important;
+    }
+
+    /* Show "Get Your ID" text on desktop */
+    #nav-cta-btn span {
+        display: inline !important;
     }
 
     .footer-container {
