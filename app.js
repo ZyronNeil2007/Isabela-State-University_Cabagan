@@ -178,7 +178,7 @@ const CONFIG_2026 = {
          * Center y: 690.
          */
         name: {
-            x: 319, y: 690,
+            x: 337.5, y: 690,
             align: 'center',
             font: "42px 'Arial'",
             isBold: true,
@@ -193,7 +193,7 @@ const CONFIG_2026 = {
          * Center y: 780.
          */
         idNumber: {
-            x: 319, y: 780,
+            x: 337.5, y: 780,
             align: 'center',
             font: "52px 'Arial'",
             isBold: true,
@@ -207,7 +207,7 @@ const CONFIG_2026 = {
          * Center y: 890, increased font size to 26px.
          */
         department: {
-            x: 319, y: 890,
+            x: 337.5, y: 890,
             align: 'center',
             font: "26px 'Arial'",
             isBold: true,

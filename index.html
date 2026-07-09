@@ -19,9 +19,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-    <!-- Inter (UI) + Roboto Condensed (ID card text) -->
+    <!-- Plus Jakarta Sans (UI) + Roboto Condensed (ID card text) -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&family=Roboto+Condensed:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto+Condensed:wght@400;700&display=swap"
         rel="stylesheet">
 
     <!-- Phosphor Icons (deferred — not in the critical paint path) -->
@@ -43,12 +43,14 @@
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
         <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
          NAVBAR
     ═══════════════════════════════════════════════════════ -->
-    <div class="top-nav-backdrop"></div>
+    <!-- Scroll progress indicator -->
+    <div id="scroll-progress" aria-hidden="true"></div>
 
     <nav id="navbar" class="liquid-glass">
         <div class="nav-container">
@@ -60,6 +62,10 @@
             <div class="desktop-menu">
                 <a href="#home" class="nav-link"
                     onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
+                <a href="#features" class="nav-link"
+                    onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+                <a href="#how-it-works" class="nav-link"
+                    onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How It Works</a>
                 <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link"
                     target="_blank" rel="noopener noreferrer">Repository</a>
             </div>
@@ -93,97 +99,115 @@
         <!-- Main content column -->
         <div class="hero-content">
 
-            <!-- Top badge -->
-            <div class="hero-badge" style="--delay:0s">
-                <span class="hero-badge-dot"></span>
-                v3.5.0 &nbsp;&middot;&nbsp; 2026 New ID &nbsp;&middot;&nbsp; Session Save
-            </div>
+            <!-- LEFT COLUMN: Text + CTAs + Stats -->
+            <div class="hero-left-col">
 
-            <!-- Staggered headline -->
-            <h1 class="hero-title">
-                <span class="hero-word" style="--i:0">Generate</span>
-                <span class="hero-word" style="--i:1">Your</span>
-                <span class="hero-word hero-word--hl" style="--i:2">ISU</span>
-                <span class="hero-word hero-word--hl" style="--i:3">Digital</span>
-                <span class="hero-word hero-word--hl" style="--i:4">ID</span>
-            </h1>
-
-            <p class="hero-subtitle" style="--delay:0.55s">
-                Print-ready student ID cards — built entirely in your browser.
-                No server, no install, no account needed.
-            </p>
-
-            <!-- CTA buttons -->
-            <div class="hero-actions" style="--delay:0.7s">
-                <a href="#generator" class="btn-primary hero-cta" id="hero-get-started-btn"
-                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
-                    <i class="ph ph-identification-card"></i>
-                    Create Your ID
-                    <i class="ph ph-arrow-right"></i>
-                </a>
-                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
-                    target="_blank" rel="noopener noreferrer">
-                    <i class="ph ph-github-logo"></i> Source Code
-                </a>
-            </div>
-
-            <!-- 3D Card Stage -->
-            <div class="hero-stage" style="--delay:0.85s">
-                <!-- Pulsing glow ring -->
-                <div class="hero-stage-glow" aria-hidden="true"></div>
-                <div class="hero-stage-glow hero-stage-glow--gold" aria-hidden="true"></div>
-
-                <!-- ID card front -->
-                <div class="hero-id-card hero-id-front" aria-hidden="true">
-                    <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img" loading="lazy">
-                    <div class="hero-card-shine"></div>
+                <!-- Eyebrow badge -->
+                <div class="hero-badge" style="--delay:0s">
+                    <span class="hero-badge-dot"></span>
+                    v3.5.0 &nbsp;&middot;&nbsp; 2026 New ID &nbsp;&middot;&nbsp; Session Save
                 </div>
 
-                <!-- ID card back -->
-                <div class="hero-id-card hero-id-back" aria-hidden="true">
-                    <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img" loading="lazy">
-                    <div class="hero-card-shine"></div>
+                <!-- Staggered headline -->
+                <h1 class="hero-title">
+                    <span class="hero-word" style="--i:0">Generate</span>
+                    <span class="hero-word" style="--i:1">Your</span>
+                    <span class="hero-word hero-word--hl" style="--i:2">ISU</span>
+                    <span class="hero-word hero-word--hl" style="--i:3">Digital</span>
+                    <span class="hero-word hero-word--hl" style="--i:4">ID</span>
+                </h1>
+
+                <p class="hero-subtitle" style="--delay:0.55s">
+                    Print-ready student ID cards — built entirely in your browser.
+                    No server, no install, no account needed.
+                </p>
+
+                <!-- Feature pills row -->
+                <div class="hero-feature-pills" style="--delay:0.65s" aria-hidden="true">
+                    <span class="hfp"><i class="ph-fill ph-lightning"></i> Real-time</span>
+                    <span class="hfp"><i class="ph-fill ph-scan"></i> OCR Fill</span>
+                    <span class="hfp"><i class="ph-fill ph-users-three"></i> Batch</span>
+                    <span class="hfp"><i class="ph-fill ph-floppy-disk"></i> Auto-Save</span>
+                    <span class="hfp"><i class="ph-fill ph-file-pdf"></i> PDF Export</span>
                 </div>
 
-                <!-- Floating badge chips -->
-                <div class="hero-floating-badge hero-fb-1">
-                    <i class="ph-fill ph-shield-check"></i> ISU Official
+                <!-- CTA buttons -->
+                <div class="hero-actions" style="--delay:0.7s">
+                    <a href="#generator" class="btn-primary hero-cta" id="hero-get-started-btn"
+                        onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                        <i class="ph ph-identification-card"></i>
+                        Create Your ID
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                    <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
+                        target="_blank" rel="noopener noreferrer">
+                        <i class="ph ph-github-logo"></i> Source Code
+                    </a>
                 </div>
-                <div class="hero-floating-badge hero-fb-2">
-                    <i class="ph-fill ph-scan"></i> OCR Autofill
-                </div>
-                <div class="hero-floating-badge hero-fb-3">
-                    <i class="ph-fill ph-users-three"></i> Batch Print
-                </div>
-                <div class="hero-floating-badge hero-fb-4">
-                    <i class="ph-fill ph-floppy-disk"></i> Auto-Save
-                </div>
-            </div>
 
-            <!-- Animated stats strip -->
-            <div class="hero-stats" style="--delay:1.05s">
-                <div class="hero-stat">
-                    <span class="hero-stat-number">100%</span>
-                    <span class="hero-stat-label">Offline</span>
+                <!-- Animated stats strip -->
+                <div class="hero-stats" style="--delay:1.05s">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">100%</span>
+                        <span class="hero-stat-label">Offline</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">CR80</span>
+                        <span class="hero-stat-label">Standard</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number" id="hero-batch-limit">5</span>
+                        <span class="hero-stat-label">Max Batch</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">0</span>
+                        <span class="hero-stat-label">Setup</span>
+                    </div>
                 </div>
-                <div class="hero-stat-div"></div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">CR80</span>
-                    <span class="hero-stat-label">Standard</span>
-                </div>
-                <div class="hero-stat-div"></div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number" id="hero-batch-limit">5</span>
-                    <span class="hero-stat-label">Max Batch</span>
-                </div>
-                <div class="hero-stat-div"></div>
-                <div class="hero-stat">
-                    <span class="hero-stat-number">0</span>
-                    <span class="hero-stat-label">Setup</span>
-                </div>
-            </div>
 
-        </div>
+            </div><!-- /hero-left-col -->
+
+            <!-- RIGHT COLUMN: 3D Card Stage -->
+            <div class="hero-right-col" style="--delay:0.85s">
+                <!-- 3D Card Stage -->
+                <div class="hero-stage">
+                    <!-- Pulsing glow ring -->
+                    <div class="hero-stage-glow" aria-hidden="true"></div>
+                    <div class="hero-stage-glow hero-stage-glow--gold" aria-hidden="true"></div>
+
+                    <!-- ID card front -->
+                    <div class="hero-id-card hero-id-front" aria-hidden="true">
+                        <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img" loading="lazy">
+                        <div class="hero-card-shine"></div>
+                    </div>
+
+                    <!-- ID card back -->
+                    <div class="hero-id-card hero-id-back" aria-hidden="true">
+                        <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img" loading="lazy">
+                        <div class="hero-card-shine"></div>
+                    </div>
+
+                    <!-- Floating badge chips -->
+                    <div class="hero-floating-badge hero-fb-1">
+                        <i class="ph-fill ph-shield-check"></i> ISU Official
+                    </div>
+                    <div class="hero-floating-badge hero-fb-2">
+                        <i class="ph-fill ph-scan"></i> OCR Autofill
+                    </div>
+                    <div class="hero-floating-badge hero-fb-3">
+                        <i class="ph-fill ph-users-three"></i> Batch Print
+                    </div>
+                    <div class="hero-floating-badge hero-fb-4">
+                        <i class="ph-fill ph-floppy-disk"></i> Auto-Save
+                    </div>
+                </div>
+            </div><!-- /hero-right-col -->
+
+        </div><!-- /hero-content -->
+
 
         <!-- Marquee feature ticker -->
         <div class="hero-marquee" aria-hidden="true">
@@ -198,7 +222,7 @@
                 <span class="hero-marquee-dot"></span>
                 <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
                 <span class="hero-marquee-dot"></span>
-                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5×)</span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5&times;)</span>
                 <span class="hero-marquee-dot"></span>
                 <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
                 <span class="hero-marquee-dot"></span>
@@ -215,7 +239,7 @@
                 <span class="hero-marquee-dot"></span>
                 <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
                 <span class="hero-marquee-dot"></span>
-                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5×)</span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5&times;)</span>
                 <span class="hero-marquee-dot"></span>
                 <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
                 <span class="hero-marquee-dot"></span>
@@ -253,12 +277,176 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
+         FEATURES SECTION — Bento Grid
+    ═══════════════════════════════════════════════════════ -->
+    <section id="features" class="features-section">
+        <div class="section-inner">
+
+            <!-- Section Header -->
+            <div class="section-header sr" style="--sr-delay:0s">
+                <span class="section-eyebrow"><i class="ph-fill ph-star-four"></i> Capabilities</span>
+                <h2 class="section-title">Everything you need to<br><span class="section-title--hl">create a perfect ID</span></h2>
+                <p class="section-subtitle">No backend, no subscription, no compromise. Built to run entirely in your browser with professional-grade output.</p>
+            </div>
+
+            <!-- Bento Grid -->
+            <div class="bento-grid">
+
+                <!-- Card 1 — Real-time Preview (wide 2×1) -->
+                <div class="bento-card bento-card--wide sr" style="--sr-delay:0.05s" data-accent="green">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--green">
+                            <i class="ph-fill ph-lightning"></i>
+                        </div>
+                        <h3 class="bento-title">Real-time Preview</h3>
+                        <p class="bento-desc">Every keystroke updates the ID card instantly. What you see is exactly what prints.</p>
+                        <div class="bento-badge">Live</div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--green"></div>
+                </div>
+
+                <!-- Card 2 — OCR Autofill (1×1) -->
+                <div class="bento-card sr" style="--sr-delay:0.10s" data-accent="gold">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--gold">
+                            <i class="ph-fill ph-scan"></i>
+                        </div>
+                        <h3 class="bento-title">OCR Autofill</h3>
+                        <p class="bento-desc">Snap a photo of any printed ID — fields fill automatically.</p>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--gold"></div>
+                </div>
+
+                <!-- Card 3 — Batch Print (1×2 tall) -->
+                <div class="bento-card bento-card--tall sr" style="--sr-delay:0.15s" data-accent="teal">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--teal">
+                            <i class="ph-fill ph-users-three"></i>
+                        </div>
+                        <h3 class="bento-title">Batch Print</h3>
+                        <p class="bento-desc">Generate up to 5 IDs at once. Export all to a single A4 PDF — ready for the printer.</p>
+                        <div class="bento-stat-row">
+                            <span class="bento-stat-num">5×</span>
+                            <span class="bento-stat-label">Max batch</span>
+                        </div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--teal"></div>
+                </div>
+
+                <!-- Card 4 — Digital Signature (1×1) -->
+                <div class="bento-card sr" style="--sr-delay:0.20s" data-accent="purple">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--purple">
+                            <i class="ph-fill ph-pen-nib"></i>
+                        </div>
+                        <h3 class="bento-title">Digital Signature</h3>
+                        <p class="bento-desc">Draw, upload, or AI-enhance your signature — rendered directly on the card back.</p>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--purple"></div>
+                </div>
+
+                <!-- Card 5 — Session Auto-Save (wide 2×1) -->
+                <div class="bento-card bento-card--wide sr" style="--sr-delay:0.25s" data-accent="green">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--green">
+                            <i class="ph-fill ph-floppy-disk"></i>
+                        </div>
+                        <h3 class="bento-title">Session Auto-Save</h3>
+                        <p class="bento-desc">Close the tab and come back anytime. Your progress is saved locally — always.</p>
+                        <div class="bento-badge bento-badge--green">Auto</div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--green"></div>
+                </div>
+
+            </div><!-- /bento-grid -->
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HOW IT WORKS — 3-Step Process
+    ═══════════════════════════════════════════════════════ -->
+    <section id="how-it-works" class="hiw-section">
+        <div class="section-inner">
+
+            <!-- Section Header -->
+            <div class="section-header sr" style="--sr-delay:0s">
+                <span class="section-eyebrow"><i class="ph-fill ph-path"></i> Process</span>
+                <h2 class="section-title">From blank form to<br><span class="section-title--hl">print-ready ID in minutes</span></h2>
+            </div>
+
+            <!-- Steps -->
+            <div class="hiw-steps">
+                <div class="hiw-step sr" style="--sr-delay:0.05s">
+                    <div class="hiw-step-num">01</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-user-circle-plus"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Fill Your Details</h3>
+                    <p class="hiw-step-desc">Enter your name, ID number, course, and upload your photo. Use OCR to autofill from an existing ID.</p>
+                </div>
+
+                <div class="hiw-connector sr" style="--sr-delay:0.12s" aria-hidden="true">
+                    <div class="hiw-connector-line"></div>
+                    <i class="ph-fill ph-arrow-right hiw-connector-arrow"></i>
+                </div>
+
+                <div class="hiw-step sr" style="--sr-delay:0.15s">
+                    <div class="hiw-step-num">02</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-eye"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Preview Live</h3>
+                    <p class="hiw-step-desc">Watch your ID card render in real-time on the right panel. Flip to see both front and back.</p>
+                </div>
+
+                <div class="hiw-connector sr" style="--sr-delay:0.22s" aria-hidden="true">
+                    <div class="hiw-connector-line"></div>
+                    <i class="ph-fill ph-arrow-right hiw-connector-arrow"></i>
+                </div>
+
+                <div class="hiw-step sr" style="--sr-delay:0.25s">
+                    <div class="hiw-step-num">03</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-printer"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Download &amp; Print</h3>
+                    <p class="hiw-step-desc">Export as a print-ready A4 PDF or save individual card images at CR80 standard size.</p>
+                </div>
+            </div><!-- /hiw-steps -->
+
+            <!-- CTA inside How it Works -->
+            <div class="hiw-cta sr" style="--sr-delay:0.30s">
+                <a href="#generator" class="btn-primary"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    <i class="ph ph-identification-card"></i>
+                    Start Creating Now
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Section divider -->
+    <div class="section-divider" aria-hidden="true"></div>
+
+    <!-- Generator section eyebrow header -->
+    <div class="generator-header section-inner">
+        <div class="section-header sr" style="--sr-delay:0s">
+            <span class="section-eyebrow"><i class="ph-fill ph-identification-card"></i> Generator</span>
+            <h2 class="section-title">Build your ID card<br><span class="section-title--hl">step by step</span></h2>
+            <p class="section-subtitle">Follow the guided steps below. Your card updates live as you type.</p>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
          MAIN GENERATOR — SPLIT LAYOUT
     ═══════════════════════════════════════════════════════ -->
     <main class="container" id="generator">
 
         <!-- ── LEFT: FORM SECTION ──────────────────────────── -->
         <div class="form-section glass-panel">
+
 
             <!-- ─────────────────────────────────────────────
                  STUDENT TABS (Batch Print Feature)
@@ -786,6 +974,31 @@
     <!-- jsPDF for PDF batch export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
+
+    <!-- Scroll Reveal + Progress Bar (inline, no deps) -->
+    <script>
+        // ── Scroll Progress Bar ──
+        const progressBar = document.getElementById('scroll-progress');
+        function updateProgress() {
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            if (progressBar) progressBar.style.width = pct + '%';
+        }
+        window.addEventListener('scroll', updateProgress, { passive: true });
+
+        // ── Scroll Reveal via IntersectionObserver ──
+        const srObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    srObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.sr').forEach(el => srObserver.observe(el));
+    </script>
+
     <script src="app.js"></script>
 </body>
 
