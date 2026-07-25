@@ -229,8 +229,6 @@ body {
         linear-gradient(160deg, var(--forest-950) 0%, var(--forest-900) 45%, var(--forest-800) 100%);
     background-attachment: fixed;
 
-    padding: calc(var(--navbar-height) + clamp(2rem, 5vw, 4rem)) clamp(1rem, 4vw, 2.5rem) clamp(3rem, 5vw, 5rem);
-
     position: relative;
 }
 
@@ -473,7 +471,6 @@ footer {
 ––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––– */
 .hero-section {
     width: 100%;
-    max-width: var(--container-max);
     margin: 0 auto;
     position: relative;
     display: flex;
@@ -1210,7 +1207,16 @@ footer {
    6b. BUTTON COMPONENTS (Global)
 ─────────────────────────────────────────────────────────────────────────── */
 
-/* Primary CTA button — ISU Green gradient */
+/* Primary CTA button - ISU Green gradient */
+.btn-primary:focus-visible,
+.btn-ghost:focus-visible,
+.stepper-btn:focus-visible,
+.add-student-btn:focus-visible,
+.version-toggle-btn:focus-visible {
+    outline: 2px solid var(--green-400);
+    outline-offset: 4px;
+}
+
 .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -1324,8 +1330,8 @@ footer {
     gap: clamp(1rem, 2.5vw, 1.75rem);
     max-width: var(--container-max);
     width: 100%;
+    padding: 0 clamp(1rem, 4vw, 2.5rem);
     margin: 0 auto;
-    padding: 0 clamp(1rem, 3vw, 2rem);
     align-items: flex-start;
 }
 
@@ -1463,7 +1469,7 @@ textarea {
     border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: var(--radius-md);
     color: var(--text-primary);
-    font-size: clamp(0.9rem, 1.5vw, 1.05rem);
+    font-size: clamp(1rem, 1.5vw, 1.05rem);
     font-weight: 400;
     font-family: var(--font-base);
     letter-spacing: -0.01em;
@@ -2985,7 +2991,10 @@ footer {
 /* ═══ MOBILE (≤ 600px) ═══════════════════════════════════════ */
 @media (max-width: 600px) {
     body {
-        padding-top: calc(var(--navbar-height) + 1.5rem);
+        padding-top: 0;
+    }
+
+    .container {
         padding-left: 0.75rem;
         padding-right: 0.75rem;
     }
@@ -2998,7 +3007,7 @@ footer {
     /* Hero section: reduce spacing for compact above-fold layout */
     .hero-section {
         min-height: auto;
-        padding-top: 0.5rem;
+        padding-top: calc(var(--navbar-height) + 1.5rem);
         padding-bottom: 0.5rem;
     }
 
@@ -4727,7 +4736,7 @@ a[aria-label="Email"]:hover {
 /* Connector between steps */
 .hiw-connector {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     padding: 0 0.5rem;
@@ -4794,7 +4803,7 @@ a[aria-label="Email"]:hover {
     }
 
     .hiw-connector {
-        flex-direction: column;
+        flex-direction: row;
         transform: rotate(90deg);
         padding: 0;
         height: 40px;
@@ -5396,4 +5405,462 @@ a[aria-label="Email"]:hover {
     }
 }
 
-
+
+
+/* =========================================================================
+   ANIMATION LAYER - Three.js / GSAP / Anime.js  (added by animations.js)
+   ========================================================================= */
+
+/* -- Three.js Hero Particle Canvas -- */
+#hero-webgl-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    display: block;
+}
+
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-mesh,
+.hero-glow-primary,
+.hero-glow-gold,
+.hero-seal {
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-marquee,
+.hero-scroll-indicator {
+    position: relative;
+    z-index: 2;
+}
+
+/* -- Three.js Holographic Shimmer Canvas -- */
+#holo-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    pointer-events: none;
+    display: block;
+    mix-blend-mode: screen;
+    border-radius: inherit;
+}
+
+.card-stage {
+    position: relative;
+    overflow: hidden;
+}
+
+/* -- GSAP will-change hints -- */
+.hero-badge,
+.hero-word,
+.hero-subtitle,
+.hero-actions,
+.hero-stats,
+.hero-right-col,
+.hero-floating-badge,
+.hfp {
+    will-change: transform, opacity;
+}
+
+.bento-card,
+.hiw-step,
+.section-header {
+    will-change: transform, opacity;
+}
+
+/* -- CSS var aliases for Anime.js -- */
+:root {
+    --clr-green: #15B915;
+    --clr-gold: #C9A84C;
+}
+
+/* -- Anime.js nav underline span -- */
+.nav-link {
+    position: relative;
+    overflow: visible;
+}
+
+.nav-link-underline {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    height: 2px;
+    width: 0;
+    background: var(--clr-green);
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* -- Transform origins -- */
+.bento-card { transform-origin: center center; }
+.hiw-step-icon { display: inline-flex; transform-origin: center center; }
+.bento-stat-num { display: inline-block; transform-origin: center center; }
+.icon-link { display: inline-flex; align-items: center; justify-content: center; transform-origin: center center; }
+
+.live-dot,
+.hero-badge-dot {
+    display: inline-block;
+    transform-origin: center center;
+    will-change: transform, opacity;
+}
+
+/* Anime.js handles float loop for badges - cancel CSS animation */
+.hero-floating-badge {
+    transform-origin: center center;
+    animation: none !important;
+}
+
+/* Anime.js lerp handles scroll progress width */
+#scroll-progress { transition: none; will-change: width; }
+
+.hfp { display: inline-flex; transform-origin: left center; }
+.stepper-btn, .version-toggle-btn { transform-origin: center center; }
+
+/* GSAP scaleX draw on connector line */
+.hiw-connector-line { transform-origin: left center; display: block; }
+
+
+/* =========================================================================
+   ENHANCEMENT LAYER — Campus Themes, Batch Table Manager & Inspector Styles
+   ========================================================================= */
+
+/* ── 1. Campus / College Theme Selector ── */
+.campus-selector-wrapper {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.campus-selector-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--green-300, #4ade80);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.campus-pills-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 9999px;
+}
+
+.campus-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.campus-pill:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.campus-pill.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.pill-dot.cabagan     { background: #15B915; box-shadow: 0 0 8px #15B915; }
+.pill-dot.echague     { background: #3b82f6; box-shadow: 0 0 8px #3b82f6; }
+.pill-dot.cauayan     { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+.pill-dot.ilagan      { background: #a855f7; box-shadow: 0 0 8px #a855f7; }
+.pill-dot.roxas       { background: #14b8a6; box-shadow: 0 0 8px #14b8a6; }
+.pill-dot.angadanan  { background: #10b981; box-shadow: 0 0 8px #10b981; }
+.pill-dot.san_mateo   { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
+.pill-dot.jones       { background: #06b6d4; box-shadow: 0 0 8px #06b6d4; }
+.pill-dot.palanan     { background: #0284c7; box-shadow: 0 0 8px #0284c7; }
+.pill-dot.san_mariano { background: #047857; box-shadow: 0 0 8px #047857; }
+.pill-dot.santiago    { background: #f43f5e; box-shadow: 0 0 8px #f43f5e; }
+
+/* ── 2. Preview Toolbar Buttons ── */
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.preview-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.preview-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preview-tool-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.preview-tool-btn.active {
+    background: rgba(21, 185, 21, 0.25);
+    border-color: rgba(21, 185, 21, 0.5);
+    color: #4ade80;
+}
+
+@media (max-width: 480px) {
+    .tool-btn-text { display: none; }
+}
+
+/* ── 3. Batch Data Table Manager Modal ── */
+.batch-modal-panel {
+    max-width: 920px !important;
+    width: 95vw !important;
+}
+
+.batch-modal-header-info h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.batch-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.2rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    gap: 1rem;
+}
+
+.batch-search-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    color: #ffffff;
+}
+
+.batch-search-box input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #ffffff;
+    font-size: 0.88rem;
+    width: 100%;
+}
+
+.batch-stats-badge {
+    padding: 0.3rem 0.75rem;
+    background: rgba(21, 185, 21, 0.15);
+    border: 1px solid rgba(21, 185, 21, 0.3);
+    color: #4ade80;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    white-space: nowrap;
+}
+
+.batch-table-wrapper {
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.batch-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    text-align: left;
+}
+
+.batch-table th {
+    position: sticky;
+    top: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(8px);
+    padding: 0.75rem 1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 2;
+}
+
+.batch-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.batch-table tr:hover td {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.batch-table tr.active-row td {
+    background: rgba(21, 185, 21, 0.08);
+}
+
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-status.yes { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.badge-status.no  { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+.batch-btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.78rem;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.batch-btn-sm:hover { background: rgba(255, 255, 255, 0.18); }
+.batch-btn-sm.danger { color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+.batch-btn-sm.danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+/* ── 4. High-Res Card Inspector Modal ── */
+.inspect-modal-panel {
+    max-width: 680px !important;
+    width: 92vw !important;
+}
+
+.inspect-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.inspect-modal-title h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.inspect-view-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inspect-toggle-btn {
+    padding: 0.45rem 1.2rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.inspect-toggle-btn.active {
+    background: rgba(21, 185, 21, 0.25);
+    border-color: rgba(21, 185, 21, 0.5);
+    color: #ffffff;
+}
+
+.inspect-body {
+    padding: 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.inspect-canvas-stage {
+    width: 100%;
+    max-width: 480px;
+    aspect-ratio: 1000 / 633;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.inspect-canvas-stage canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+
+.inspect-info {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+

@@ -25,12 +25,18 @@
         rel="stylesheet">
 
     <!-- Phosphor Icons (deferred — not in the critical paint path) -->
-    <script src="https://unpkg.com/@phosphor-icons/web" defer></script>
+    <script src="https://unpkg.com/@phosphor-icons/web" integrity="sha384-J7cw2fbG1T4C5MirTVUxsZGaMfw2m0XsCgOQEqUvB1OF9VIsHWuZF1GmyVRzs7eu" crossorigin="anonymous" defer></script>
 
     <!-- VanillaTilt — 3D card hover effect -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js" integrity="sha384-0k1dj5tm+KUH/4vkNk/i90XsjDA8Ltmt+ybcrFoH4t0dgv/WZsPpVBnkhcroX8UL" crossorigin="anonymous" defer></script>
 
-    <link rel="stylesheet" href="style.css?v=3.5.0">
+    <!-- Three.js (global UMD — available as window.THREE) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js" integrity="sha384-9EQoUIJYrv09/oYhSxnw1VpLcfPw3BM9dE7+D/3wGUPeLLa7F9Z6OAoD+i/M6FK9" crossorigin="anonymous" defer></script>
+
+    <!-- QRCode.js for ID Verification QR Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha384-3nhO2w16gLkW0yM2v20bV86y/eBq6j9wJ2Wb3u7y6X1n/7R+m6t2y4j0L" crossorigin="anonymous" defer></script>
+
+    <link rel="stylesheet" href="style.css?v=3.6.0">
 </head>
 
 
@@ -125,6 +131,9 @@
          HERO SECTION — Cinematic Full-Width
     ═══════════════════════════════════════════════════════ -->
     <section id="home" class="hero-section">
+
+        <!-- Three.js particle constellation canvas -->
+        <canvas id="hero-webgl-canvas" aria-hidden="true"></canvas>
 
         <!-- Animated mesh grid background -->
         <div class="hero-mesh" aria-hidden="true"></div>
@@ -478,6 +487,46 @@
             <span class="section-eyebrow"><i class="ph-fill ph-identification-card"></i> Generator</span>
             <h2 class="section-title">Build your ID card<br><span class="section-title--hl">step by step</span></h2>
             <p class="section-subtitle">Follow the guided steps below. Your card updates live as you type.</p>
+
+            <!-- Campus / College Theme Selector -->
+            <div class="campus-selector-wrapper">
+                <span class="campus-selector-label"><i class="ph ph-buildings"></i> Select ISU Campus Theme:</span>
+                <div class="campus-pills-bar" id="campus-pills-bar">
+                    <button class="campus-pill active" data-campus="cabagan" onclick="setCampusTheme('cabagan')">
+                        <span class="pill-dot cabagan"></span> Cabagan Main
+                    </button>
+                    <button class="campus-pill" data-campus="echague" onclick="setCampusTheme('echague')">
+                        <span class="pill-dot echague"></span> Echague Main
+                    </button>
+                    <button class="campus-pill" data-campus="cauayan" onclick="setCampusTheme('cauayan')">
+                        <span class="pill-dot cauayan"></span> Cauayan
+                    </button>
+                    <button class="campus-pill" data-campus="ilagan" onclick="setCampusTheme('ilagan')">
+                        <span class="pill-dot ilagan"></span> Ilagan
+                    </button>
+                    <button class="campus-pill" data-campus="roxas" onclick="setCampusTheme('roxas')">
+                        <span class="pill-dot roxas"></span> Roxas
+                    </button>
+                    <button class="campus-pill" data-campus="angadanan" onclick="setCampusTheme('angadanan')">
+                        <span class="pill-dot angadanan"></span> Angadanan
+                    </button>
+                    <button class="campus-pill" data-campus="san_mateo" onclick="setCampusTheme('san_mateo')">
+                        <span class="pill-dot san_mateo"></span> San Mateo
+                    </button>
+                    <button class="campus-pill" data-campus="jones" onclick="setCampusTheme('jones')">
+                        <span class="pill-dot jones"></span> Jones
+                    </button>
+                    <button class="campus-pill" data-campus="palanan" onclick="setCampusTheme('palanan')">
+                        <span class="pill-dot palanan"></span> Palanan
+                    </button>
+                    <button class="campus-pill" data-campus="san_mariano" onclick="setCampusTheme('san_mariano')">
+                        <span class="pill-dot san_mariano"></span> San Mariano
+                    </button>
+                    <button class="campus-pill" data-campus="santiago" onclick="setCampusTheme('santiago')">
+                        <span class="pill-dot santiago"></span> Santiago City
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -505,6 +554,10 @@
                     <i class="ph ph-file-csv"></i>
                     <input type="file" id="csv-upload" accept=".csv" style="display:none;">
                 </label>
+                <button class="add-student-btn" title="Batch Data Table Manager" onclick="openBatchModal()"
+                    aria-label="Open Batch Data Table Manager" style="margin-left:8px;">
+                    <i class="ph ph-table"></i>
+                </button>
                 <button class="add-student-btn" title="Autofill from Photo (OCR)" onclick="openOcrModal()"
                     aria-label="Scan printed ID or form to autofill fields" style="margin-left:8px;">
                     <i class="ph ph-scan"></i>
@@ -819,12 +872,25 @@
                     LIVE
                 </div>
                 <div class="preview-title" id="flip-title">Front Side</div>
-                <div class="preview-side-hint">Click card to flip</div>
+                <div class="preview-tools">
+                    <button class="preview-tool-btn" id="btn-toggle-hologram" onclick="toggleHologramOverlay()" title="Toggle Security Watermark & Hologram">
+                        <i class="ph ph-shield-check"></i> <span class="tool-btn-text">Watermark</span>
+                    </button>
+                    <button class="preview-tool-btn" onclick="openCardInspectModal()" title="Inspect Card High-Res">
+                        <i class="ph ph-corners-out"></i> <span class="tool-btn-text">Inspect</span>
+                    </button>
+                    <button class="preview-tool-btn" id="btn-toggle-audio" onclick="toggleAudioFx()" title="Toggle Sound FX">
+                        <i class="ph ph-speaker-high" id="audio-icon"></i>
+                    </button>
+                </div>
             </div>
 
             <!-- Card Stage: ambient glow + tilt container -->
             <div class="card-stage">
                 <div class="card-ambient-glow" aria-hidden="true"></div>
+
+                <!-- Three.js holographic shimmer overlay on the card -->
+                <canvas id="holo-canvas" aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;border-radius:inherit;"></canvas>
 
                 <div class="flip-card-container" id="card-tilt-wrapper" onclick="flipCard()" role="button" tabindex="0"
                     aria-label="Click to flip ID card" onkeydown="if(event.key==='Enter'||event.key===' ')flipCard()">
@@ -978,6 +1044,96 @@
     </div>
 
     <!-- ═══════════════════════════════════════════════════════
+         BATCH DATA TABLE MANAGER MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="batch-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel batch-modal-panel">
+            <div class="cropper-header">
+                <div class="batch-modal-header-info">
+                    <h3><i class="ph ph-table"></i> Batch Data Manager</h3>
+                    <p class="step-hint">View, edit, search, and manage all student records in your batch.</p>
+                </div>
+                <button class="btn-close" onclick="closeBatchModal()" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="batch-toolbar">
+                <div class="batch-search-box">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="batch-search-input" placeholder="Search student by name, ID number, or course..." oninput="filterBatchTable()">
+                </div>
+                <div class="batch-stats-badge" id="batch-stats-badge">
+                    0 Students
+                </div>
+            </div>
+            <div class="batch-table-wrapper">
+                <table class="batch-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>ID Number</th>
+                            <th>Course / Program</th>
+                            <th>Photo</th>
+                            <th>Signature</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-table-body">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-actions" style="justify-content: space-between; width: 100%;">
+                    <div>
+                        <button class="btn-ghost" onclick="exportBatchCsv()"><i class="ph ph-download-simple"></i> Export CSV</button>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-ghost" onclick="closeBatchModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HIGH-RES CARD INSPECTION MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="card-inspect-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel inspect-modal-panel">
+            <div class="cropper-header">
+                <div class="inspect-modal-title">
+                    <h3><i class="ph ph-corners-out"></i> High-Resolution Card Inspector</h3>
+                    <span class="live-badge"><span class="live-dot"></span> Studio HD</span>
+                </div>
+                <button class="btn-close" onclick="closeCardInspectModal()" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="inspect-view-toggle">
+                <button class="inspect-toggle-btn active" id="inspect-btn-front" onclick="switchInspectFace('front')">Front Face</button>
+                <button class="inspect-toggle-btn" id="inspect-btn-back" onclick="switchInspectFace('back')">Back Face</button>
+            </div>
+            <div class="inspect-body">
+                <div class="inspect-canvas-stage">
+                    <canvas id="inspect-canvas"></canvas>
+                </div>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-actions" style="justify-content: space-between; width: 100%;">
+                    <span class="inspect-info"><i class="ph ph-shield-check"></i> 300 DPI Native Canvas Print Quality</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-ghost" onclick="saveAsImage('front')"><i class="ph ph-download-simple"></i> Download Front</button>
+                        <button class="btn-ghost" onclick="saveAsImage('back')"><i class="ph ph-download-simple"></i> Download Back</button>
+                        <button class="btn-primary" onclick="closeCardInspectModal()">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
          PHOTO CROPPER MODAL
     ═══════════════════════════════════════════════════════ -->
     <div class="cropper-modal-overlay" id="cropper-modal" aria-hidden="true">
@@ -1077,8 +1233,8 @@
                     Open-source under the <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/blob/main/LICENSE" class="footer-copy-link" target="_blank" rel="noopener noreferrer">MIT License</a>.
                 </p>
                 <div class="footer-version">
-                    <span class="footer-version-badge">v3.5.0</span>
-                    <span class="footer-version-label">UI/UX Pro Max</span>
+                    <span class="footer-version-badge">v3.6.0</span>
+                    <span class="footer-version-label">University Multi-Campus & Security Studio Edition</span>
                 </div>
             </div>
 
@@ -1089,11 +1245,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
 
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Anime.js v4 (UMD bundle — exposes global `anime` object) -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+
     <!-- Scroll Reveal + Progress Bar (inline, no deps) -->
     <script>
-        // ── Scroll Progress Bar ──
+        // ── Scroll Progress Bar (fallback — animations.js installs a smoother version) ──
         const progressBar = document.getElementById('scroll-progress');
+        window._progressBarOwned = false; // animations.js sets this true when it takes over
         function updateProgress() {
+            if (window._progressBarOwned) return; // yield to animations.js
             const h = document.documentElement;
             const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
             if (progressBar) progressBar.style.width = pct + '%';
@@ -1184,6 +1349,9 @@
     </script>
 
     <script src="app.js"></script>
+
+    <!-- Animation enhancement layer (GSAP + Anime.js + Three.js) -->
+    <script src="animations.js"></script>
 </body>
 
 </html>
