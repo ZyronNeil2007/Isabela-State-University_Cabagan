@@ -296,6 +296,10 @@ const state = {
     back2026Template:  null,
     activeStudentIndex: 0,
     idVersion: 'old',   // 'old' | '2026'
+    campusTheme: 'cabagan', // 'cabagan' | 'echague' | 'cauayan' | 'ilagan' | 'roxas'
+    showHologram: true,
+    audioEnabled: true,
+    inspectFace: 'front',
     students: [
         {
             photoImage:     null,
@@ -556,6 +560,15 @@ document.getElementById('profile-pic').addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
 
+    if (!file.type.startsWith('image/')) {
+        showToast('Please upload a valid image file', 'error');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showToast('Image is too large. Maximum size is 5MB.', 'warning');
+        return;
+    }
+
     const reader = new FileReader();
     reader.onload = event => {
         const img = new Image();
@@ -681,11 +694,11 @@ function formatCourseText(course) {
     if (!course) return '';
     const upper = course.toUpperCase().trim();
 
-    if (upper.startsWith('BACHELOR OF SCIENCE IN '))
-        return 'BACHELOR OF SCIENCE\nIN ' + course.substring(23).trim().toUpperCase();
-
-    if (upper.startsWith('BACHELOR OF SCIENCE '))
-        return 'BACHELOR OF SCIENCE\n' + course.substring(20).trim().toUpperCase();
+    // Matches "BACHELOR OF [ANYTHING] IN " and splits it
+    const degreeMatch = upper.match(/^(BACHELOR OF [A-Z\s]+(?:IN)?)\s+(.+)/);
+    if (degreeMatch) {
+        return `${degreeMatch[1].trim()}\n${degreeMatch[2].trim()}`;
+    }
 
     if (upper.includes(' IN ')) {
         const idx = upper.indexOf(' IN ');
@@ -824,6 +837,9 @@ function renderCanvases() {
         console.error('[ISU ID] Error rendering front text:', e);
     }
 
+    // Holographic security watermark overlay on front face
+    drawHologramWatermark(frontCtx, frontCanvas.width, frontCanvas.height);
+
     // ── Back Face ───────────────────────────────────────────
     backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height);
 
@@ -848,9 +864,9 @@ function renderCanvases() {
         if (student.formData.dob) {
             const d = new Date(student.formData.dob);
             if (!isNaN(d.getTime())) {
-                const yyyy = d.getFullYear();
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const dd = String(d.getDate()).padStart(2, '0');
+                const yyyy = d.getUTCFullYear();
+                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const dd = String(d.getUTCDate()).padStart(2, '0');
                 dobText = `${mm}/${dd}/${yyyy}`;
             } else {
                 dobText = student.formData.dob;
@@ -872,9 +888,9 @@ function renderCanvases() {
         if (student.formData.dob) {
             const d = new Date(student.formData.dob);
             if (!isNaN(d.getTime())) {
-                const yyyy = d.getFullYear();
-                const mm = String(d.getMonth() + 1).padStart(2, '0');
-                const dd = String(d.getDate()).padStart(2, '0');
+                const yyyy = d.getUTCFullYear();
+                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const dd = String(d.getUTCDate()).padStart(2, '0');
                 dobText = `${dd}-${mm}-${yyyy}`;
             } else {
                 dobText = student.formData.dob.split('-').reverse().join('-');
@@ -882,6 +898,9 @@ function renderCanvases() {
         }
         renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
     }
+
+    // Real-time verification QR Code on back face
+    renderQrCodeOnCanvas(backCtx, student, is2026 ? 510 : 460, is2026 ? 60 : 70, is2026 ? 140 : 120);
 
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
@@ -2609,3 +2628,452 @@ function applyOcrResults() {
     else if (!student.formData.address) goToStep(7);
     else if (!student.formData.telephone) goToStep(8);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   20. ENHANCEMENT SUITE — Campus Themes, QR Generator, Security Hologram,
+       Batch Table Manager, Card Inspector & Web Audio FX
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/** Campus Config Dictionary — 11 ISU Campuses */
+const CAMPUS_CONFIG = {
+    cabagan: {
+        name: 'Cabagan Main Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · CABAGAN',
+        primary: '#0f5132',
+        accent: '#d4af37',
+        particleColor: 0x15B915
+    },
+    echague: {
+        name: 'Echague Main Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ECHAGUE',
+        primary: '#1b365d',
+        accent: '#eaaa00',
+        particleColor: 0x3b82f6
+    },
+    cauayan: {
+        name: 'Cauayan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · CAUAYAN',
+        primary: '#800020',
+        accent: '#dfb15b',
+        particleColor: 0xef4444
+    },
+    ilagan: {
+        name: 'Ilagan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ILAGAN',
+        primary: '#4a154b',
+        accent: '#c0c0c0',
+        particleColor: 0xa855f7
+    },
+    roxas: {
+        name: 'Roxas Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ROXAS',
+        primary: '#008080',
+        accent: '#ffbf00',
+        particleColor: 0x14b8a6
+    },
+    angadanan: {
+        name: 'Angadanan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ANGADANAN',
+        primary: '#1e4d2b',
+        accent: '#b87333',
+        particleColor: 0x10b981
+    },
+    san_mateo: {
+        name: 'San Mateo Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · SAN MATEO',
+        primary: '#92400e',
+        accent: '#f59e0b',
+        particleColor: 0xf59e0b
+    },
+    jones: {
+        name: 'Jones Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · JONES',
+        primary: '#0f172a',
+        accent: '#06b6d4',
+        particleColor: 0x06b6d4
+    },
+    palanan: {
+        name: 'Palanan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · PALANAN',
+        primary: '#0284c7',
+        accent: '#f97316',
+        particleColor: 0x0284c7
+    },
+    san_mariano: {
+        name: 'San Mariano Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · SAN MARIANO',
+        primary: '#047857',
+        accent: '#eab308',
+        particleColor: 0x047857
+    },
+    santiago: {
+        name: 'Santiago City Extension',
+        headerText: 'ISABELA STATE UNIVERSITY · SANTIAGO',
+        primary: '#581c87',
+        accent: '#f43f5e',
+        particleColor: 0xf43f5e
+    }
+};
+
+/** Set active Campus Theme */
+function setCampusTheme(campusKey, skipSound = false) {
+    if (!CAMPUS_CONFIG[campusKey]) return;
+    state.campusTheme = campusKey;
+    if (!skipSound) playAudioFx('click');
+
+    // Update active state on campus pill buttons
+    document.querySelectorAll('.campus-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.campus === campusKey);
+    });
+
+    const config = CAMPUS_CONFIG[campusKey];
+    document.documentElement.style.setProperty('--green-600', config.primary);
+    document.documentElement.style.setProperty('--gold-400', config.accent);
+
+    // Notify window for Three.js particle constellation color animation in animations.js
+    if (typeof window.onCampusThemeChange === 'function') {
+        window.onCampusThemeChange(config);
+    }
+
+    showToast(`Switched campus theme to ${config.name}`, 'info');
+    renderCanvases();
+}
+
+/** Toggle Security Hologram & Watermark Overlay */
+function toggleHologramOverlay() {
+    state.showHologram = !state.showHologram;
+    playAudioFx('click');
+    const btn = document.getElementById('btn-toggle-hologram');
+    if (btn) btn.classList.toggle('active', state.showHologram);
+    showToast(state.showHologram ? 'Security Watermark & Hologram Enabled' : 'Hologram Overlay Disabled', 'info');
+    renderCanvases();
+}
+
+/** Web Audio API Synthesizer */
+function playAudioFx(type) {
+    if (!state.audioEnabled) return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!window._appAudioCtx) {
+            window._appAudioCtx = new AudioCtx();
+        }
+        const ctx = window._appAudioCtx;
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+
+        if (type === 'flip') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (type === 'chime' || type === 'success') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.06);
+            osc.frequency.setValueAtTime(783.99, now + 0.12);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else if (type === 'click' || type === 'tab') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.03);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        }
+    } catch (e) {}
+}
+
+/** Toggle Web Audio FX Mute */
+function toggleAudioFx() {
+    state.audioEnabled = !state.audioEnabled;
+    const btn = document.getElementById('btn-toggle-audio');
+    const icon = document.getElementById('audio-icon');
+    if (btn) btn.classList.toggle('active', state.audioEnabled);
+    if (icon) icon.className = state.audioEnabled ? 'ph ph-speaker-high' : 'ph ph-speaker-slash';
+    showToast(state.audioEnabled ? 'Sound FX Enabled' : 'Sound Muted', 'info');
+    if (state.audioEnabled) playAudioFx('click');
+}
+
+/** Render Hologram Security Watermark on Canvas */
+function drawHologramWatermark(ctx, width, height) {
+    if (!state.showHologram) return;
+    ctx.save();
+
+    // Subtle official seal watermark pattern in center
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, width * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // UV Guilloche security curves across card
+    ctx.globalAlpha = 0.07;
+    ctx.strokeStyle = CAMPUS_CONFIG[state.campusTheme]?.accent || '#d4af37';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        const yOffset = height * (0.18 + i * 0.16);
+        for (let x = 0; x <= width; x += 10) {
+            const y = yOffset + Math.sin(x * 0.02 + i * 1.5) * 15;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // Iridescent ribbon sheen reflection
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.02)');
+    grad.addColorStop(0.5, 'rgba(255, 215, 0, 0.1)');
+    grad.addColorStop(0.6, 'rgba(0, 255, 255, 0.08)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.restore();
+}
+
+/** Render QR Code on Canvas */
+function renderQrCodeOnCanvas(ctx, student, x, y, size) {
+    const studentId = student.formData.idNumber || 'ISU-CAB-00000';
+    const name = student.formData.name || 'STUDENT';
+    const payload = `ISU-VERIFY:${studentId}:${name.toUpperCase()}`;
+
+    if (typeof QRCode !== 'undefined') {
+        const tempDiv = document.createElement('div');
+        tempDiv.style.display = 'none';
+        document.body.appendChild(tempDiv);
+        try {
+            new QRCode(tempDiv, {
+                text: payload,
+                width: size,
+                height: size,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            const img = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+            if (img) {
+                ctx.drawImage(img, x, y, size, size);
+            } else {
+                drawFallbackQr(ctx, payload, x, y, size);
+            }
+        } catch (e) {
+            drawFallbackQr(ctx, payload, x, y, size);
+        } finally {
+            document.body.removeChild(tempDiv);
+        }
+    } else {
+        drawFallbackQr(ctx, payload, x, y, size);
+    }
+}
+
+/** Fallback QR Code matrix generator */
+function drawFallbackQr(ctx, payload, x, y, size) {
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = '#000000';
+
+    const grid = 15;
+    const cell = size / grid;
+
+    // Outer border & positioning finders
+    ctx.fillRect(x, y, cell * 5, cell * 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + cell, y + cell, cell * 3, cell * 3);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x + cell * 2, y + cell * 2, cell, cell);
+
+    ctx.fillRect(x + size - cell * 5, y, cell * 5, cell * 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + size - cell * 4, y + cell, cell * 3, cell * 3);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x + size - cell * 3, y + cell * 2, cell, cell);
+
+    // Simple deterministic pattern based on char codes
+    for (let r = 0; r < grid; r++) {
+        for (let c = 0; c < grid; c++) {
+            if ((r < 5 && c < 5) || (r < 5 && c > 9)) continue;
+            const code = payload.charCodeAt((r * grid + c) % payload.length);
+            if ((code + r * 3 + c * 7) % 2 === 0) {
+                ctx.fillRect(x + c * cell, y + r * cell, cell, cell);
+            }
+        }
+    }
+    ctx.restore();
+}
+
+/** Batch Data Table Manager Modal */
+function openBatchModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('batch-modal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    renderBatchTable();
+}
+
+function closeBatchModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('batch-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function renderBatchTable() {
+    const tbody = document.getElementById('batch-table-body');
+    const statsBadge = document.getElementById('batch-stats-badge');
+    if (!tbody) return;
+
+    if (statsBadge) {
+        statsBadge.textContent = `${state.students.length} Student${state.students.length === 1 ? '' : 's'}`;
+    }
+
+    tbody.innerHTML = '';
+    state.students.forEach((st, idx) => {
+        const tr = document.createElement('tr');
+        if (idx === state.activeStudentIndex) tr.classList.add('active-row');
+
+        const hasPhoto = !!st.photoDataUrl;
+        const hasSig = !!st.signatureDataUrl;
+        const name = st.formData.name || '—';
+        const idNum = st.formData.idNumber || '—';
+        const course = st.formData.course || st.formData.department || '—';
+
+        tr.innerHTML = `
+            <td><strong>#${idx + 1}</strong></td>
+            <td>${name}</td>
+            <td><code>${idNum}</code></td>
+            <td>${course}</td>
+            <td><span class="badge-status ${hasPhoto ? 'yes' : 'no'}">${hasPhoto ? '✓ Yes' : '✗ Missing'}</span></td>
+            <td><span class="badge-status ${hasSig ? 'yes' : 'no'}">${hasSig ? '✓ Yes' : '✗ Missing'}</span></td>
+            <td>
+                <div style="display:flex; gap:4px;">
+                    <button class="batch-btn-sm" onclick="selectBatchStudent(${idx})">Select</button>
+                    <button class="batch-btn-sm danger" onclick="deleteBatchStudent(${idx})">Delete</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function selectBatchStudent(index) {
+    if (typeof switchStudent === 'function') {
+        switchStudent(index);
+        closeBatchModal();
+        showToast(`Switched to Student #${index + 1}`, 'info');
+    }
+}
+
+function deleteBatchStudent(index) {
+    if (state.students.length <= 1) {
+        showToast('Cannot delete the last student tab', 'warning');
+        return;
+    }
+    if (confirm(`Remove Student #${index + 1} from batch?`)) {
+        state.students.splice(index, 1);
+        if (state.activeStudentIndex >= state.students.length) {
+            state.activeStudentIndex = state.students.length - 1;
+        }
+        renderStudentTabs();
+        renderCanvases();
+        renderBatchTable();
+        showToast('Student removed', 'info');
+    }
+}
+
+function filterBatchTable() {
+    const q = (document.getElementById('batch-search-input')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('#batch-table-body tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+
+function exportBatchCsv() {
+    if (!state.students || !state.students.length) return;
+    const headers = ['Full Name', 'Student ID', 'Course', 'Department', 'Date of Birth', 'Guardian', 'Address', 'Contact Number'];
+    const rows = state.students.map(st => [
+        `"${st.formData.name || ''}"`,
+        `"${st.formData.idNumber || ''}"`,
+        `"${st.formData.course || ''}"`,
+        `"${st.formData.department || ''}"`,
+        `"${st.formData.dob || ''}"`,
+        `"${st.formData.parentName || ''}"`,
+        `"${st.formData.address || ''}"`,
+        `"${st.formData.telephone || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `isu_students_batch_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    playAudioFx('chime');
+    showToast('Exported student batch CSV', 'success');
+}
+
+/** High-Res Card Inspector Modal */
+function openCardInspectModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('card-inspect-modal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    renderInspectCanvas();
+}
+
+function closeCardInspectModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('card-inspect-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function switchInspectFace(face) {
+    state.inspectFace = face;
+    playAudioFx('click');
+    document.getElementById('inspect-btn-front')?.classList.toggle('active', face === 'front');
+    document.getElementById('inspect-btn-back')?.classList.toggle('active', face === 'back');
+    renderInspectCanvas();
+}
+
+function renderInspectCanvas() {
+    const cvs = document.getElementById('inspect-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const srcCvs = state.inspectFace === 'back' ? backCanvas : frontCanvas;
+
+    cvs.width = srcCvs.width;
+    cvs.height = srcCvs.height;
+    ctx.drawImage(srcCvs, 0, 0);
+}
+

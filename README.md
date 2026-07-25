@@ -1,6 +1,6 @@
-# 🎓 Isabela State University Premium ID Generator v3.5.0
+# 🎓 Isabela State University Premium ID Generator v3.6.0
 
-A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **Isabela State University (ISU)**. Built with a stunning glassmorphism UI, interactive 3D card preview, and a powerful batch export engine — no backend, no build tools, runs entirely in the browser.
+A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
 🔗 **Live Demo**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)
 
@@ -8,37 +8,30 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ## ✨ Features
 
+### 🆕 v3.6 — University Multi-Campus & Security Studio Edition
+- **🏛️ All 11 ISU Campus Themes**: Instant theme switching across all 11 ISU campuses (Cabagan, Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City). Propagates accent colors to UI buttons, live canvas graphics, and WebGL Three.js hero particles.
+- **📱 Real-Time Verification QR Code**: Renders a dynamic, scannable QR Code (`ISU-VERIFY:[ID]:[NAME]`) on the card back for instant campus gate verification.
+- **🛡️ Holographic Security Watermark**: Interactive toggle for ISU Seal watermark, UV guilloche security curves, and iridescent ribbon sheen reflection.
+- **📊 Glassmorphic Batch Data Manager**: Table modal with student photo/signature completeness badges, real-time search, batch deletion, and CSV re-export.
+- **🔍 High-Res 3D Card Inspector Studio**: Full-screen 300 DPI canvas inspection modal for front and back faces.
+- **🔊 Web Audio API Sound FX**: Native Web Audio API sound cues for card flips, tab switching, and batch export chimes with an instant mute toggle.
+
+### 🆕 v3.5 — Bento Grid & Spatial Motion Overhaul
+- **🎨 Immersive Spatial Redesign**: Split-screen hero layout, animated 6-card Bento Grid for features, and a guided 3-step process.
+- **🚀 Advanced GSAP & Three.js Animations**: Particle constellation background in the hero section and holographic shimmer effects on the live card stage.
+
 ### 🆕 v3.4 — Session Auto-Save & OCR Autofill
-- **💾 Auto-Save Session**: The app now auto-saves your entire session (all students, form data, photos, signatures) to `localStorage` after every change. If you close the tab by accident, a restore banner will appear on the next visit.
-- **🔍 OCR Autofill from Photo**: Snap or upload a photo of any printed ID or registration form. Powered by **Tesseract.js** (local, runs in the browser), the system reads Name, ID Number, Course, and Date of Birth and pre-fills the form fields — skipping tedious manual entry for re-prints.
-- **🟢 Smart Field Parsing**: Regex-based post-processing converts extracted dates to `YYYY-MM-DD` format and normalises names to uppercase automatically.
+- **💾 Auto-Save Session**: Auto-saves your entire session (all students, form data, photos, signatures) to `localStorage` after every change.
+- **🔍 OCR Autofill from Photo**: Snap or upload a photo of any printed ID or registration form. Powered by **Tesseract.js** (offline WASM), extracts Name, ID Number, Course, and DOB automatically.
 
 ### 🆕 v3.3 — Local Signature Scanner & Extractor
-- **🪄 Local Signature Extraction (No APIs)**: Scan or upload a photo of a signature written on white paper, and have it cropped and extracted instantly without external network requests or third-party APIs.
-- **Background Removal & Contrast Enhancement**: Uses mathematical thresholding and custom canvas pixel filters to boost contrast, crop empty margins, and strip grey/white backgrounds to transparent.
-- **🔄 Dual Signature Capture Modes**: Seamlessly toggle between drawing a signature freehand and uploading a photo for instant local scanning.
+- **🪄 Local Signature Extraction (No APIs)**: Otsu binarization and automatic bounding-box cropping strip paper shadows and convert handwritten paper signatures to clean, transparent ink.
 
 ### 🆕 v3.2 — CSV Bulk Import & Unlimited Batches
-- **📥 CSV Bulk Student Import**: Upload a `.csv` file containing 50+ students to auto-generate all ID cards in one click.
-- **♾️ Infinite Batch Mode (CSV-only)**: Bypasses the manual student tab limit of 5, enabling infinite student card creation via CSV import.
-- **🔍 Smart Header Matching**: Automatically maps columns using fuzzy matching for keys like Name, Student Number (ID), Course, Date of Birth, Parent/Guardian, Address, and Telephone.
+- **📥 CSV Bulk Student Import**: Upload a `.csv` file containing 50+ students to auto-generate all ID cards in one click with smart header mapping.
 
-### 🆕 v3.1 — Immersive Redesign & PDF Export
-- **🎨 Immersive Hero Layout**: Complete visual overhaul of the hero section featuring a split-screen design, floating 3D cards, particle backgrounds, and dynamic grid layouts. Mobile view has been fully optimized for a perfect "above-the-fold" experience.
-- **📄 Native PDF Export**: Upgraded the print batch engine from generating static PNGs to producing a **proper multi-page A4 PDF document** via `jsPDF`. IDs are precisely sized to **CR80 standard dimensions (3.375" x 2.125")** with accurate cut lines, perfect for ID card printers.
-
-### 🆕 v3.0 — Batch & Precision Upgrades
-- **👥 Multi-Student Batch Mode**: Generate up to **5 student IDs** in a single session using a tabbed interface. Each student tab maintains its own independent form state, photo, and signature.
-- **✂️ Interactive Photo Cropper**: A modal-based crop editor with **pan, zoom (0.5×–3×),** and a locked **315:355 portrait aspect ratio** — ensuring every photo is perfectly framed before it hits the card.
-- **🗂️ Smart A4 Batch Export**: The export engine dynamically arranges 1–5 student IDs into an optimized grid.
-
-### ⚡ Core Features
-- **🫧 Premium Glassmorphism UI**: Multi-tier CSS3 glass panels with backdrop blur, saturation layers, and ISU green (`#15B915`) & gold (`#C9A84C`) palette.
-- **📱 Adaptive Stepper Form**: A 9-step wizard intelligently adapts between mobile (full-screen stepper) and desktop (side-by-side split layout) without breaking flow.
-- **🔄 Interactive 3D Card Preview**: Real-time mouse-hover 3D tilt (powered by VanillaTilt) with a click-to-flip animation between Front and Back views.
-- **🖼️ Mini Live Preview**: A compact in-header thumbnail syncs in real-time and auto-flips to match the active form step.
-- **✍️ Digital Signature Pad**: Touch & mouse-friendly HTML5 canvas for capturing handwritten signatures, embedded directly on the card.
-- **💾 Save as Image**: Export the Front, Back, or Both card sides individually as PNG images.
+### 🆕 v3.1 — Native A4 Landscape PDF Export
+- **📄 Native A4 Landscape PDF Export**: Arranges up to 5 student pairs (10 cards total) per sheet in side-by-side front/back stacked rows for easy double-sided printing.
 
 ---
 
@@ -47,14 +40,12 @@ A premium, fully responsive **client-side** web application for generating high-
 | Layer | Technology |
 |---|---|
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
-| Styling | Vanilla CSS3 (custom properties, GPU transforms, flexbox/grid) |
+| Styling | Vanilla CSS3 (custom properties, GPU transforms, glassmorphism) |
 | Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
-| OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline, WASM) |
-| 3D Effects | [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
-| Icons | [Phosphor Icons](https://phosphoricons.com/) |
-| Typography | Inter — Google Fonts |
-
-> **Zero runtime dependencies** on your server. No npm, no bundler, no backend.
+| 3D / Graphics | [Three.js r134](https://threejs.org/), [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
+| Animations | [GSAP 3](https://greensock.com/gsap/) + ScrollTrigger, [Anime.js v4](https://animejs.com/) |
+| OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline WASM) |
+| Icons & Fonts | [Phosphor Icons](https://phosphoricons.com/), Google Fonts (Plus Jakarta Sans, Roboto Condensed) |
 
 ---
 
@@ -70,12 +61,14 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ## 📋 Changelog
 
-### v3.5.0 *(2026-07-09)*
-- `feat` — Full UI/UX redesign: 2-column hero layout, animated 6-card Bento Grid for features, and 3-step "How It Works" guide.
-- `feat` — Comprehensive GitHub Wiki creation for onboarding and developer guidelines.
-- `fix` — Resolved canvas coordinate desync for the 2026 ID to perfectly center Name, ID Number, and Department text against the 675px width template.
-- `fix` — Disabled infinite rotation on the hero background seal watermark for a cleaner, static layout.
-- `perf` — Implemented lightweight, dependency-free `IntersectionObserver` scroll-reveal animations.
+### v3.6.0 *(2026-07-25)*
+- `feat` — Multi-Campus Theme Selector supporting all 11 ISU campuses (Cabagan, Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City).
+- `feat` — Real-Time Verification QR Code Generator for ID card back.
+- `feat` — Holographic Security Watermark Overlay with UV guilloche curves and iridescent sheen.
+- `feat` — Glassmorphism Batch Student Data Manager Modal with search, status badges, and CSV export.
+- `feat` — High-Resolution 3D Card Inspector Studio modal.
+- `feat` — Web Audio API synthesized sound effects with mute toggle.
+- `fix` — Fully resolved all 14 outstanding bugs/UX issues from `issues.txt`.
 
 ### v3.4.3 *(2026-07-08)*
 - `fix` — Corrected formatting and alignment issues in the module directory index within the main application script (`app.js`).
