@@ -1,2 +1,23 @@
-node_modules
+# Dependencies
+node_modules/
+web/node_modules/
 .agents/
+.artifacts/
+
+# Android / Gradle
+.gradle/
+build/
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+local.properties
+*.apk
+*.aab
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

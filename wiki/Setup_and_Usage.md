@@ -2,21 +2,21 @@
 
 ## 🚀 Running the Project Locally
 
-Because the ISU Premium ID Generator is entirely client-side, running it is as simple as opening a file!
-
-1. **Clone the repository:**
+### 🌐 Running the Web Application
+1. **Open the Web App:**
+   Simply double-click on `web/index.html` to open it in your default web browser (Chrome, Edge, Firefox, or Safari).
+   *Optional:* If you want to use the CSV import functionality seamlessly, serve the `web/` directory using a simple local server:
    ```bash
-   git clone https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan.git
-   cd Isabela-State-University_Cabagan
-   ```
-2. **Open the App:**
-   Simply double-click on `index.html` to open it in your default web browser (Chrome, Edge, Firefox, or Safari).
-   *Optional:* If you want to use the CSV import functionality seamlessly, you can serve the directory using a simple local server:
-   ```bash
+   cd web
    npx serve .
    # or
-   python -m http.server
+   python -m http.server 8000
    ```
+
+### 📱 Running the Android Application
+1. Open the `android/` directory in **Android Studio**.
+2. Let Gradle sync dependencies.
+3. Select an emulator or physical Android device (API 24+) and click **Run**.
 
 ## 📋 Generating an ID
 

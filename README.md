@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.6.0
+# 🎓 Isabela State University Premium ID Generator v3.7.0
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
@@ -49,17 +49,58 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ---
 
+## 📂 Project Structure
+
+```text
+isu_id/
+├── web/                    # Client-side Web Application
+│   ├── index.html          # Main HTML entry point
+│   ├── style.css           # Glassmorphism design system & styles
+│   ├── app.js              # Application core logic & Canvas rendering engine
+│   ├── animations.js       # GSAP, Anime.js & Three.js animations
+│   ├── images/             # Blank ID templates, logos & static assets
+│   └── scripts/            # Python utility scripts (dummy data generator, photo resizer)
+│
+├── android/                # Android Application (Native Jetpack Compose / WebView Shell)
+│   ├── app/                # Android app module (Kotlin source, assets, resources)
+│   ├── gradle/             # Gradle wrapper
+│   ├── build.gradle.kts    # Top-level build configuration
+│   ├── settings.gradle.kts # Gradle project settings
+│   ├── gradlew / gradlew.bat
+│   └── gradle.properties
+│
+├── wiki/                   # Technical documentation and guides
+├── README.md               # Project documentation
+├── release_notes.md        # Release notes
+└── .gitignore
+```
+
+---
+
 ## 🚀 Getting Started
 
-1. Clone the repository:
+### 🌐 Web Application
+1. Open [`web/index.html`](web/index.html) directly in any modern web browser.
+2. *Optional (Local Server):*
    ```bash
-   git clone https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan.git
+   cd web
+   npx serve .
+   # or
+   python -m http.server 8000
    ```
-2. Open `index.html` directly in any modern browser — no server needed.
+
+### 📱 Android Application
+1. Open the `android/` directory in Android Studio.
+2. Sync Gradle and run the app on an Android device or emulator (Android 7.0+ / API 24+).
 
 ---
 
 ## 📋 Changelog
+
+### v3.7.0 *(2026-08-29)*
+- `refactor` — Separated the repository into a monorepo structure: `web/` for the client-side web application and `android/` for the Android Studio project.
+- `chore` — Updated `.gitignore` with comprehensive patterns for both `web/` and `android/` build artifacts.
+- `docs` — Updated `README.md`, `wiki/Architecture.md`, and `wiki/Setup_and_Usage.md` to document the new folder structure and running instructions for both platforms.
 
 ### v3.6.0 *(2026-07-25)*
 - `feat` — Multi-Campus Theme Selector supporting all 11 ISU campuses (Cabagan, Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City).
