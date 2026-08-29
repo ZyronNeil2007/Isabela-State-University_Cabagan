@@ -1,62 +1,80 @@
-# 🚀 Release Notes — v3.6.0: University Multi-Campus & Security Studio Edition
+# 🚀 Release Notes — v3.7.0: Monorepo Restructure & Repository Organization
 
-## 🎓 Summary
-We are thrilled to announce **v3.6.0** of the **Isabela State University Premium Digital ID Generator**! This release scales the generator university-wide across **all 11 ISU campuses**, introduces real-time verification QR codes, security watermark overlays, a glassmorphic batch student data table manager, a high-resolution 3D card inspector studio, Web Audio API sound feedback, and comprehensive bug fixes for all 14 previously tracked issues.
+## 📦 Summary
 
----
-
-## ✨ New Features & Upgrades
-
-### 🏛️ 1. All 11 ISU Campus Color Themes
-Users can now generate student IDs tailored to any Isabela State University campus:
-- **Cabagan Main Campus** (Emerald Green & Metallic Gold)
-- **Echague Main Campus** (Royal Navy & Imperial Gold)
-- **Cauayan Campus** (Crimson Maroon & Satin Gold)
-- **Ilagan Campus** (Deep Purple & Metallic Silver)
-- **Roxas Campus** (Dark Teal & Amber)
-- **Angadanan Campus** (Forest Green & Copper)
-- **San Mateo Campus** (Deep Bronze & Amber)
-- **Jones Campus** (Midnight Blue & Sky Cyan)
-- **Palanan Campus** (Ocean Blue & Sunset Orange)
-- **San Mariano Campus** (Leaf Emerald & Yellow)
-- **Santiago City Extension** (Dark Plum & Rose Gold)
-
-*Theme selection updates CSS variable tokens, live ID card canvas headers, and smoothly animates Three.js WebGL particle constellation colors.*
-
-### 📱 2. Real-Time Verification QR Code Generator
-- Generates a sharp, dynamic QR Code on the back face of the student ID card.
-- Encodes student details (`ISU-VERIFY:[ID]:[NAME]`) scannable by standard mobile cameras or campus gate entry readers. Includes fallback matrix renderer.
-
-### 🛡️ 3. Holographic Security Watermark & Ribbon Overlay
-- Interactive toggle in the card stage preview toolbar.
-- Renders an official ISU Seal watermark, UV guilloche security curves, and an iridescent ribbon sheen reflection on the card front.
-
-### 📊 4. Glassmorphism Batch Student Data Manager
-- Accessible via the table icon button in the student tab bar.
-- Shows student photo/signature completeness badges (`✓ Yes` / `✗ Missing`).
-- Offers real-time search/filtering, inline tab switching, row deletion, and full CSV batch re-export.
-
-### 🔍 5. High-Resolution 3D Card Inspector Studio
-- Fullscreen modal for inspecting Front and Back card faces at 300 DPI native canvas print quality.
-
-### 🔊 6. Web Audio API Micro-Sound FX
-- Zero-dependency Web Audio API synthesized sound cues for card flips, tab clicks, and batch export chimes with an instant mute toggle button.
+**v3.7.0** is a **structural release** for the ISU Premium ID Generator project. This release reorganizes the repository into a clean monorepo layout, separating the client-side web application and the Android application into dedicated top-level subdirectories. There are no changes to application features, UI, or logic in this release — all functionality from v3.6.0 is preserved unchanged.
 
 ---
 
-## 🛠️ Resolved Issues & Bug Fixes (from issues.txt)
+## 🏗️ Repository Restructure
 
-1. **PDF Export State Recovery**: Wrapped batch print loop in `try...finally` to guarantee active student tab restoration on failure.
-2. **Date Format Standardization**: Standardized Date-of-Birth parsing using UTC getters (`getUTCFullYear()`, `getUTCMonth()`, `getUTCDate()`).
-3. **Canvas Resize Integrity**: Preserves and redraws stored signature image buffer on window resize events.
-4. **Strict CSV Header Matching**: Replaced substring header checks with word-boundary matching to prevent false collisions.
-5. **Smart OCR Navigation**: Corrected OCR autofill step navigation flow.
-6. **Dynamic Hero Stats**: Dynamically updates the "Max Batch" stat chip beyond 5 when larger CSV batches are imported.
-7. **Destructive Action Protection**: Added confirmation dialogs before removing student tabs with inputted data.
-8. **Broadened Camera Support**: Removed restrictive `capture="environment"` attribute to allow gallery photo selection.
-9. **Glassmorphism Toasts**: Replaced all native browser `alert()` dialogs with styled toast notifications.
-10. **Card Flip Synchronization**: Unified flip states between main card, mini card, and flip title indicators.
-11. **Codebase Maintenance**: Corrected duplicate section numbers in `app.js`.
-12. **Cropper Dimensional Accuracy**: Computed cropper base scale using `requestAnimationFrame` after paint.
-13. **Quota Overflow Protection**: Bounded auto-save serialized payloads to 4.5MB limits to prevent localStorage crashes.
-14. **Tesseract SRI Security Hardening**: Pinned Tesseract.js to v5.1.1 with SHA-384 Subresource Integrity hashes.
+The root of `isu_id` now contains two clean, dedicated subdirectories:
+
+### `web/` — Client-Side Web Application
+```
+web/
+├── index.html         # Main web UI entry point
+├── style.css          # Glassmorphism design system & animations
+├── app.js             # Application state, Canvas rendering engine
+├── animations.js      # GSAP 3, Anime.js v4 & Three.js visual layer
+├── images/            # ID templates, university seals & logos
+│   └── 2026_id/
+└── scripts/           # Python admin utilities
+    ├── generate_dummy_students.py
+    └── resize_photos.py
+```
+
+### `android/` — Android Studio Project
+```
+android/
+├── app/               # Android module (Kotlin, Compose, WebView bridge, ML Kit)
+├── gradle/wrapper/
+├── build.gradle.kts   # Root build config
+├── settings.gradle.kts
+├── gradlew / gradlew.bat
+└── gradle.properties
+```
+
+---
+
+## 🚀 Improvements
+
+- **Monorepo Layout**: The previously flat root has been organized into `web/` and `android/` subdirectories, making it easier to navigate and work on each platform independently.
+- **Updated `.gitignore`**: Now includes proper ignore patterns for `android/.gradle/`, `android/build/`, `android/app/build/`, IDE artifacts, and web tooling.
+
+---
+
+## 📚 Documentation
+
+- **`README.md`**: Added a full **Project Structure** diagram showing the new `web/` and `android/` layout, and updated **Getting Started** instructions with separate web and Android running steps.
+- **`wiki/Architecture.md`**: Updated **File Structure** section to reflect the new monorepo organization.
+- **`wiki/Setup_and_Usage.md`**: Updated **Running the Project Locally** with separate web and Android instructions.
+
+---
+
+## 🔧 Technical Changes
+
+- Android `versionCode` bumped from `1` to `2`, `versionName` from `3.6.0` to `3.7.0`.
+- Web `style.css` cache-buster parameter updated from `?v=3.6.0` to `?v=3.7.0`.
+- Version badges in `web/index.html` updated to `v3.7.0`.
+
+---
+
+## ⚠️ Breaking Changes
+
+> [!NOTE]
+> **None** — All web and Android application functionality is identical to v3.6.0.
+
+The only change for existing users is path-based: if you cloned the repository previously, web app files are now in `web/` (previously at root) and the Android project is in `android/` (previously also at root). Update any bookmarks or IDE project roots accordingly.
+
+---
+
+## ✅ Resolved Issues
+
+- Closes #6 — v3.6.0 release tracker issue (all features shipped and verified in v3.6.0; this release wraps up repository organization).
+
+---
+
+## 🙏 Credits
+
+Developed and maintained by **Zyron Neil**. Repository: [ZyronNeil2007/Isabela-State-University_Cabagan](https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan)

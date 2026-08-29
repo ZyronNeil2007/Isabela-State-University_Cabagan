@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- PDF exports shared via FileProvider -->
+    <cache-path name="exported_pdfs" path="pdfs/" />
+    <!-- OCR camera temp captures -->
+    <cache-path name="ocr_captures"  path="." />
+</paths>

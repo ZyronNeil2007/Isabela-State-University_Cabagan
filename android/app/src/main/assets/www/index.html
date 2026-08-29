@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature and OCR autofill.">
+    <meta name="theme-color" content="#021a02">
+    <title>ISU Premium ID Generator — Isabela State University</title>
+
+    <!-- DNS prefetch for CDN resources -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+    <link rel="dns-prefetch" href="https://unpkg.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+
+    <!-- Preconnect for fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Plus Jakarta Sans (UI) + Roboto Condensed (ID card text) -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Roboto+Condensed:wght@400;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Phosphor Icons (deferred — not in the critical paint path) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"
+        integrity="sha384-J7cw2fbG1T4C5MirTVUxsZGaMfw2m0XsCgOQEqUvB1OF9VIsHWuZF1GmyVRzs7eu" crossorigin="anonymous"
+        defer></script>
+
+    <!-- VanillaTilt — 3D card hover effect -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"
+        integrity="sha384-0k1dj5tm+KUH/4vkNk/i90XsjDA8Ltmt+ybcrFoH4t0dgv/WZsPpVBnkhcroX8UL" crossorigin="anonymous"
+        defer></script>
+
+    <!-- Three.js (global UMD — available as window.THREE) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"
+        integrity="sha384-9EQoUIJYrv09/oYhSxnw1VpLcfPw3BM9dE7+D/3wGUPeLLa7F9Z6OAoD+i/M6FK9" crossorigin="anonymous"
+        defer></script>
+
+    <!-- QRCode.js for ID Verification QR Rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+        integrity="sha384-3nhO2w16gLkW0yM2v20bV86y/eBq6j9wJ2Wb3u7y6X1n/7R+m6t2y4j0L" crossorigin="anonymous"
+        defer></script>
+
+    <link rel="stylesheet" href="style.css?v=3.6.0">
+</head>
+
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BACKGROUND DECORATIVE ORBS
+    ═══════════════════════════════════════════════════════ -->
+    <div class="floating-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         NAVBAR
+    ═══════════════════════════════════════════════════════ -->
+    <!-- Scroll progress indicator -->
+    <div id="scroll-progress" aria-hidden="true"></div>
+
+    <nav id="navbar" class="liquid-glass">
+        <div class="nav-container">
+            <div class="logo-container" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})"
+                role="button" tabindex="0" aria-label="Back to home">
+                <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
+                <span class="logo-text">Isabela State University Cabagan </span>
+            </div>
+            <div class="desktop-menu">
+                <a href="#home" class="nav-link"
+                    onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
+                <a href="#features" class="nav-link"
+                    onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+                <a href="#how-it-works" class="nav-link"
+                    onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How It
+                    Works</a>
+                <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="nav-link"
+                    target="_blank" rel="noopener noreferrer">Repository</a>
+            </div>
+            <div class="nav-actions">
+                <a href="#generator" class="btn-nav" id="nav-cta-btn"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    <i class="ph ph-identification-card"></i>
+                    <span>Get Your ID</span>
+                </a>
+                <!-- Hamburger (mobile only) -->
+                <button class="nav-hamburger" id="nav-hamburger" aria-label="Open navigation menu" aria-expanded="false"
+                    aria-controls="mobile-drawer">
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                    <span class="hamburger-bar"></span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MOBILE NAVIGATION DRAWER
+    ═══════════════════════════════════════════════════════ -->
+    <div class="mobile-drawer-overlay" id="mobile-drawer-overlay" aria-hidden="true"></div>
+    <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
+        <div class="mobile-drawer-header">
+            <div class="mobile-drawer-brand">
+                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <span class="logo-text">ISU ID Generator</span>
+            </div>
+            <button class="btn-close" id="mobile-drawer-close" aria-label="Close navigation menu">
+                <i class="ph ph-x"></i>
+            </button>
+        </div>
+        <nav class="mobile-drawer-nav">
+            <a href="#home" class="mobile-nav-link" data-section="home">
+                <i class="ph-fill ph-house"></i> Home
+            </a>
+            <a href="#features" class="mobile-nav-link" data-section="features">
+                <i class="ph-fill ph-star-four"></i> Features
+            </a>
+            <a href="#how-it-works" class="mobile-nav-link" data-section="how-it-works">
+                <i class="ph-fill ph-path"></i> How It Works
+            </a>
+            <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="mobile-nav-link"
+                target="_blank" rel="noopener noreferrer">
+                <i class="ph-fill ph-github-logo"></i> Repository
+            </a>
+        </nav>
+        <div class="mobile-drawer-cta">
+            <a href="#generator" class="btn-primary" style="width:100%;justify-content:center;">
+                <i class="ph ph-identification-card"></i> Get Your ID
+                <i class="ph ph-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HERO SECTION — Cinematic Full-Width
+    ═══════════════════════════════════════════════════════ -->
+    <section id="home" class="hero-section">
+
+        <!-- Three.js particle constellation canvas -->
+        <canvas id="hero-webgl-canvas" aria-hidden="true"></canvas>
+
+        <!-- Animated mesh grid background -->
+        <div class="hero-mesh" aria-hidden="true"></div>
+
+        <!-- Morphing ambient glow -->
+        <div class="hero-glow-primary" aria-hidden="true"></div>
+        <div class="hero-glow-gold" aria-hidden="true"></div>
+
+        <!-- ISU Seal watermark -->
+        <div class="hero-seal" aria-hidden="true">
+            <img src="images/isu_logo.png" alt="" class="hero-seal-img" loading="lazy">
+        </div>
+
+        <!-- Main content column -->
+        <div class="hero-content">
+
+            <!-- LEFT COLUMN: Text + CTAs + Stats -->
+            <div class="hero-left-col">
+
+                <!-- Eyebrow badge -->
+                <div class="hero-badge" style="--delay:0s">
+                    <span class="hero-badge-dot"></span>
+                    v3.5.0 &nbsp;&middot;&nbsp; 2026 New ID &nbsp;&middot;&nbsp; Session Save
+                </div>
+
+                <!-- Staggered headline -->
+                <h1 class="hero-title">
+                    <span class="hero-word" style="--i:0">Generate</span>
+                    <span class="hero-word" style="--i:1">Your</span>
+                    <span class="hero-word hero-word--hl" style="--i:2">ISU</span>
+                    <span class="hero-word hero-word--hl" style="--i:3">Digital</span>
+                    <span class="hero-word hero-word--hl" style="--i:4">ID</span>
+                </h1>
+
+                <p class="hero-subtitle" style="--delay:0.55s">
+                    Print-ready student ID cards — built entirely in your browser.
+                    No server, no install, no account needed.
+                </p>
+
+                <!-- Feature pills row -->
+                <div class="hero-feature-pills" style="--delay:0.65s" aria-hidden="true">
+                    <span class="hfp"><i class="ph-fill ph-lightning"></i> Real-time</span>
+                    <span class="hfp"><i class="ph-fill ph-scan"></i> OCR Fill</span>
+                    <span class="hfp"><i class="ph-fill ph-users-three"></i> Batch</span>
+                    <span class="hfp"><i class="ph-fill ph-floppy-disk"></i> Auto-Save</span>
+                    <span class="hfp"><i class="ph-fill ph-file-pdf"></i> PDF Export</span>
+                </div>
+
+                <!-- CTA buttons -->
+                <div class="hero-actions" style="--delay:0.7s">
+                    <a href="#generator" class="btn-primary hero-cta" id="hero-get-started-btn"
+                        onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                        <i class="ph ph-identification-card"></i>
+                        Create Your ID
+                        <i class="ph ph-arrow-right"></i>
+                    </a>
+                    <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="btn-ghost"
+                        target="_blank" rel="noopener noreferrer">
+                        <i class="ph ph-github-logo"></i> Source Code
+                    </a>
+                </div>
+
+                <!-- Animated stats strip -->
+                <div class="hero-stats" style="--delay:1.05s">
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">100%</span>
+                        <span class="hero-stat-label">Offline</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">CR80</span>
+                        <span class="hero-stat-label">Standard</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number" id="hero-batch-limit">5</span>
+                        <span class="hero-stat-label">Max Batch</span>
+                    </div>
+                    <div class="hero-stat-div"></div>
+                    <div class="hero-stat">
+                        <span class="hero-stat-number">0</span>
+                        <span class="hero-stat-label">Setup</span>
+                    </div>
+                </div>
+
+            </div><!-- /hero-left-col -->
+
+            <!-- RIGHT COLUMN: 3D Card Stage -->
+            <div class="hero-right-col" style="--delay:0.85s">
+                <!-- 3D Card Stage -->
+                <div class="hero-stage">
+                    <!-- Pulsing glow ring -->
+                    <div class="hero-stage-glow" aria-hidden="true"></div>
+                    <div class="hero-stage-glow hero-stage-glow--gold" aria-hidden="true"></div>
+
+                    <!-- ID card front -->
+                    <div class="hero-id-card hero-id-front" aria-hidden="true">
+                        <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
+                            loading="lazy">
+                        <div class="hero-card-shine"></div>
+                    </div>
+
+                    <!-- ID card back -->
+                    <div class="hero-id-card hero-id-back" aria-hidden="true">
+                        <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
+                            loading="lazy">
+                        <div class="hero-card-shine"></div>
+                    </div>
+
+                    <!-- Floating badge chips -->
+                    <div class="hero-floating-badge hero-fb-1">
+                        <i class="ph-fill ph-shield-check"></i> ISU Official
+                    </div>
+                    <div class="hero-floating-badge hero-fb-2">
+                        <i class="ph-fill ph-scan"></i> OCR Autofill
+                    </div>
+                    <div class="hero-floating-badge hero-fb-3">
+                        <i class="ph-fill ph-users-three"></i> Batch Print
+                    </div>
+                    <div class="hero-floating-badge hero-fb-4">
+                        <i class="ph-fill ph-floppy-disk"></i> Auto-Save
+                    </div>
+                </div>
+            </div><!-- /hero-right-col -->
+
+        </div><!-- /hero-content -->
+
+
+        <!-- Marquee feature ticker -->
+        <div class="hero-marquee" aria-hidden="true">
+            <div class="hero-marquee-track">
+                <span><i class="ph-fill ph-lightning"></i> Real-time Preview</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-file-pdf"></i> CR80 PDF Export</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-pen-nib"></i> Digital Signature</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-scan"></i> OCR Autofill</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5&times;)</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-table"></i> CSV Import</span>
+                <span class="hero-marquee-dot"></span>
+                <!-- duplicate for seamless loop -->
+                <span><i class="ph-fill ph-lightning"></i> Real-time Preview</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-file-pdf"></i> CR80 PDF Export</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-pen-nib"></i> Digital Signature</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-scan"></i> OCR Autofill</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-floppy-disk"></i> Session Auto-Save</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-users-three"></i> Batch Mode (5&times;)</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-crop"></i> Photo Cropper</span>
+                <span class="hero-marquee-dot"></span>
+                <span><i class="ph-fill ph-table"></i> CSV Import</span>
+            </div>
+        </div>
+
+        <div class="hero-scroll-indicator"
+            onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+            <div class="scroll-mouse">
+                <div class="scroll-wheel"></div>
+            </div>
+            <span>Scroll to begin</span>
+        </div>
+
+    </section>
+
+
+    <div id="session-restore-banner" class="session-banner" role="alert" aria-live="polite">
+        <div class="session-banner-inner">
+            <i class="ph ph-clock-counter-clockwise"></i>
+            <span>You have an unsaved session from a previous visit. Restore it?</span>
+            <div class="session-banner-actions">
+                <button class="btn-primary btn-sm" onclick="onRestoreSession()">
+                    <i class="ph ph-arrow-counter-clockwise"></i> Restore
+                </button>
+                <button class="btn-ghost btn-sm" onclick="onDiscardSession()">
+                    <i class="ph ph-trash"></i> Discard
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FEATURES SECTION — Bento Grid
+    ═══════════════════════════════════════════════════════ -->
+    <section id="features" class="features-section">
+        <div class="section-inner">
+
+            <!-- Section Header -->
+            <div class="section-header sr" style="--sr-delay:0s">
+                <span class="section-eyebrow"><i class="ph-fill ph-star-four"></i> Capabilities</span>
+                <h2 class="section-title">Everything you need to<br><span class="section-title--hl">create a perfect
+                        ID</span></h2>
+                <p class="section-subtitle">No backend, no subscription, no compromise. Built to run entirely in your
+                    browser with professional-grade output.</p>
+            </div>
+
+            <!-- Bento Grid -->
+            <div class="bento-grid">
+
+                <!-- Card 1 — Real-time Preview (wide 2×1) -->
+                <div class="bento-card bento-card--wide sr" style="--sr-delay:0.05s" data-accent="green">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--green">
+                            <i class="ph-fill ph-lightning"></i>
+                        </div>
+                        <h3 class="bento-title">Real-time Preview</h3>
+                        <p class="bento-desc">Every keystroke updates the ID card instantly. What you see is exactly
+                            what prints.</p>
+                        <div class="bento-badge">Live</div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--green"></div>
+                </div>
+
+                <!-- Card 2 — OCR Autofill (1×1) -->
+                <div class="bento-card sr" style="--sr-delay:0.10s" data-accent="gold">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--gold">
+                            <i class="ph-fill ph-scan"></i>
+                        </div>
+                        <h3 class="bento-title">OCR Autofill</h3>
+                        <p class="bento-desc">Snap a photo of any printed ID — fields fill automatically.</p>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--gold"></div>
+                </div>
+
+                <!-- Card 3 — Batch Print (1×2 tall) -->
+                <div class="bento-card bento-card--tall sr" style="--sr-delay:0.15s" data-accent="teal">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--teal">
+                            <i class="ph-fill ph-users-three"></i>
+                        </div>
+                        <h3 class="bento-title">Batch Print</h3>
+                        <p class="bento-desc">Generate up to 5 IDs at once. Export all to a single A4 PDF — ready for
+                            the printer.</p>
+                        <div class="bento-stat-row">
+                            <span class="bento-stat-num">5×</span>
+                            <span class="bento-stat-label">Max batch</span>
+                        </div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--teal"></div>
+                </div>
+
+                <!-- Card 4 — Digital Signature (1×1) -->
+                <div class="bento-card sr" style="--sr-delay:0.20s" data-accent="purple">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--purple">
+                            <i class="ph-fill ph-pen-nib"></i>
+                        </div>
+                        <h3 class="bento-title">Digital Signature</h3>
+                        <p class="bento-desc">Draw, upload, or AI-enhance your signature — rendered directly on the card
+                            back.</p>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--purple"></div>
+                </div>
+
+                <!-- Card 5 — Session Auto-Save (wide 2×1) -->
+                <div class="bento-card bento-card--wide sr" style="--sr-delay:0.25s" data-accent="green">
+                    <div class="bento-card-inner">
+                        <div class="bento-icon bento-icon--green">
+                            <i class="ph-fill ph-floppy-disk"></i>
+                        </div>
+                        <h3 class="bento-title">Session Auto-Save</h3>
+                        <p class="bento-desc">Close the tab and come back anytime. Your progress is saved locally —
+                            always.</p>
+                        <div class="bento-badge bento-badge--green">Auto</div>
+                    </div>
+                    <div class="bento-card-glow bento-card-glow--green"></div>
+                </div>
+
+            </div><!-- /bento-grid -->
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HOW IT WORKS — 3-Step Process
+    ═══════════════════════════════════════════════════════ -->
+    <section id="how-it-works" class="hiw-section">
+        <div class="section-inner">
+
+            <!-- Section Header -->
+            <div class="section-header sr" style="--sr-delay:0s">
+                <span class="section-eyebrow"><i class="ph-fill ph-path"></i> Process</span>
+                <h2 class="section-title">From blank form to<br><span class="section-title--hl">print-ready ID in
+                        minutes</span></h2>
+            </div>
+
+            <!-- Steps -->
+            <div class="hiw-steps">
+                <div class="hiw-step sr" style="--sr-delay:0.05s">
+                    <div class="hiw-step-num">01</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-user-circle-plus"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Fill Your Details</h3>
+                    <p class="hiw-step-desc">Enter your name, ID number, course, and upload your photo. Use OCR to
+                        autofill from an existing ID.</p>
+                </div>
+
+                <div class="hiw-connector sr" style="--sr-delay:0.12s" aria-hidden="true">
+                    <div class="hiw-connector-line"></div>
+                    <i class="ph-fill ph-arrow-right hiw-connector-arrow"></i>
+                </div>
+
+                <div class="hiw-step sr" style="--sr-delay:0.15s">
+                    <div class="hiw-step-num">02</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-eye"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Preview Live</h3>
+                    <p class="hiw-step-desc">Watch your ID card render in real-time on the right panel. Flip to see both
+                        front and back.</p>
+                </div>
+
+                <div class="hiw-connector sr" style="--sr-delay:0.22s" aria-hidden="true">
+                    <div class="hiw-connector-line"></div>
+                    <i class="ph-fill ph-arrow-right hiw-connector-arrow"></i>
+                </div>
+
+                <div class="hiw-step sr" style="--sr-delay:0.25s">
+                    <div class="hiw-step-num">03</div>
+                    <div class="hiw-step-icon">
+                        <i class="ph-fill ph-printer"></i>
+                    </div>
+                    <h3 class="hiw-step-title">Download &amp; Print</h3>
+                    <p class="hiw-step-desc">Export as a print-ready A4 PDF or save individual card images at CR80
+                        standard size.</p>
+                </div>
+            </div><!-- /hiw-steps -->
+
+            <!-- CTA inside How it Works -->
+            <div class="hiw-cta sr" style="--sr-delay:0.30s">
+                <a href="#generator" class="btn-primary"
+                    onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">
+                    <i class="ph ph-identification-card"></i>
+                    Start Creating Now
+                    <i class="ph ph-arrow-right"></i>
+                </a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Section divider -->
+    <div class="section-divider" aria-hidden="true"></div>
+
+    <!-- Generator section eyebrow header -->
+    <div class="generator-header section-inner">
+        <div class="section-header sr" style="--sr-delay:0s">
+            <span class="section-eyebrow"><i class="ph-fill ph-identification-card"></i> Generator</span>
+            <h2 class="section-title">Build your ID card<br><span class="section-title--hl">step by step</span></h2>
+            <p class="section-subtitle">Follow the guided steps below. Your card updates live as you type.</p>
+
+            <!-- Campus / College Theme Selector -->
+            <div class="campus-selector-wrapper">
+                <span class="campus-selector-label"><i class="ph ph-buildings"></i> Select ISU Campus Theme:</span>
+                <div class="campus-pills-bar" id="campus-pills-bar">
+                    <button class="campus-pill active" data-campus="cabagan" onclick="setCampusTheme('cabagan')">
+                        <span class="pill-dot cabagan"></span> Cabagan Main
+                    </button>
+                    <button class="campus-pill" data-campus="echague" onclick="setCampusTheme('echague')">
+                        <span class="pill-dot echague"></span> Echague Main
+                    </button>
+                    <button class="campus-pill" data-campus="cauayan" onclick="setCampusTheme('cauayan')">
+                        <span class="pill-dot cauayan"></span> Cauayan
+                    </button>
+                    <button class="campus-pill" data-campus="ilagan" onclick="setCampusTheme('ilagan')">
+                        <span class="pill-dot ilagan"></span> Ilagan
+                    </button>
+                    <button class="campus-pill" data-campus="roxas" onclick="setCampusTheme('roxas')">
+                        <span class="pill-dot roxas"></span> Roxas
+                    </button>
+                    <button class="campus-pill" data-campus="angadanan" onclick="setCampusTheme('angadanan')">
+                        <span class="pill-dot angadanan"></span> Angadanan
+                    </button>
+                    <button class="campus-pill" data-campus="san_mateo" onclick="setCampusTheme('san_mateo')">
+                        <span class="pill-dot san_mateo"></span> San Mateo
+                    </button>
+                    <button class="campus-pill" data-campus="jones" onclick="setCampusTheme('jones')">
+                        <span class="pill-dot jones"></span> Jones
+                    </button>
+                    <button class="campus-pill" data-campus="palanan" onclick="setCampusTheme('palanan')">
+                        <span class="pill-dot palanan"></span> Palanan
+                    </button>
+                    <button class="campus-pill" data-campus="san_mariano" onclick="setCampusTheme('san_mariano')">
+                        <span class="pill-dot san_mariano"></span> San Mariano
+                    </button>
+                    <button class="campus-pill" data-campus="santiago" onclick="setCampusTheme('santiago')">
+                        <span class="pill-dot santiago"></span> Santiago City
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         MAIN GENERATOR — SPLIT LAYOUT
+    ═══════════════════════════════════════════════════════ -->
+    <main class="container" id="generator">
+
+        <!-- ── LEFT: FORM SECTION ──────────────────────────── -->
+        <div class="form-section glass-panel">
+
+
+            <!-- ─────────────────────────────────────────────
+                 STUDENT TABS (Batch Print Feature)
+            ───────────────────────────────────────────────── -->
+            <div class="student-tabs-container">
+                <div class="student-tabs" id="student-tabs">
+                    <!-- Tabs injected by JS -->
+                </div>
+                <button class="add-student-btn" id="add-student-btn" aria-label="Add new student" title="Add Student">
+                    <i class="ph ph-plus"></i>
+                </button>
+                <label for="csv-upload" class="add-student-btn" title="Bulk Import CSV"
+                    style="cursor:pointer; margin-left:8px; display:inline-flex; align-items:center; justify-content:center;">
+                    <i class="ph ph-file-csv"></i>
+                    <input type="file" id="csv-upload" accept=".csv" style="display:none;">
+                </label>
+                <button class="add-student-btn" title="Batch Data Table Manager" onclick="openBatchModal()"
+                    aria-label="Open Batch Data Table Manager" style="margin-left:8px;">
+                    <i class="ph ph-table"></i>
+                </button>
+                <button class="add-student-btn" title="Autofill from Photo (OCR)" onclick="openOcrModal()"
+                    aria-label="Scan printed ID or form to autofill fields" style="margin-left:8px;">
+                    <i class="ph ph-scan"></i>
+                </button>
+            </div>
+
+            <!-- ─────────────────────────────────────────────
+                 STEPPER HEADER (shown in stepper mode)
+                 Contains mini live preview + progress meta
+            ───────────────────────────────────────────────── -->
+            <div class="stepper-header">
+                <div class="stepper-mini-preview">
+                    <div class="stepper-mini-card" id="mini-card">
+                        <div class="stepper-mini-front">
+                            <canvas id="mini-canvas-front"></canvas>
+                        </div>
+                        <div class="stepper-mini-back">
+                            <canvas id="mini-canvas-back"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stepper-meta">
+                    <div class="stepper-step-label">
+                        <span id="stepper-step-name">Upload Photo</span>
+                        <span class="stepper-step-count" id="stepper-count">1 / 10</span>
+                    </div>
+                    <div class="stepper-progress-track">
+                        <div class="stepper-progress-fill" id="stepper-progress"></div>
+                    </div>
+                    <div class="stepper-dots" id="stepper-dots"></div>
+                </div>
+            </div>
+
+            <!-- ─────────────────────────────────────────────
+                 DESKTOP FORM HEADER
+            ───────────────────────────────────────────────── -->
+            <div class="desktop-form-header">
+                <div class="desktop-form-header-top">
+                    <div class="desktop-step-badge" id="desktop-step-badge">
+                        <i class="ph ph-number-one"></i>
+                        Step 1 of 10
+                    </div>
+                    <h2 class="desktop-step-title" id="desktop-step-title">Choose ID Version</h2>
+                    <p class="subtitle">Fill in your details to generate the live ID preview.</p>
+                </div>
+                <!-- Segmented progress bar — JS injects 9 segments -->
+                <div class="desktop-progress-bar" id="desktop-progress-bar" role="progressbar" aria-valuemin="1"
+                    aria-valuemax="10" aria-valuenow="1"></div>
+            </div>
+
+            <!-- ─────────────────────────────────────────────
+                 FORM STEPS
+                 Each .form-group: data-step & data-step-title
+            ───────────────────────────────────────────────── -->
+            <div class="steps-wrapper">
+
+                <!-- Step 1: ID Version -->
+                <div class="form-group" data-step="1" data-step-title="Choose ID Version">
+                    <label><i class="ph ph-cards"></i> ID Template Version</label>
+                    <p class="step-hint" style="margin-bottom:16px;"><i class="ph ph-info"></i> Select which ID design
+                        you want to generate.</p>
+                    <div class="version-toggle-group" id="version-toggle-group">
+                        <button class="version-toggle-btn active" id="btn-old-id" onclick="setIdVersion('old')">
+                            <div class="version-btn-icon"><i class="ph ph-identification-card"></i></div>
+                            <div class="version-btn-label">
+                                <span class="version-btn-title">Old ID</span>
+                                <span class="version-btn-sub">Classic template with course</span>
+                            </div>
+                            <i class="ph ph-check-circle version-check"></i>
+                        </button>
+                        <button class="version-toggle-btn" id="btn-2026-id" onclick="setIdVersion('2026')">
+                            <div class="version-btn-icon version-btn-icon--new"><i class="ph ph-sparkle"></i></div>
+                            <div class="version-btn-label">
+                                <span class="version-btn-title">2026 New ID</span>
+                                <span class="version-btn-sub">Modern template with department</span>
+                            </div>
+                            <i class="ph ph-check-circle version-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Photo -->
+                <div class="form-group" data-step="2" data-step-title="Upload Photo">
+                    <label for="profile-pic">
+                        <i class="ph ph-camera"></i> Profile Picture
+                    </label>
+                    <div class="photo-upload-area" id="photo-upload-area">
+                        <div class="photo-upload-placeholder" id="photo-placeholder">
+                            <div class="photo-upload-icon">
+                                <i class="ph ph-cloud-arrow-up"></i>
+                            </div>
+                            <span>Click or drag to upload</span>
+                            <small>JPG, PNG supported · Passport size recommended</small>
+                        </div>
+                        <div class="photo-preview-wrapper" id="photo-preview-wrapper" style="display:none;">
+                            <img id="photo-preview-thumb" class="photo-preview-thumb" alt="Profile photo preview">
+                            <button id="recrop-btn" class="recrop-btn" type="button"><i class="ph ph-crop"></i>
+                                Re-crop</button>
+                        </div>
+                        <input type="file" id="profile-pic" accept="image/*" aria-label="Upload profile picture">
+                    </div>
+                    <p class="step-hint"><i class="ph ph-info"></i> Your photo will appear on the front of the ID card.
+                    </p>
+                </div>
+
+                <!-- Step 3: Full Name -->
+                <div class="form-group" data-step="3" data-step-title="Full Name">
+                    <label for="full-name"><i class="ph ph-user"></i> Full Name</label>
+                    <input type="text" id="full-name" placeholder="e.g. JUAN DELA CRUZ" autocomplete="name"
+                        spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the front of your ID. Use your official
+                        full name.</p>
+                </div>
+
+                <!-- Step 4: ID Number -->
+                <div class="form-group" data-step="4" data-step-title="ID Number">
+                    <label for="id-number"><i class="ph ph-hash"></i> ID / Student Number</label>
+                    <input type="text" id="id-number" placeholder="e.g. 25-00001" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Your official student identification number.</p>
+                </div>
+
+                <!-- Step 5: Course / Department -->
+                <div class="form-group" data-step="5" data-step-title="Course / Department">
+                    <!-- OLD ID: Course text input -->
+                    <div id="course-field-wrapper">
+                        <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
+                        <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
+                        <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear
+                            on the ID.</p>
+                    </div>
+                    <!-- 2026 ID: Department select -->
+                    <div id="department-field-wrapper" style="display:none;">
+                        <label for="department"><i class="ph ph-buildings"></i> College / Department</label>
+                        <select id="department" class="select-field">
+                            <option value="">— Select your college —</option>
+                            <option value="CBM">CBM – College of Business and Management</option>
+                            <option value="CCJE">CCJE – College of Criminal Justice Education</option>
+                            <option value="CAST">CAST – College of Agricultural, Science and Technology</option>
+                            <option value="CCSICT">CCSICT – College of Computing Studies, Information and Communication
+                                Technology</option>
+                            <option value="COE">COE – College of Education</option>
+                            <option value="CED">CED – College of Education</option>
+                            <option value="CFEM">CFEM – College of Forestry and Environmental Management</option>
+                            <option value="CCSS">CCSS – College of Communication and Social Sciences</option>
+                            <option value="CS">CS – College of Science</option>
+                        </select>
+                        <p class="step-hint"><i class="ph ph-info"></i> Select the college your department belongs to.
+                            This will appear on your 2026 ID.</p>
+                    </div>
+                </div>
+
+                <!-- Step 6: DOB -->
+                <div class="form-group" data-step="6" data-step-title="Date of Birth">
+                    <label for="dob"><i class="ph ph-cake"></i> Date of Birth</label>
+                    <input type="date" id="dob">
+                    <p class="step-hint"><i class="ph ph-info"></i> Appears on the back of the ID card.</p>
+                </div>
+
+                <!-- Step 7: Parent / Guardian -->
+                <div class="form-group" data-step="7" data-step-title="Parent / Guardian">
+                    <label for="parent-name"><i class="ph ph-users"></i> Parent / Guardian Name</label>
+                    <input type="text" id="parent-name" placeholder="e.g. JANE DELA CRUZ" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Person to notify in case of emergency.</p>
+                </div>
+
+                <!-- Step 8: Address -->
+                <div class="form-group" data-step="8" data-step-title="Address">
+                    <label for="address"><i class="ph ph-map-pin"></i> Home Address</label>
+                    <textarea id="address" placeholder="e.g. Brgy. San Antonio, Cauayan City, Isabela" rows="3"
+                        spellcheck="false"></textarea>
+                    <p class="step-hint"><i class="ph ph-info"></i> Full home address for your ID record.</p>
+                </div>
+
+                <!-- Step 9: Telephone -->
+                <div class="form-group" data-step="9" data-step-title="Telephone">
+                    <label for="telephone"><i class="ph ph-phone"></i> Telephone / Mobile</label>
+                    <input type="text" id="telephone" placeholder="e.g. +63 912 345 6789" spellcheck="false">
+                    <p class="step-hint"><i class="ph ph-info"></i> Emergency contact number printed on the back.</p>
+                </div>
+
+                <!-- Step 10: Signature -->
+                <div class="form-group clearfix" data-step="10" data-step-title="Signature">
+                    <label><i class="ph ph-pen-nib"></i> Signature</label>
+
+                    <!-- Signature Mode Toggle -->
+                    <div class="sig-mode-tabs">
+                        <button class="sig-mode-tab active" id="sig-tab-draw" onclick="switchSigMode('draw')">
+                            <i class="ph ph-pencil-simple"></i> Draw
+                        </button>
+                        <button class="sig-mode-tab" id="sig-tab-upload" onclick="switchSigMode('upload')">
+                            <i class="ph ph-sparkle"></i> Scan Photo
+                        </button>
+                    </div>
+
+                    <!-- Draw Mode -->
+                    <div id="sig-draw-mode">
+                        <div class="signature-container">
+                            <canvas id="signature-pad" aria-label="Draw your signature"></canvas>
+                            <div class="signature-watermark">Draw your signature here</div>
+                        </div>
+                        <div class="signature-actions">
+                            <button id="clear-signature" class="btn-clear">
+                                <i class="ph ph-eraser"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Upload Mode -->
+                    <div id="sig-upload-mode" style="display:none;">
+                        <div class="sig-upload-area" id="sig-upload-area">
+                            <div class="sig-upload-placeholder" id="sig-upload-placeholder">
+                                <i class="ph ph-camera"></i>
+                                <span>Take a photo or upload your signature on white paper</span>
+                                <small>JPG · PNG · WEBP supported</small>
+                            </div>
+                            <img id="sig-upload-preview" class="sig-upload-preview" style="display:none;"
+                                alt="Signature photo preview">
+                            <input type="file" id="sig-photo-input" accept="image/*"
+                                aria-label="Upload signature photo">
+                        </div>
+                        <div class="sig-upload-actions">
+                            <button class="btn-ai-enhance" id="sig-enhance-btn" onclick="enhanceSignatureWithAI()"
+                                style="display:none;">
+                                <i class="ph ph-magic-wand"></i>
+                                <span>Enhance &amp; Remove Background</span>
+                            </button>
+                            <button class="btn-clear" id="sig-upload-clear" onclick="clearUploadedSig()"
+                                style="display:none;">
+                                <i class="ph ph-trash"></i> Clear
+                            </button>
+                        </div>
+                        <div class="sig-ai-status" id="sig-ai-status" style="display:none;">
+                            <div class="sig-ai-spinner"></div>
+                            <span id="sig-ai-status-text">Processing signature…</span>
+                        </div>
+                        <div class="sig-result-preview" id="sig-result-preview" style="display:none;">
+                            <div class="sig-result-label"><i class="ph ph-check-circle"></i> Cleaned signature ready
+                            </div>
+                            <canvas id="sig-result-canvas" class="sig-result-canvas"
+                                aria-label="Processed signature preview"></canvas>
+                            <button class="btn-ghost sig-reprocess-btn"
+                                onclick="document.getElementById('sig-photo-input').click()">
+                                <i class="ph ph-arrow-counter-clockwise"></i> Use different photo
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="step-hint"><i class="ph ph-info"></i> Sign on white paper, take a photo, and the engine
+                        will clean and extract it automatically.</p>
+                </div>
+
+            </div><!-- /steps-wrapper -->
+
+            <!-- ─────────────────────────────────────────────
+                 STEPPER NAVIGATION (Back / Next / Done)
+            ───────────────────────────────────────────────── -->
+            <div class="stepper-nav">
+                <button class="stepper-btn stepper-btn-back" id="stepper-back" onclick="stepperBack()"
+                    aria-label="Previous step">
+                    <i class="ph ph-arrow-left"></i> Back
+                </button>
+                <button class="stepper-btn stepper-btn-next" id="stepper-next" onclick="stepperNext()"
+                    aria-label="Next step">
+                    Next <i class="ph ph-arrow-right"></i>
+                </button>
+                <button class="stepper-btn stepper-btn-done" id="stepper-done" style="display:none;"
+                    onclick="showMobileExportMenu()" aria-label="Download ID">
+                    <i class="ph ph-download-simple"></i> Download ID
+                </button>
+            </div>
+
+            <!-- Desktop Download Buttons -->
+            <div class="export-actions" id="desktop-export-actions">
+                <button id="download-btn" class="btn-primary desktop-download-btn"
+                    aria-label="Download print-ready A4 ID">
+                    <i class="ph ph-printer"></i>
+                    Print Batch (A4)
+                </button>
+                <div class="export-dropdown-container">
+                    <button id="save-image-btn" class="btn-primary desktop-download-btn" aria-label="Save as Image">
+                        <i class="ph ph-image"></i>
+                        Save Image <i class="ph ph-caret-down"></i>
+                    </button>
+                    <div class="export-dropdown-menu" id="export-dropdown-menu">
+                        <button onclick="saveAsImage('front')">Front Side</button>
+                        <button onclick="saveAsImage('back')">Back Side</button>
+                        <button onclick="saveAsImage('both')">Both Sides</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Export Actions Sheet -->
+            <div class="mobile-export-sheet" id="mobile-export-sheet">
+                <div class="sheet-header">
+                    <h3>Export ID</h3>
+                    <button class="btn-close" onclick="hideMobileExportMenu()"><i class="ph ph-x"></i></button>
+                </div>
+                <div class="sheet-body">
+                    <button class="btn-primary"
+                        onclick="document.getElementById('download-btn').click(); hideMobileExportMenu();">
+                        <i class="ph ph-printer"></i> Print Batch (A4)
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('front'); hideMobileExportMenu();">
+                        <i class="ph ph-image"></i> Save Front Image
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('back'); hideMobileExportMenu();">
+                        <i class="ph ph-image"></i> Save Back Image
+                    </button>
+                    <button class="btn-ghost" onclick="saveAsImage('both'); hideMobileExportMenu();">
+                        <i class="ph ph-images"></i> Save Both Sides
+                    </button>
+                </div>
+            </div>
+
+        </div><!-- /form-section -->
+
+        <!-- ── RIGHT: PREVIEW SECTION ──────────────────────── -->
+        <div class="preview-section glass-panel">
+
+            <div class="preview-header">
+                <div class="live-badge">
+                    <span class="live-dot"></span>
+                    LIVE
+                </div>
+                <div class="preview-title" id="flip-title">Front Side</div>
+                <div class="preview-tools">
+                    <button class="preview-tool-btn" id="btn-toggle-hologram" onclick="toggleHologramOverlay()"
+                        title="Toggle Security Watermark & Hologram">
+                        <i class="ph ph-shield-check"></i> <span class="tool-btn-text">Watermark</span>
+                    </button>
+                    <button class="preview-tool-btn" onclick="openCardInspectModal()" title="Inspect Card High-Res">
+                        <i class="ph ph-corners-out"></i> <span class="tool-btn-text">Inspect</span>
+                    </button>
+                    <button class="preview-tool-btn" id="btn-toggle-audio" onclick="toggleAudioFx()"
+                        title="Toggle Sound FX">
+                        <i class="ph ph-speaker-high" id="audio-icon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Card Stage: ambient glow + tilt container -->
+            <div class="card-stage">
+                <div class="card-ambient-glow" aria-hidden="true"></div>
+
+                <!-- Three.js holographic shimmer overlay on the card -->
+                <canvas id="holo-canvas" aria-hidden="true"
+                    style="position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none;border-radius:inherit;"></canvas>
+
+                <div class="flip-card-container" id="card-tilt-wrapper" onclick="flipCard()" role="button" tabindex="0"
+                    aria-label="Click to flip ID card" onkeydown="if(event.key==='Enter'||event.key===' ')flipCard()">
+                    <div class="flip-card" id="idCard">
+                        <div class="flip-card-front id-card-preview">
+                            <canvas id="front-canvas"></canvas>
+                        </div>
+                        <div class="flip-card-back id-card-preview">
+                            <canvas id="back-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flip Hint -->
+            <div class="flip-hint" onclick="document.querySelector('.flip-card-container').click();" role="button">
+                <i class="ph ph-arrows-clockwise"></i>
+                <span>Tap card to flip</span>
+            </div>
+
+            <!-- Info Chips -->
+            <div class="preview-chips">
+                <div class="chip"><i class="ph ph-lightning"></i> Real-time</div>
+                <div class="chip"><i class="ph ph-printer"></i> Print-Ready</div>
+                <div class="chip chip-gold"><i class="ph ph-shield-check"></i> ISU Official</div>
+            </div>
+
+        </div><!-- /preview-section -->
+
+    </main><!-- /container -->
+
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════ -->
+    <footer>
+        <div class="footer-container liquid-glass">
+            <div class="footer-logo">
+                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <div class="footer-logo-text">
+                    <span class="footer-uni-name">Isabela State University</span>
+                    <span class="footer-tagline">Cabagan, Isabela</span>
+                </div>
+            </div>
+            <p class="footer-text">
+                © 2026 Designed &amp; Developed by Zyron Neil.
+                <span>v3.5.0 · 2026 ID Generator</span>
+            </p>
+            <div class="social-links">
+                <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
+                    <i class="ph ph-envelope"></i>
+                </a>
+                <a href="https://www.facebook.com/share/18ZFsaeo4S/" target="_blank" rel="noopener noreferrer"
+                    class="icon-link liquid-glass" aria-label="Facebook">
+                    <i class="ph ph-facebook-logo"></i>
+                </a>
+                <a href="https://www.instagram.com/zyronnei10/" target="_blank" rel="noopener noreferrer"
+                    class="icon-link liquid-glass" aria-label="Instagram">
+                    <i class="ph ph-instagram-logo"></i>
+                </a>
+                <a href="https://www.tiktok.com/@zyron_neil" target="_blank" rel="noopener noreferrer"
+                    class="icon-link liquid-glass" aria-label="TikTok">
+                    <i class="ph ph-tiktok-logo"></i>
+                </a>
+                <a href="https://github.com/ZyronNeil2007" target="_blank" rel="noopener noreferrer"
+                    class="icon-link liquid-glass" aria-label="GitHub">
+                    <i class="ph ph-github-logo"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Hidden export canvas -->
+    <canvas id="export-canvas" style="display:none;" aria-hidden="true"></canvas>
+    <!-- Hidden crop canvas -->
+    <canvas id="crop-canvas" style="display:none;" aria-hidden="true"></canvas>
+
+    <!-- ═══════════════════════════════════════════════════════
+         OCR AUTOFILL MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="ocr-modal" aria-modal="true" role="dialog"
+        aria-label="Scan printed ID or form">
+        <div class="cropper-modal glass-panel ocr-modal-panel">
+            <div class="cropper-header">
+                <div class="ocr-header-icon"><i class="ph ph-scan"></i></div>
+                <div>
+                    <h3>Autofill from Photo</h3>
+                    <p class="ocr-header-sub">Snap or upload a printed ID / registration form</p>
+                </div>
+                <button class="btn-close" onclick="closeOcrModal()" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+
+            <div class="ocr-body">
+                <!-- Upload zone -->
+                <div class="ocr-upload-zone" id="ocr-upload-zone">
+                    <div class="ocr-placeholder" id="ocr-placeholder">
+                        <i class="ph ph-camera"></i>
+                        <span>Click or tap to upload / snap a photo</span>
+                        <small>Photo of existing printed ID or registration form</small>
+                    </div>
+                    <img id="ocr-preview-img" class="ocr-preview-img" style="display:none;"
+                        alt="Uploaded photo for OCR">
+                    <input type="file" id="ocr-file-input" accept="image/*" capture="environment" style="display:none;">
+                </div>
+
+                <!-- Status bar -->
+                <div class="sig-ai-status" id="ocr-status" style="display:none;">
+                    <div class="sig-ai-spinner"></div>
+                    <span id="ocr-status-text">Loading OCR engine…</span>
+                </div>
+
+                <!-- Scan button -->
+                <div class="ocr-scan-row">
+                    <button class="btn-ai-enhance" id="ocr-scan-btn" onclick="runOcrScan()" style="display:none;">
+                        <i class="ph ph-magnifying-glass"></i>
+                        <span>Scan &amp; Extract Fields</span>
+                    </button>
+                </div>
+
+                <!-- Extracted results -->
+                <div class="ocr-results" id="ocr-results" style="display:none;">
+                    <h4 class="ocr-results-title"><i class="ph ph-check-circle"></i> Extracted Fields</h4>
+                    <div class="ocr-results-grid">
+                        <div class="ocr-field">
+                            <span class="ocr-field-label"><i class="ph ph-user"></i> Name</span>
+                            <span class="ocr-field-value" id="ocr-result-name">—</span>
+                        </div>
+                        <div class="ocr-field">
+                            <span class="ocr-field-label"><i class="ph ph-hash"></i> ID Number</span>
+                            <span class="ocr-field-value" id="ocr-result-id">—</span>
+                        </div>
+                        <div class="ocr-field">
+                            <span class="ocr-field-label"><i class="ph ph-graduation-cap"></i> Course</span>
+                            <span class="ocr-field-value" id="ocr-result-course">—</span>
+                        </div>
+                        <div class="ocr-field">
+                            <span class="ocr-field-label"><i class="ph ph-cake"></i> Date of Birth</span>
+                            <span class="ocr-field-value" id="ocr-result-dob">—</span>
+                        </div>
+                    </div>
+                    <p class="ocr-disclaimer"><i class="ph ph-info"></i> Review the results above before applying. OCR
+                        may not be 100% accurate.</p>
+                </div>
+            </div>
+
+            <div class="cropper-footer">
+                <div class="cropper-actions">
+                    <button class="btn-ghost" onclick="closeOcrModal()">Cancel</button>
+                    <button class="btn-primary" id="ocr-apply-btn" onclick="applyOcrResults()"
+                        style="display:none;">Apply to Form</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BATCH DATA TABLE MANAGER MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="batch-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel batch-modal-panel">
+            <div class="cropper-header">
+                <div class="batch-modal-header-info">
+                    <h3><i class="ph ph-table"></i> Batch Data Manager</h3>
+                    <p class="step-hint">View, edit, search, and manage all student records in your batch.</p>
+                </div>
+                <button class="btn-close" onclick="closeBatchModal()" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="batch-toolbar">
+                <div class="batch-search-box">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" id="batch-search-input"
+                        placeholder="Search student by name, ID number, or course..." oninput="filterBatchTable()">
+                </div>
+                <div class="batch-stats-badge" id="batch-stats-badge">
+                    0 Students
+                </div>
+            </div>
+            <div class="batch-table-wrapper">
+                <table class="batch-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Student Name</th>
+                            <th>ID Number</th>
+                            <th>Course / Program</th>
+                            <th>Photo</th>
+                            <th>Signature</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="batch-table-body">
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-actions" style="justify-content: space-between; width: 100%;">
+                    <div>
+                        <button class="btn-ghost" onclick="exportBatchCsv()"><i class="ph ph-download-simple"></i>
+                            Export CSV</button>
+                    </div>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-ghost" onclick="closeBatchModal()">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         HIGH-RES CARD INSPECTION MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="card-inspect-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel inspect-modal-panel">
+            <div class="cropper-header">
+                <div class="inspect-modal-title">
+                    <h3><i class="ph ph-corners-out"></i> High-Resolution Card Inspector</h3>
+                    <span class="live-badge"><span class="live-dot"></span> Studio HD</span>
+                </div>
+                <button class="btn-close" onclick="closeCardInspectModal()" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="inspect-view-toggle">
+                <button class="inspect-toggle-btn active" id="inspect-btn-front"
+                    onclick="switchInspectFace('front')">Front Face</button>
+                <button class="inspect-toggle-btn" id="inspect-btn-back" onclick="switchInspectFace('back')">Back
+                    Face</button>
+            </div>
+            <div class="inspect-body">
+                <div class="inspect-canvas-stage">
+                    <canvas id="inspect-canvas"></canvas>
+                </div>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-actions" style="justify-content: space-between; width: 100%;">
+                    <span class="inspect-info"><i class="ph ph-shield-check"></i> 300 DPI Native Canvas Print
+                        Quality</span>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn-ghost" onclick="saveAsImage('front')"><i class="ph ph-download-simple"></i>
+                            Download Front</button>
+                        <button class="btn-ghost" onclick="saveAsImage('back')"><i class="ph ph-download-simple"></i>
+                            Download Back</button>
+                        <button class="btn-primary" onclick="closeCardInspectModal()">Done</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         PHOTO CROPPER MODAL
+    ═══════════════════════════════════════════════════════ -->
+    <div class="cropper-modal-overlay" id="cropper-modal" aria-hidden="true">
+        <div class="cropper-modal glass-panel">
+            <div class="cropper-header">
+                <h3>Adjust Photo</h3>
+                <button class="btn-close" id="cropper-cancel" aria-label="Close">
+                    <i class="ph ph-x"></i>
+                </button>
+            </div>
+            <div class="cropper-body">
+                <div class="cropper-viewport" id="cropper-viewport">
+                    <img id="cropper-img" src="" alt="Source image to crop">
+                    <div class="cropper-frame">
+                        <div class="cropper-handle top-left"></div>
+                        <div class="cropper-handle top-right"></div>
+                        <div class="cropper-handle bottom-left"></div>
+                        <div class="cropper-handle bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="cropper-footer">
+                <div class="cropper-zoom">
+                    <i class="ph ph-magnifying-glass-minus"></i>
+                    <input type="range" id="cropper-zoom" min="0.5" max="3" step="0.01" value="1">
+                    <i class="ph ph-magnifying-glass-plus"></i>
+                </div>
+                <div class="cropper-actions">
+                    <button class="btn-ghost" id="cropper-cancel-btn">Cancel</button>
+                    <button class="btn-primary" id="cropper-save-btn">Use This Crop</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER
+    ═══════════════════════════════════════════════════════ -->
+    <footer class="site-footer" id="footer">
+        <div class="footer-glow" aria-hidden="true"></div>
+        <div class="footer-inner section-inner">
+
+            <!-- Top row: brand + links -->
+            <div class="footer-top">
+
+                <!-- Brand -->
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
+                        <div class="footer-logo-text">
+                            <span class="footer-logo-name">ISU ID Generator</span>
+                            <span class="footer-logo-sub">Isabela State University · Cabagan</span>
+                        </div>
+                    </div>
+                    <p class="footer-tagline">Generate print-ready student IDs entirely in your browser — no server, no
+                        account, no compromise.</p>
+                    <div class="footer-badges">
+                        <span class="footer-badge"><i class="ph-fill ph-lock"></i> 100% Private</span>
+                        <span class="footer-badge"><i class="ph-fill ph-wifi-slash"></i> Works Offline</span>
+                        <span class="footer-badge"><i class="ph-fill ph-open-source-logo"></i> Open Source</span>
+                    </div>
+                </div>
+
+                <!-- Nav columns -->
+                <div class="footer-links-grid">
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Navigate</h4>
+                        <a href="#home" class="footer-link"
+                            onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})">Home</a>
+                        <a href="#features" class="footer-link"
+                            onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+                        <a href="#how-it-works" class="footer-link"
+                            onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">How It
+                            Works</a>
+                        <a href="#generator" class="footer-link"
+                            onclick="document.getElementById('generator').scrollIntoView({behavior:'smooth'})">Generator</a>
+                    </div>
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Resources</h4>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan" class="footer-link"
+                            target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/wiki"
+                            class="footer-link" target="_blank" rel="noopener noreferrer">Documentation</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/releases"
+                            class="footer-link" target="_blank" rel="noopener noreferrer">Release Notes</a>
+                        <a href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/issues"
+                            class="footer-link" target="_blank" rel="noopener noreferrer">Report an Issue</a>
+                    </div>
+                    <div class="footer-links-col">
+                        <h4 class="footer-links-heading">Built With</h4>
+                        <a href="https://phosphoricons.com" class="footer-link" target="_blank"
+                            rel="noopener noreferrer">Phosphor Icons</a>
+                        <a href="https://fonts.google.com" class="footer-link" target="_blank"
+                            rel="noopener noreferrer">Google Fonts</a>
+                        <a href="https://tesseract.projectnaptha.com" class="footer-link" target="_blank"
+                            rel="noopener noreferrer">Tesseract.js</a>
+                        <a href="https://github.com/parall.ax/parallax" class="footer-link" target="_blank"
+                            rel="noopener noreferrer">VanillaTilt.js</a>
+                    </div>
+                </div>
+
+            </div><!-- /footer-top -->
+
+            <!-- Divider -->
+            <div class="footer-rule" aria-hidden="true"></div>
+
+            <!-- Bottom row: copyright + version -->
+            <div class="footer-bottom">
+                <p class="footer-copy">
+                    &copy; <span id="footer-year">2026</span> Isabela State University · Cabagan Campus.
+                    Open-source under the <a
+                        href="https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/blob/main/LICENSE"
+                        class="footer-copy-link" target="_blank" rel="noopener noreferrer">MIT License</a>.
+                </p>
+                <div class="footer-version">
+                    <span class="footer-version-badge">v3.6.0</span>
+                    <span class="footer-version-label">University Multi-Campus & Security Studio Edition</span>
+                </div>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- jsPDF for PDF batch export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <!-- Anime.js v4 (UMD bundle — exposes global `anime` object) -->
+    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+
+    <!-- Scroll Reveal + Progress Bar (inline, no deps) -->
+    <script>
+        // ── Scroll Progress Bar (fallback — animations.js installs a smoother version) ──
+        const progressBar = document.getElementById('scroll-progress');
+        window._progressBarOwned = false; // animations.js sets this true when it takes over
+        function updateProgress() {
+            if (window._progressBarOwned) return; // yield to animations.js
+            const h = document.documentElement;
+            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+            if (progressBar) progressBar.style.width = pct + '%';
+        }
+        window.addEventListener('scroll', updateProgress, { passive: true });
+
+        // ── Scroll Reveal via IntersectionObserver ──
+        const srObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    srObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.sr').forEach(el => srObserver.observe(el));
+
+        // ── Mobile Drawer ──
+        const hamburger = document.getElementById('nav-hamburger');
+        const drawer = document.getElementById('mobile-drawer');
+        const overlay = document.getElementById('mobile-drawer-overlay');
+        const drawerClose = document.getElementById('mobile-drawer-close');
+
+        function openDrawer() {
+            drawer.classList.add('is-open');
+            overlay.classList.add('is-open');
+            hamburger.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeDrawer() {
+            drawer.classList.remove('is-open');
+            overlay.classList.remove('is-open');
+            hamburger.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+
+        if (hamburger) hamburger.addEventListener('click', openDrawer);
+        if (drawerClose) drawerClose.addEventListener('click', closeDrawer);
+        if (overlay) overlay.addEventListener('click', closeDrawer);
+
+        // Close drawer on mobile nav link click
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const section = link.dataset.section;
+                if (section) {
+                    e.preventDefault();
+                    closeDrawer();
+                    setTimeout(() => {
+                        document.getElementById(section)?.scrollIntoView({ behavior: 'smooth' });
+                    }, 300);
+                } else {
+                    closeDrawer();
+                }
+            });
+        });
+
+        // Close drawer on mobile CTA click
+        const mobileDrawerCta = drawer ? drawer.querySelector('.btn-primary') : null;
+        if (mobileDrawerCta) mobileDrawerCta.addEventListener('click', () => {
+            closeDrawer();
+            setTimeout(() => document.getElementById('generator')?.scrollIntoView({ behavior: 'smooth' }), 300);
+        });
+
+        // ── Active Nav Scrollspy ──
+        const navLinks = document.querySelectorAll('.nav-link[href^="#"], .desktop-menu .nav-link');
+        const sections = ['home', 'features', 'how-it-works', 'generator'];
+
+        const spyObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const id = entry.target.id;
+                    navLinks.forEach(link => {
+                        link.classList.toggle('nav-link--active', link.getAttribute('href') === `#${id}`);
+                    });
+                }
+            });
+        }, { threshold: 0.35, rootMargin: '-60px 0px -30% 0px' });
+
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) spyObserver.observe(el);
+        });
+
+        // ── Dynamic Copyright Year ──
+        const yearEl = document.getElementById('footer-year');
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+    </script>
+
+    <script src="app.js"></script>
+
+    <!-- Animation enhancement layer (GSAP + Anime.js + Three.js) -->
+    <script src="animations.js"></script>
+</body>
+
+</html>

@@ -11,12 +11,17 @@ The ISU Premium ID Generator operates strictly as a **Client-Side Single-Page Ap
 - **VanillaTilt.js:** Provides the smooth, interactive 3D hover effects on the ID preview cards.
 
 ## 📂 File Structure
-The project is intentionally kept simple and flat:
-- `index.html`: The main entry point. Contains the layout, SVG icons, and DOM structure.
-- `style.css`: All application styling, neatly organized into 25 documented sections (e.g., CSS tokens, reset, typography, components, animations).
-- `app.js`: The powerhouse of the application. Contains all logic, state management, and the Canvas rendering pipeline.
-- `images/`: Contains the blank ID template references (Front and Back), university logos, and other static assets.
-- `scripts/`: Python utility scripts (e.g., `resize_photos.py`) used by administrators to batch process student photos before uploading.
+The project is modularized into dedicated folders under `isu_id`:
+- **`web/`**: Client-side Web Application
+  - `index.html`: The main entry point. Contains the layout, SVG icons, and DOM structure.
+  - `style.css`: All application styling, neatly organized into documented sections.
+  - `app.js`: The powerhouse of the application. Contains all logic, state management, and the Canvas rendering pipeline.
+  - `animations.js`: Visual motion layer (GSAP 3, Anime.js v4, Three.js hero particles).
+  - `images/`: Contains the blank ID template references (Front and Back), university logos, and static assets.
+  - `scripts/`: Python utility scripts (e.g., `generate_dummy_students.py`, `resize_photos.py`).
+- **`android/`**: Android Studio Project
+  - `app/`: Native / hybrid Android application source (Kotlin, Jetpack Compose, ML Kit OCR, WebView bridge).
+  - `gradle/`, `build.gradle.kts`, `settings.gradle.kts`: Gradle build configuration.
 
 ## 🎨 The Canvas Rendering Pipeline
 The core of the ID generator is the HTML5 Canvas API. The rendering pipeline works as follows:

@@ -1,0 +1,3079 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ *  ISU PREMIUM ID GENERATOR — app.js
+ *  Isabela State University · Spatial Edition 2026
+ * ═══════════════════════════════════════════════════════════════════════════
+ *
+ *  MODULES:
+ *  1.  CONFIG         — canvas coordinates & text layout
+ *  2.  STATE          — reactive data store
+ *  3.  CANVAS REFS    — DOM element references
+ *  4.  SIGNATURE PAD  — freehand drawing on canvas
+ *  5.  FORM BINDINGS  — real-time input → state → render
+ *  6.  TEMPLATE LOAD  — async image loading
+ *  7.  RENDER ENGINE  — front / back canvas draw calls
+ *  8.  STEPPER        — step navigation, progress, dots
+ *  9.  TILT EFFECT    — VanillaTilt 3D card hover
+ * 10.  NAVBAR         — scroll-shrink behaviour
+ * 11.  EXPORT         — jsPDF A4 landscape batch print
+ * 12.  BOOT           — initialise everything on load
+ * 13.  STUDENT TABS   — multi-student batch management
+ * 14.  PHOTO CROPPER  — interactive crop & zoom modal
+ * 15.  SAVE AS IMAGE  — PNG front/back export
+ * 16.  CSV IMPORT     — bulk student import from CSV
+ * 17.  AI SIGNATURE   — photo scan → background removal
+ * 18.  SESSION SAVE   — localStorage auto-save & restore
+ * 19.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   1. CONFIG — Canvas coordinate map & text style definitions
+   All pixel values are relative to the native template image dimensions.
+═══════════════════════════════════════════════════════════════════════════ */
+const CONFIG = {
+    /** Scale from logical coords → native canvas pixels */
+    scaleMultiplier: 4.17,
+
+    /** Photo crop box on front face (pixels in native resolution) */
+    photo: { x: 161, y: 213, width: 315, height: 355 },
+
+    /** Signature placement on front face */
+    signature: { x: 160, y: 575, width: 319, height: 120 },
+
+    /** Per-field text style definitions */
+    text: {
+        name: {
+            x: 319, y: 710,
+            align: 'center',
+            font: "11.2px 'Roboto Condensed'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+        idNumber: {
+            x: 319, y: 795,
+            align: 'center',
+            font: "9.8px 'Nourd', sans-serif",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+        course: {
+            x: 319, y: 915,
+            align: 'center',
+            font: "10.8px 'Roboto Condensed'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent',
+            maxWidth: 550
+        },
+        parentName: {
+            x: 64, y: 145,
+            align: 'left',
+            font: "7.7px 'Arial'",
+            isBold: true,
+            strokeThickness: 10,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+        address: {
+            x: 64, y: 185,
+            align: 'left',
+            font: "4.9px 'Arial Nova Condensed', sans-serif",
+            isBold: true,
+            strokeThickness: 16,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent',
+            maxWidth: 500
+        },
+        telephone: {
+            x: 64, y: 205,
+            align: 'left',
+            font: "4.9px 'Arial Nova Condensed', sans-serif",
+            isBold: true,
+            strokeThickness: 16,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+        dob: {
+            x: 64, y: 250,
+            align: 'left',
+            font: "5.7px 'Arial MT Pro', sans-serif",
+            isBold: false,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        }
+    }
+};
+
+/**
+ * CONFIG for the 2026 New ID template.
+ * Front: 675 × 1050 px   Back: 704 × 1050 px
+ *
+ * All coordinates measured pixel-by-pixel from:
+ *   - new_template_front.id.png  (the blank template)
+ *   - front_reference.png        (the filled reference)
+ *   - new_template_back.id.png   (the blank template)
+ *   - back_reference.png         (the filled reference)
+ *
+ * FRONT pixel math
+ * ─────────────────
+ *  Blue photo box outer (includes 4px green border):
+ *    left=172  top=225  right=508  bottom=558  → w=336 h=333
+ *  Photo FILL area (inside border, 4px inset each side):
+ *    x=176 y=229 w=328 h=325  (corner-radius ≈ 18px)
+ *
+ *  "NAME" label (small caps in template) center: x=337 y=729
+ *  Student name rendered ABOVE that label:
+ *    font-size 36px → half-height ~18px → center y = 729 - 18 - 14 = 697
+ *
+ *  "STUDENT NUMBER" label center: x=337 y=813
+ *  Student ID rendered ABOVE that label:
+ *    font-size 42px → half-height ~21px → center y = 813 - 21 - 11 = 781
+ *
+ *  Department block (below "STUDENT NUMBER"):
+ *    3 lines × 28px line-height, block top ~840  → center y = 840 + 28 = 868
+ *    (center of 3-line block = top + lineHeight + 0.5*lineHeight = 840+14=854)
+ *    Adjust to observed position: y = 880
+ *
+ * BACK pixel math (canvas 704 × 1050)
+ * ─────────────────────────────────────
+ *  Labels at left edge, bold values follow on same row.
+ *  Label font in template: 13.5px bold Arial uppercase
+ *    at 13.5px bold, avg uppercase char width ≈ 9.5px
+ *
+ *  "CONTACT PERSON"  (14 chars) ≈ 133px wide, starts x=30
+ *     → ends at x=163, value starts x=173, y=108
+ *
+ *  "ADRESS"  (6 chars) ≈ 57px wide, starts x=30
+ *     → ends at x=87, value starts x=97, y=152
+ *
+ *  "CONTACT NO"  (10 chars) ≈ 95px wide, starts x=30
+ *     → ends at x=125, value starts x=135, y=195
+ *
+ *  "BIRTH DATE"  (10 chars) ≈ 95px wide, starts x=30
+ *     → ends at x=125, value starts x=135, y=238
+ */
+const CONFIG_2026 = {
+    scaleMultiplier: 1,
+
+    /**
+     * Photo FILL area: strictly inside the green border.
+     */
+    photo: { x: 181, y: 249, width: 336, height: 315, borderRadius: 14 },
+
+    /** Signature placement above the name */
+    signature: { x: 176, y: 565, width: 328, height: 100 },
+
+    text: {
+        /**
+         * Student NAME — large bold caps, rendered ABOVE the printed "NAME" label.
+         * Increased font size to 42px to match the prominent text in the reference.
+         * Center y: 690.
+         */
+        name: {
+            x: 337.5, y: 690,
+            align: 'center',
+            font: "42px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /**
+         * STUDENT NUMBER — extra-large bold, rendered ABOVE printed "STUDENT NUMBER".
+         * Increased font size to 52px.
+         * Center y: 780.
+         */
+        idNumber: {
+            x: 337.5, y: 780,
+            align: 'center',
+            font: "52px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /**
+         * DEPARTMENT full name — bold, dark green, multi-line (split on '\n').
+         * Center y: 890, increased font size to 26px.
+         */
+        department: {
+            x: 337.5, y: 890,
+            align: 'center',
+            font: "26px 'Arial'",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000', // Changed to black to match reference image text
+            strokeStyle: 'transparent',
+            maxWidth: 600,
+            lineHeight: 34
+        },
+
+        /* ══════════════════════════════════════════════════════════════
+         * BACK FACE — Canvas 704 × 1050 px
+         *
+         * Spacing matches reference: wider row spacing (~60px)
+         * Values are larger (26px) and bold, sitting precisely after the labels.
+         * ═════════════════════════════════════════════════════════════ */
+
+        /** CONTACT PERSON value — y=120 (row 1), x=240 */
+        parentName: {
+            x: 240, y: 120,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /** ADRESS value — y=180 (row 2), x=135 */
+        address: {
+            x: 135, y: 180,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent',
+            maxWidth: 380
+        },
+
+        /** CONTACT NO value — y=240 (row 3), x=175 */
+        telephone: {
+            x: 175, y: 240,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        },
+
+        /** BIRTH DATE value — y=300 (row 4), x=170 */
+        dob: {
+            x: 170, y: 300,
+            align: 'left',
+            font: "bold 26px Arial",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#000000',
+            strokeStyle: 'transparent'
+        }
+    }
+};
+
+/** Lookup for 2026 department abbreviation → full college name for rendering */
+const DEPARTMENT_LABELS = {
+    'CBM':    'COLLEGE OF BUSINESS AND MANAGEMENT',
+    'CCJE':   'COLLEGE OF CRIMINAL JUSTICE EDUCATION',
+    'CAST':   'COLLEGE OF AGRICULTURAL,\nSCIENCE AND TECHNOLOGY',
+    'CCSICT': 'COLLEGE OF COMPUTING STUDIES,\nINFORMATION COMMUNICATION\nTECHNOLOGY',
+    'COE':    'COLLEGE OF EDUCATION',
+    'CED':    'COLLEGE OF EDUCATION',
+    'CFEM':   'COLLEGE OF FORESTRY AND\nENVIRONMENTAL MANAGEMENT',
+    'CCSS':   'COLLEGE OF COMMUNICATION\nAND SOCIAL SCIENCES',
+    'CS':     'COLLEGE OF SCIENCE'
+};
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2. STATE — Single reactive data store
+═══════════════════════════════════════════════════════════════════════════ */
+const state = {
+    frontTemplate:     null,
+    backTemplate:      null,
+    front2026Template: null,
+    back2026Template:  null,
+    activeStudentIndex: 0,
+    idVersion: 'old',   // 'old' | '2026'
+    campusTheme: 'cabagan', // 'cabagan' | 'echague' | 'cauayan' | 'ilagan' | 'roxas'
+    showHologram: true,
+    audioEnabled: true,
+    inspectFace: 'front',
+    students: [
+        {
+            photoImage:     null,
+            photoDataUrl:   null,
+            signatureImage: null,
+            signatureDataUrl: null,
+            formData: {
+                name:       '',
+                idNumber:   '',
+                course:     '',
+                department: '',
+                dob:        '',
+                parentName: '',
+                address:    '',
+                telephone:  ''
+            }
+        }
+    ]
+};
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3. CANVAS REFERENCES
+═══════════════════════════════════════════════════════════════════════════ */
+const frontCanvas     = document.getElementById('front-canvas');
+const frontCtx        = frontCanvas.getContext('2d');
+const backCanvas      = document.getElementById('back-canvas');
+const backCtx         = backCanvas.getContext('2d');
+const miniCanvasFront = document.getElementById('mini-canvas-front');
+const miniCtxFront    = miniCanvasFront ? miniCanvasFront.getContext('2d') : null;
+const miniCanvasBack  = document.getElementById('mini-canvas-back');
+const miniCtxBack     = miniCanvasBack  ? miniCanvasBack.getContext('2d')  : null;
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4. SIGNATURE PAD — Freehand drawing with mouse & touch support
+═══════════════════════════════════════════════════════════════════════════ */
+const sigCanvas = document.getElementById('signature-pad');
+const sigCtx    = sigCanvas.getContext('2d');
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+/** Resize the canvas to match its CSS-rendered width */
+function initSignaturePad() {
+    const rect = sigCanvas.parentElement.getBoundingClientRect();
+    sigCanvas.width  = rect.width  || 300;
+    sigCanvas.height = 140;
+    sigCtx.lineWidth   = 2.5;
+    sigCtx.lineCap     = 'round';
+    sigCtx.lineJoin    = 'round';
+    sigCtx.strokeStyle = '#111111';
+
+    if (state.students && state.students[state.activeStudentIndex]) {
+        const img = state.students[state.activeStudentIndex].signatureImage;
+        if (img) {
+            sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height);
+        }
+    }
+}
+
+/** Normalise pointer position for both mouse and touch events */
+function getPointerPos(e) {
+    const rect = sigCanvas.getBoundingClientRect();
+    const source = e.touches && e.touches.length > 0 ? e.touches[0] : e;
+    return {
+        x: source.clientX - rect.left,
+        y: source.clientY - rect.top
+    };
+}
+
+function startDrawing(e) {
+    isDrawing = true;
+    const p = getPointerPos(e);
+    lastX = p.x;
+    lastY = p.y;
+
+    // Hide the watermark as soon as drawing starts
+    const watermark = sigCanvas.parentElement.querySelector('.signature-watermark');
+    if (watermark) watermark.style.opacity = '0';
+}
+
+function draw(e) {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const p = getPointerPos(e);
+    sigCtx.beginPath();
+    sigCtx.moveTo(lastX, lastY);
+    sigCtx.lineTo(p.x, p.y);
+    sigCtx.stroke();
+    lastX = p.x;
+    lastY = p.y;
+}
+
+function stopDrawing() {
+    if (!isDrawing) return;
+    isDrawing = false;
+    updateSignatureImage();
+}
+
+function updateSignatureImage() {
+    const img = new Image();
+    const dataUrl = sigCanvas.toDataURL('image/png');
+    img.onload = () => {
+        state.students[state.activeStudentIndex].signatureImage = img;
+        state.students[state.activeStudentIndex].signatureDataUrl = dataUrl;
+        renderCanvases();
+    };
+    img.src = dataUrl;
+}
+
+// Signature event listeners
+sigCanvas.addEventListener('mousedown',  startDrawing);
+sigCanvas.addEventListener('mousemove',  draw);
+sigCanvas.addEventListener('mouseup',    stopDrawing);
+sigCanvas.addEventListener('mouseout',   stopDrawing);
+sigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
+sigCanvas.addEventListener('touchmove',  draw,         { passive: false });
+sigCanvas.addEventListener('touchend',   stopDrawing);
+
+document.getElementById('clear-signature').addEventListener('click', () => {
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    state.students[state.activeStudentIndex].signatureImage = null;
+    state.students[state.activeStudentIndex].signatureDataUrl = null;
+    // Restore watermark
+    const watermark = sigCanvas.parentElement.querySelector('.signature-watermark');
+    if (watermark) watermark.style.opacity = '1';
+    renderCanvases();
+});
+
+// Re-init on resize
+window.addEventListener('resize', initSignaturePad);
+initSignaturePad();
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5. FORM BINDINGS — Map every input to state, then re-render
+═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Convert kebab-case input IDs to the camelCase state keys.
+ * E.g. "full-name" → "name", "id-number" → "idNumber"
+ */
+const INPUT_KEY_MAP = {
+    'full-name':   'name',
+    'id-number':   'idNumber',
+    'course':      'course',
+    'dob':         'dob',
+    'parent-name': 'parentName',
+    'address':     'address',
+    'telephone':   'telephone'
+};
+
+const UPPERCASE_FIELDS = new Set(['full-name', 'id-number', 'course', 'parent-name', 'address', 'telephone']);
+
+/**
+ * requestAnimationFrame-based debounce.
+ * Coalesces rapid successive calls into one execution per animation frame.
+ * This means typing fast only triggers one canvas draw per ~16 ms,
+ * keeping the UI silky-smooth without any input lag.
+ */
+function rafDebounce(fn) {
+    let rafId = null;
+    return function(...args) {
+        if (rafId !== null) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            rafId = null;
+            fn.apply(this, args);
+        });
+    };
+}
+
+/**
+ * Throttle: at most once per `limit` ms.
+ * Used for saveSessionToStorage to avoid LocalStorage thrash.
+ */
+function throttle(fn, limit = 2000) {
+    let lastRun = 0;
+    let timer = null;
+    return function(...args) {
+        const now = Date.now();
+        const remaining = limit - (now - lastRun);
+        if (remaining <= 0) {
+            clearTimeout(timer);
+            lastRun = now;
+            fn.apply(this, args);
+        } else {
+            clearTimeout(timer);
+            timer = setTimeout(() => {
+                lastRun = Date.now();
+                fn.apply(this, args);
+            }, remaining);
+        }
+    };
+}
+
+/** Debounced version — used by form inputs for live canvas updates */
+const debouncedRender = rafDebounce(renderCanvases);
+
+Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', e => {
+        const raw = e.target.value;
+        state.students[state.activeStudentIndex].formData[stateKey] = UPPERCASE_FIELDS.has(id) ? raw.toUpperCase() : raw;
+        debouncedRender();
+
+        // Also update tab name if editing full name
+        if (stateKey === 'name') {
+            renderStudentTabs();
+        }
+    });
+});
+
+
+/**
+ * Switch the ID version between 'old' and '2026'.
+ * Updates state, toggles the active button UI, shows/hides form fields,
+ * and re-renders the card.
+ *
+ * @param {'old'|'2026'} version
+ * @param {boolean} silent - If true, skip DOM toggle (used during session restore)
+ */
+function setIdVersion(version, silent = false) {
+    state.idVersion = version;
+
+    if (!silent) {
+        // Toggle button active states
+        const btnOld  = document.getElementById('btn-old-id');
+        const btn2026 = document.getElementById('btn-2026-id');
+        if (btnOld)  btnOld.classList.toggle('active',  version === 'old');
+        if (btn2026) btn2026.classList.toggle('active', version === '2026');
+    }
+
+    // Show/hide course vs department fields
+    const courseWrapper = document.getElementById('course-field-wrapper');
+    const deptWrapper   = document.getElementById('department-field-wrapper');
+    if (courseWrapper) courseWrapper.style.display = version === 'old' ? '' : 'none';
+    if (deptWrapper)   deptWrapper.style.display   = version === '2026' ? '' : 'none';
+
+    // Update step 5 label dynamically
+    const stepGroup = document.querySelector('.form-group[data-step="5"]');
+    if (stepGroup) {
+        stepGroup.dataset.stepTitle = version === '2026' ? 'Department' : 'Course';
+    }
+
+    renderCanvases();
+}
+
+// Department dropdown — bind change event
+document.getElementById('department')?.addEventListener('change', e => {
+    state.students[state.activeStudentIndex].formData.department = e.target.value;
+    renderCanvases();
+});
+
+// Profile picture — file upload handler
+document.getElementById('profile-pic').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+        showToast('Please upload a valid image file', 'error');
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        showToast('Image is too large. Maximum size is 5MB.', 'warning');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = event => {
+        const img = new Image();
+        img.onload = () => {
+            state.students[state.activeStudentIndex].rawSourceImage = img;
+            openCropper();
+        };
+        img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // Reset to allow same file re-upload
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   6. TEMPLATE LOADING — Async load both ID face templates
+═══════════════════════════════════════════════════════════════════════════ */
+function loadImage(src) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.onload  = () => resolve(img);
+        img.onerror = () => { console.warn(`[ISU ID] Template not found: ${src}`); resolve(null); };
+        img.src = src;
+    });
+}
+
+async function loadTemplates() {
+    const [front, back, front2026, back2026] = await Promise.all([
+        loadImage('images/template_front.id.png'),
+        loadImage('images/template_back.id.png'),
+        loadImage('images/2026_id/new_template_front.id.png'),
+        loadImage('images/2026_id/new_template_back.id.png')
+    ]);
+
+    state.frontTemplate     = front;
+    state.backTemplate      = back;
+    state.front2026Template = front2026;
+    state.back2026Template  = back2026;
+
+    // Set canvas intrinsic sizes from the loaded images (use old template as default)
+    frontCanvas.width  = front ? front.width  : 638;
+    frontCanvas.height = front ? front.height : 1013;
+    backCanvas.width   = back  ? back.width   : 638;
+    backCanvas.height  = back  ? back.height  : 1013;
+
+    if (miniCanvasFront) {
+        miniCanvasFront.width  = frontCanvas.width;
+        miniCanvasFront.height = frontCanvas.height;
+    }
+    if (miniCanvasBack) {
+        miniCanvasBack.width  = backCanvas.width;
+        miniCanvasBack.height = backCanvas.height;
+    }
+
+    renderCanvases();
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7. RENDER ENGINE — Draw ID card faces onto their canvases
+═══════════════════════════════════════════════════════════════════════════ */
+
+/**
+ * Draw a single text field onto a canvas context.
+ * Handles multi-line text split by '\n', font scaling, and optional stroke.
+ *
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {object} textConfig - from CONFIG.text
+ * @param {string} textValue  - string to draw (may contain '\n')
+ */
+function renderText(ctx, textConfig, textValue) {
+    if (!textValue) return;
+
+    const m = CONFIG.scaleMultiplier;
+    let fontString = textConfig.font;
+    let fontSize = 10;
+
+    // Scale the px font size by the multiplier
+    const sizeMatch = fontString.match(/([\d.]+)px/);
+    if (sizeMatch && m !== 1.0) {
+        const scaled = parseFloat(sizeMatch[1]) * m;
+        fontSize     = scaled;
+        fontString   = fontString.replace(/[\d.]+px/, `${scaled}px`);
+    }
+
+    ctx.font        = (textConfig.isBold ? 'bold ' : '') + fontString;
+    ctx.textAlign   = textConfig.align;
+    ctx.textBaseline = 'middle';
+
+    const lines      = textValue.split('\n');
+    const lineHeight = fontSize * 1.15;
+    const startY     = textConfig.y - ((lines.length - 1) * lineHeight) / 2;
+
+    lines.forEach((line, i) => {
+        const y = startY + i * lineHeight;
+
+        // Optional stroke (for heavier text on busy backgrounds)
+        if (textConfig.strokeThickness > 0) {
+            ctx.lineWidth   = (textConfig.strokeThickness / 10) * m;
+            ctx.strokeStyle = textConfig.strokeStyle;
+            ctx.lineJoin    = 'round';
+            ctx.miterLimit  = 2;
+            textConfig.maxWidth
+                ? ctx.strokeText(line, textConfig.x, y, textConfig.maxWidth)
+                : ctx.strokeText(line, textConfig.x, y);
+        }
+
+        ctx.fillStyle = textConfig.fillStyle;
+        textConfig.maxWidth
+            ? ctx.fillText(line, textConfig.x, y, textConfig.maxWidth)
+            : ctx.fillText(line, textConfig.x, y);
+    });
+}
+
+/**
+ * Smart-wrap long course names: split after degree prefix if possible.
+ * E.g. "BS COMPUTER SCIENCE" → "BACHELOR OF SCIENCE\nIN COMPUTER SCIENCE"
+ *
+ * @param {string} course
+ * @returns {string}
+ */
+function formatCourseText(course) {
+    if (!course) return '';
+    const upper = course.toUpperCase().trim();
+
+    // Matches "BACHELOR OF [ANYTHING] IN " and splits it
+    const degreeMatch = upper.match(/^(BACHELOR OF [A-Z\s]+(?:IN)?)\s+(.+)/);
+    if (degreeMatch) {
+        return `${degreeMatch[1].trim()}\n${degreeMatch[2].trim()}`;
+    }
+
+    if (upper.includes(' IN ')) {
+        const idx = upper.indexOf(' IN ');
+        return course.substring(0, idx).trim().toUpperCase()
+             + '\nIN ' + course.substring(idx + 4).trim().toUpperCase();
+    }
+
+    return upper;
+}
+
+/**
+ * Main render function — draws both card faces and the mini preview.
+ * Called every time state changes (input, photo upload, signature).
+ */
+function renderCanvases() {
+    const student = state.students[state.activeStudentIndex];
+    const is2026  = state.idVersion === '2026';
+    const cfg     = is2026 ? CONFIG_2026 : CONFIG;
+
+    // ── Resize canvases to match the active template ────────
+    if (is2026) {
+        const ft = state.front2026Template;
+        const bt = state.back2026Template;
+        frontCanvas.width  = ft ? ft.width  : 675;
+        frontCanvas.height = ft ? ft.height : 1050;
+        backCanvas.width   = bt ? bt.width  : 704;
+        backCanvas.height  = bt ? bt.height : 1050;
+    } else {
+        const ft = state.frontTemplate;
+        const bt = state.backTemplate;
+        frontCanvas.width  = ft ? ft.width  : 638;
+        frontCanvas.height = ft ? ft.height : 1013;
+        backCanvas.width   = bt ? bt.width  : 638;
+        backCanvas.height  = bt ? bt.height : 1013;
+    }
+    if (miniCanvasFront) { miniCanvasFront.width = frontCanvas.width; miniCanvasFront.height = frontCanvas.height; }
+    if (miniCanvasBack)  { miniCanvasBack.width  = backCanvas.width;  miniCanvasBack.height  = backCanvas.height; }
+
+    // ── Front Face ──────────────────────────────────────────
+    frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
+
+    const frontTpl = is2026 ? state.front2026Template : state.frontTemplate;
+
+    if (is2026) {
+        // ── 2026: PHOTO FIRST, then template on top ──────────
+        // This ensures the green border (part of the template PNG) draws
+        // OVER the photo, so the border is always visible.
+
+        // 1. Draw a white base
+        frontCtx.fillStyle = '#ffffff';
+        frontCtx.fillRect(0, 0, frontCanvas.width, frontCanvas.height);
+
+        // 2. Draw the template FIRST (because it has a solid background)
+        if (frontTpl) {
+            frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
+        }
+
+        // 3. Draw photo ON TOP (clipped perfectly inside the frame)
+        if (student.photoImage) {
+            const { x, y, width, height, borderRadius: r = 18 } = cfg.photo;
+            frontCtx.save();
+            frontCtx.beginPath();
+            frontCtx.moveTo(x + r, y);
+            frontCtx.lineTo(x + width - r, y);
+            frontCtx.arcTo(x + width, y,         x + width, y + r,          r);
+            frontCtx.lineTo(x + width, y + height - r);
+            frontCtx.arcTo(x + width, y + height, x + width - r, y + height, r);
+            frontCtx.lineTo(x + r, y + height);
+            frontCtx.arcTo(x,        y + height, x, y + height - r,          r);
+            frontCtx.lineTo(x, y + r);
+            frontCtx.arcTo(x, y,                 x + r, y,                   r);
+            frontCtx.closePath();
+            frontCtx.clip();
+
+            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const boxRatio = width / height;
+            let dw = width, dh = height, dx = x, dy = y;
+            if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
+            else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
+
+            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.restore();
+        }
+
+    } else {
+        // ── Old ID: template first, photo on top ─────────────
+        if (frontTpl) {
+            frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
+        } else {
+            frontCtx.fillStyle = '#d4e8d4';
+            frontCtx.fillRect(0, 0, frontCanvas.width, frontCanvas.height);
+        }
+
+        if (student.photoImage) {
+            const { x, y, width, height } = cfg.photo;
+            frontCtx.save();
+            frontCtx.beginPath();
+            frontCtx.rect(x, y, width, height);
+            frontCtx.clip();
+
+            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const boxRatio = width / height;
+            let dw = width, dh = height, dx = x, dy = y;
+            if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
+            else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
+
+            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.restore();
+        }
+    }
+
+    // Signature (drawn for both versions if defined in config)
+    if (student.signatureImage && cfg.signature) {
+        const { x, y, width, height } = cfg.signature;
+        frontCtx.drawImage(student.signatureImage, x, y, width, height);
+    }
+
+    try {
+        // Text fields on front face
+        if (is2026) {
+            // 2026: draw text AFTER the template (so text appears above the template image)
+            renderText2026(frontCtx, cfg.text.name, student.formData.name || 'JUAN DELA CRUZ');
+            renderText2026(frontCtx, cfg.text.idNumber, student.formData.idNumber || '25-00001');
+            const deptKey   = student.formData.department || '';
+            const deptLabel = deptKey ? (DEPARTMENT_LABELS[deptKey] || deptKey) : 'COLLEGE / DEPARTMENT';
+            renderText2026(frontCtx, cfg.text.department, deptLabel);
+        } else {
+            renderText(frontCtx, CONFIG.text.name,
+                student.formData.name || 'JUAN DELA CRUZ');
+            renderText(frontCtx, CONFIG.text.idNumber,
+                student.formData.idNumber || '25-00001');
+            renderText(frontCtx, CONFIG.text.course,
+                formatCourseText(student.formData.course || 'Bachelor of Science in Computer Science'));
+        }
+    } catch (e) {
+        console.error('[ISU ID] Error rendering front text:', e);
+    }
+
+    // Holographic security watermark overlay on front face
+    drawHologramWatermark(frontCtx, frontCanvas.width, frontCanvas.height);
+
+    // ── Back Face ───────────────────────────────────────────
+    backCtx.clearRect(0, 0, backCanvas.width, backCanvas.height);
+
+    const backTpl = is2026 ? state.back2026Template : state.backTemplate;
+    if (backTpl) {
+        backCtx.drawImage(backTpl, 0, 0, backCanvas.width, backCanvas.height);
+    } else {
+        backCtx.fillStyle = '#ffffff';
+        backCtx.fillRect(0, 0, backCanvas.width, backCanvas.height);
+    }
+
+    if (is2026) {
+        // 2026 back: render text inline at the label positions
+        renderText2026(backCtx, cfg.text.parentName,
+            student.formData.parentName || 'JANE DELA CRUZ');
+        renderText2026(backCtx, cfg.text.address,
+            student.formData.address || 'BARUCBOC, QUEZON, ISABELA');
+        renderText2026(backCtx, cfg.text.telephone,
+            student.formData.telephone || '09123456789');
+
+        let dobText = '01/01/2000';
+        if (student.formData.dob) {
+            const d = new Date(student.formData.dob);
+            if (!isNaN(d.getTime())) {
+                const yyyy = d.getUTCFullYear();
+                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const dd = String(d.getUTCDate()).padStart(2, '0');
+                dobText = `${mm}/${dd}/${yyyy}`;
+            } else {
+                dobText = student.formData.dob;
+            }
+        }
+        renderText2026(backCtx, cfg.text.dob, dobText);
+    } else {
+        // Old ID back: white clear rect + text overlay
+        backCtx.fillStyle = '#ffffff';
+        backCtx.fillRect(60, 170, 500, 120);
+
+        renderText(backCtx, CONFIG.text.parentName,
+            student.formData.parentName || 'JANE DELA CRUZ');
+        renderText(backCtx, CONFIG.text.address,
+            'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
+        renderText(backCtx, CONFIG.text.telephone,
+            'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
+        let dobText = '01-01-2000';
+        if (student.formData.dob) {
+            const d = new Date(student.formData.dob);
+            if (!isNaN(d.getTime())) {
+                const yyyy = d.getUTCFullYear();
+                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+                const dd = String(d.getUTCDate()).padStart(2, '0');
+                dobText = `${dd}-${mm}-${yyyy}`;
+            } else {
+                dobText = student.formData.dob.split('-').reverse().join('-');
+            }
+        }
+        renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
+    }
+
+    // Real-time verification QR Code on back face
+    renderQrCodeOnCanvas(backCtx, student, is2026 ? 510 : 460, is2026 ? 60 : 70, is2026 ? 140 : 120);
+
+    // ── Mini preview (mobile stepper header) ────────────────
+    updateMiniCanvas();
+
+    // ── Session Auto-Save ─────────────────────────────────────
+    saveSessionToStorage();
+}
+
+/**
+ * Draw text for the 2026 template (no scale multiplier — coordinates are native px).
+ * Supports multi-line via '\n'. Uses textConfig.lineHeight if set, otherwise
+ * falls back to fontSize × 1.35.
+ * The y coordinate is the CENTER of the entire multi-line block.
+ */
+function renderText2026(ctx, textConfig, textValue) {
+    if (!textValue) return;
+    textValue = String(textValue); // Ensure it's always a string so .split() doesn't fail
+
+    ctx.save();
+    // Avoid prepending 'bold' twice when the font string already includes it
+    const fontStr = textConfig.font.trim();
+    ctx.font        = (textConfig.isBold && !fontStr.startsWith('bold'))
+                        ? 'bold ' + fontStr
+                        : fontStr;
+    ctx.textAlign   = textConfig.align;
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle   = textConfig.fillStyle;
+
+    const lines      = textValue.split('\n');
+    // Parse font-size: handles "bold 16px Arial" and "16px Arial" correctly
+    const fontSizeMatch = fontStr.match(/(\d+(\.\d+)?)px/);
+    const fontSize   = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 14;
+    const lineHeight = textConfig.lineHeight || (fontSize * 1.35);
+
+    // Center the whole block on textConfig.y
+    const totalHeight = (lines.length - 1) * lineHeight;
+    const startY      = textConfig.y - totalHeight / 2;
+
+    lines.forEach((line, i) => {
+        const y = startY + i * lineHeight;
+        if (textConfig.maxWidth) {
+            ctx.fillText(line, textConfig.x, y, textConfig.maxWidth);
+        } else {
+            ctx.fillText(line, textConfig.x, y);
+        }
+    });
+
+    ctx.restore();
+}
+
+/** Copy the main canvases into the small mini-preview thumbnails */
+function updateMiniCanvas() {
+    if (miniCanvasFront && miniCtxFront) {
+        miniCtxFront.clearRect(0, 0, miniCanvasFront.width, miniCanvasFront.height);
+        miniCtxFront.drawImage(frontCanvas, 0, 0, miniCanvasFront.width, miniCanvasFront.height);
+    }
+    if (miniCanvasBack && miniCtxBack) {
+        miniCtxBack.clearRect(0, 0, miniCanvasBack.width, miniCanvasBack.height);
+        miniCtxBack.drawImage(backCanvas, 0, 0, miniCanvasBack.width, miniCanvasBack.height);
+    }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   8. STEPPER — Step navigation, progress bar & dot indicator
+═══════════════════════════════════════════════════════════════════════════ */
+const TOTAL_STEPS = 10;
+const STEP_TITLES = [
+    'Choose ID Version', // 1
+    'Upload Photo',      // 2
+    'Full Name',         // 3
+    'ID Number',         // 4
+    'Course / Dept.',    // 5
+    'Date of Birth',     // 6
+    'Parent / Guardian', // 7
+    'Home Address',      // 8
+    'Telephone',         // 9
+    'Signature'          // 10
+];
+
+let currentStep = 1;
+
+/** Returns true — stepper mode is always active */
+function isStepperMode() { return true; }
+
+/* ── Dot indicators ─────────────────────────────────────── */
+function buildStepperDots() {
+    const container = document.getElementById('stepper-dots');
+    if (!container) return;
+    container.innerHTML = '';
+
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+        const dot = document.createElement('span');
+        dot.className      = 'stepper-dot';
+        dot.dataset.step   = i;
+        dot.title          = STEP_TITLES[i - 1];
+        dot.setAttribute('role', 'button');
+        dot.setAttribute('aria-label', `Go to step ${i}: ${STEP_TITLES[i - 1]}`);
+        dot.addEventListener('click', () => goToStep(i));
+        container.appendChild(dot);
+    }
+}
+
+/* ── Desktop segmented progress bar ────────────────────── */
+function buildDesktopProgressBar() {
+    const bar = document.getElementById('desktop-progress-bar');
+    if (!bar) return;
+    bar.innerHTML = '';
+
+    for (let i = 1; i <= TOTAL_STEPS; i++) {
+        const seg = document.createElement('div');
+        seg.className    = 'progress-segment';
+        seg.dataset.step = i;
+        seg.title        = STEP_TITLES[i - 1];
+        seg.addEventListener('click', () => goToStep(i));
+        bar.appendChild(seg);
+    }
+}
+
+/** Update desktop segmented progress bar to reflect current step */
+function updateDesktopProgressBar(step) {
+    document.querySelectorAll('.progress-segment').forEach(seg => {
+        const s = parseInt(seg.dataset.step);
+        seg.classList.toggle('done',   s < step);
+        seg.classList.toggle('active', s === step);
+    });
+}
+
+/** Update the desktop header (badge + title) */
+function updateDesktopHeader(step) {
+    const badge = document.getElementById('desktop-step-badge');
+    const title = document.getElementById('desktop-step-title');
+    if (badge) badge.textContent = `Step ${step} of ${TOTAL_STEPS}`;
+    if (title) title.textContent  = STEP_TITLES[step - 1];
+}
+
+/* ── Main step navigation function ─────────────────────── */
+/**
+ * Navigate to step n. Updates:
+ *  • Visible form group
+ *  • Header labels (mobile + desktop)
+ *  • Progress bar / dots
+ *  • Back / Next / Done button visibility
+ *  • Card flip for back-face steps
+ */
+function goToStep(n) {
+    if (n < 1 || n > TOTAL_STEPS) return;
+    currentStep = n;
+
+    // ── Show/hide form groups ──
+    document.querySelectorAll('.steps-wrapper .form-group').forEach(el => {
+        const step = parseInt(el.dataset.step);
+        if (step === currentStep) {
+            el.classList.add('active-step');
+            // Auto-focus the first interactive field (not file inputs)
+            const firstInput = el.querySelector('input:not([type="file"]), textarea');
+            if (firstInput) setTimeout(() => firstInput.focus({ preventScroll: true }), 380);
+        } else {
+            el.classList.remove('active-step');
+        }
+    });
+
+    // ── Mobile stepper header ──
+    const mobileNameEl  = document.getElementById('stepper-step-name');
+    const mobileCountEl = document.getElementById('stepper-count');
+    if (mobileNameEl)  mobileNameEl.textContent  = STEP_TITLES[currentStep - 1];
+    if (mobileCountEl) mobileCountEl.textContent = `${currentStep} / ${TOTAL_STEPS}`;
+
+    // ── Mobile progress bar ──
+    const fill = document.getElementById('stepper-progress');
+    if (fill) fill.style.width = `${(currentStep / TOTAL_STEPS) * 100}%`;
+
+    // ── Stepper dots ──
+    document.querySelectorAll('.stepper-dot').forEach(dot => {
+        const s = parseInt(dot.dataset.step);
+        dot.classList.toggle('active', s === currentStep);
+        dot.classList.toggle('done',   s < currentStep);
+    });
+
+    // ── Desktop header + segmented bar ──
+    updateDesktopHeader(currentStep);
+    updateDesktopProgressBar(currentStep);
+
+    // ── Back / Next / Done button state ──
+    const backBtn = document.getElementById('stepper-back');
+    const nextBtn = document.getElementById('stepper-next');
+    const doneBtn = document.getElementById('stepper-done');
+
+    if (backBtn) backBtn.disabled = currentStep === 1;
+
+    if (currentStep === TOTAL_STEPS) {
+        if (nextBtn) nextBtn.style.display = 'none';
+        if (doneBtn) doneBtn.style.display = 'flex';
+    } else {
+        if (nextBtn) nextBtn.style.display = 'flex';
+        if (doneBtn) doneBtn.style.display = 'none';
+    }
+
+    // ── Card face flip ──
+    // Steps 1-5 = front face, steps 6-10 = back face
+    const idCard    = document.getElementById('idCard');
+    const flipTitle = document.getElementById('flip-title');
+    const miniCard  = document.getElementById('mini-card');
+    const shouldFlip = currentStep >= 6;
+
+    if (idCard) {
+        idCard.classList.toggle('is-flipped', shouldFlip);
+        if (flipTitle) {
+            flipTitle.textContent = shouldFlip ? 'Back Side' : 'Front Side';
+        }
+    }
+
+    if (miniCard) {
+        miniCard.classList.toggle('is-flipped', shouldFlip);
+    }
+}
+
+/* ── Button handlers (called from HTML onclick) ─────────── */
+/** Navigate to the next step */
+function stepperNext() {
+    if (currentStep < TOTAL_STEPS) goToStep(currentStep + 1);
+}
+
+/** Navigate to the previous step */
+function stepperBack() {
+    if (currentStep > 1) goToStep(currentStep - 1);
+}
+
+/** Flip the main ID card and update the preview title */
+function flipCard() {
+    const idCard    = document.getElementById('idCard');
+    const flipTitle = document.getElementById('flip-title');
+    if (!idCard) return;
+    idCard.classList.toggle('is-flipped');
+    
+    const isFlipped = idCard.classList.contains('is-flipped');
+    if (flipTitle) {
+        flipTitle.textContent = isFlipped ? 'Back Side' : 'Front Side';
+    }
+    
+    const miniCard = document.getElementById('mini-card');
+    if (miniCard) miniCard.classList.toggle('is-flipped', isFlipped);
+}
+
+/* ── Resize: re-apply stepper at current step ────────────── */
+function handleResize() {
+    if (isStepperMode()) goToStep(currentStep);
+}
+
+window.addEventListener('resize', handleResize);
+
+/* ── Boot stepper ───────────────────────────────────────── */
+function initStepper() {
+    buildStepperDots();
+    buildDesktopProgressBar();
+    goToStep(1);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   9. TILT EFFECT — VanillaTilt 3D card hover (loaded via CDN, deferred)
+═══════════════════════════════════════════════════════════════════════════ */
+function initTilt() {
+    const tiltEl = document.getElementById('card-tilt-wrapper');
+    if (!tiltEl || typeof VanillaTilt === 'undefined') return;
+
+    VanillaTilt.init(tiltEl, {
+        max:          7,       // max tilt angle in degrees — subtle & premium
+        speed:        500,     // transition speed in ms
+        glare:        true,    // subtle glare reflection
+        'max-glare':  0.12,   // glare opacity
+        scale:        1.025,   // very slight lift on hover
+        perspective:  900,     // matching CSS perspective
+        gyroscope:    true,    // tilt on mobile motion sensors
+        'full-page-listening': false
+    });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   10. NAVBAR — Scroll-shrink effect
+═══════════════════════════════════════════════════════════════════════════ */
+function initNavbar() {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+
+    // Use IntersectionObserver to detect when the hero section leaves viewport
+    const heroSection = document.getElementById('home');
+    if (!heroSection) return;
+
+    const observer = new IntersectionObserver(
+        ([entry]) => {
+            navbar.classList.toggle('scrolled', !entry.isIntersecting);
+        },
+        { threshold: 0.05 }
+    );
+
+    observer.observe(heroSection);
+}
+
+
+/**
+ * Display a temporary glassmorphism toast notification.
+ * @param {string} message 
+ * @param {'success'|'error'|'warning'} type 
+ */
+function showToast(message, type = 'success') {
+    let toast = document.getElementById('isu-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'isu-toast';
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            z-index: 9999;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        `;
+        document.body.appendChild(toast);
+    }
+    
+    let icon = 'ph-info';
+    let color = '#fff';
+    if (type === 'success') { icon = 'ph-check-circle'; color = '#4ade80'; }
+    if (type === 'error') { icon = 'ph-x-circle'; color = '#f87171'; }
+    if (type === 'warning') { icon = 'ph-warning'; color = '#fbbf24'; }
+    
+    toast.innerHTML = `<i class="ph ${icon}" style="color: ${color}; font-size: 18px;"></i> <span>${message}</span>`;
+    
+    // Animate in
+    requestAnimationFrame(() => {
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+        toast.style.opacity = '1';
+    });
+    
+    // Auto-hide
+    if (toast._timer) clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+        toast.style.transform = 'translateX(-50%) translateY(100px)';
+        toast.style.opacity = '0';
+    }, 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   11. EXPORT — Generate A4 print-ready PNG and trigger download
+═══════════════════════════════════════════════════════════════════════════ */
+document.getElementById('download-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('download-btn');
+
+    // ── Loading state feedback ──
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<i class="ph ph-circle-notch"></i> Generating PDF…';
+    btn.classList.add('loading');
+
+    // Yield to browser to paint the loading state before heavy work
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 50)));
+
+    try {
+        const { jsPDF } = window.jspdf;
+        // Create an A4 landscape PDF (297mm x 210mm)
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        const studentCount = state.students.length;
+        const cardW = 54;      // CR80 standard width (mm)
+        const cardH = 85.6;    // CR80 standard height (mm)
+        const gapX = 3;        // Horizontal gap between cards
+        const gapY = 6;        // Vertical gap between front and back
+        const startX = (297 - (cardW * 5 + gapX * 4)) / 2; // Centered horizontally
+        const startY = 20;
+
+        const originalIndex = state.activeStudentIndex;
+
+        for (let i = 0; i < studentCount; i++) {
+            if (i > 0 && i % 5 === 0) {
+                pdf.addPage();
+            }
+            
+            const colIndex = i % 5;
+            const pageIndex = Math.floor(i / 5);
+            const studentsOnThisPage = Math.min(5, studentCount - pageIndex * 5);
+            const gridWidth = studentsOnThisPage * cardW + (studentsOnThisPage - 1) * gapX;
+            const pageStartX = (297 - gridWidth) / 2;
+
+            const frontX = pageStartX + colIndex * (cardW + gapX);
+            const backX = frontX;
+            const frontY = startY;
+            const backY = startY + cardH + gapY;
+
+            // Print header on each page
+            if (colIndex === 0) {
+                pdf.setFont("helvetica", "bold");
+                pdf.setFontSize(12);
+                pdf.setTextColor(0, 0, 0);
+                const dateStr = new Date().toLocaleDateString();
+                pdf.text(`ISU Student IDs — Page ${Math.floor(i / 5) + 1} — ${dateStr}`, 148.5, 12, { align: 'center' });
+            }
+
+            state.activeStudentIndex = i;
+            renderCanvases(); // render i-th student
+            
+            pdf.addImage(frontCanvas.toDataURL('image/png', 1.0), 'PNG', frontX, frontY, cardW, cardH);
+            pdf.addImage(backCanvas.toDataURL('image/png', 1.0), 'PNG', backX, backY, cardW, cardH);
+            
+            // Draw cut lines
+            pdf.setDrawColor(200, 200, 200);
+            pdf.setLineWidth(0.3);
+            pdf.setLineDashPattern([2, 2], 0);
+            const p = 1.5; // padding around card
+            pdf.rect(frontX - p, frontY - p, cardW + p * 2, cardH + p * 2);
+            pdf.rect(backX - p, backY - p, cardW + p * 2, cardH + p * 2);
+            
+            pdf.setFontSize(6);
+            pdf.setTextColor(150, 150, 150);
+            pdf.text('✂ Cut', frontX + cardW/2, frontY - p - 1, { align: 'center' });
+            pdf.text('✂ Cut', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
+        }
+
+        const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.pdf` : `ISU_ID_Batch_${studentCount}_Students.pdf`;
+        pdf.save(filename);
+
+    } catch (err) {
+        console.error('[ISU ID] PDF Export failed:', err);
+        showToast('Export failed. Please try again.', 'error');
+    } finally {
+        // Restore active state
+        state.activeStudentIndex = originalIndex;
+        renderCanvases();
+
+        // Restore button state
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('loading');
+    }
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   12. BOOT — Initialise all modules when DOM + assets are ready
+═══════════════════════════════════════════════════════════════════════════ */
+window.addEventListener('load', () => {
+    // Load ID card templates & render
+    loadTemplates();
+
+    // Check if a previous session exists and show restore banner
+    (() => {
+        try {
+            const raw = localStorage.getItem(SESSION_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                // Support both old (array) and new ({ version, students }) formats
+                const snapshot = Array.isArray(parsed) ? parsed : (parsed && parsed.students);
+                // Only show banner when there is meaningful data (non-empty name or photo)
+                const hasMeaningfulData = Array.isArray(snapshot) && snapshot.some(s =>
+                    (s.formData && s.formData.name) || s.photoDataUrl
+                );
+                if (hasMeaningfulData) showRestoreBanner();
+            }
+        } catch { /* ignore parse errors */ }
+    })();
+
+    // Boot stepper
+    initStepper();
+
+    // Navbar scroll behaviour
+    initNavbar();
+
+    // 3D tilt — VanillaTilt is deferred, wait for it to be available
+    if (typeof VanillaTilt !== 'undefined') {
+        initTilt();
+    } else {
+        // Script is deferred; poll briefly then give up gracefully
+        let attempts = 0;
+        const tiltPoll = setInterval(() => {
+            if (typeof VanillaTilt !== 'undefined') {
+                initTilt();
+                clearInterval(tiltPoll);
+            }
+            if (++attempts > 20) clearInterval(tiltPoll);
+        }, 150);
+    }
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   13. STUDENT TABS LOGIC (Batch Print Feature)
+═══════════════════════════════════════════════════════════════════════════ */
+const MAX_STUDENTS = 5;
+
+function renderStudentTabs() {
+    const container = document.getElementById('student-tabs');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    state.students.forEach((student, index) => {
+        const tab = document.createElement('div');
+        tab.className = 'student-tab' + (index === state.activeStudentIndex ? ' active' : '');
+        tab.onclick = (e) => {
+            if (!e.target.closest('.btn-remove-student')) {
+                switchStudent(index);
+            }
+        };
+        
+        let thumbContent = '';
+        if (student.photoDataUrl) {
+            thumbContent = `<img src="${student.photoDataUrl}" class="student-tab-thumb" alt="thumb">`;
+        } else {
+            thumbContent = `<div class="student-tab-thumb" style="display:flex;align-items:center;justify-content:center;font-size:10px;"><i class="ph ph-user"></i></div>`;
+        }
+        
+        let name = student.formData.name || `Student ${index + 1}`;
+        if (name.length > 12) name = name.substring(0, 10) + '...';
+        
+        let removeBtn = '';
+        if (state.students.length > 1) {
+            removeBtn = `<button class="btn-remove-student" onclick="removeStudent(${index})"><i class="ph ph-x"></i></button>`;
+        }
+        
+        tab.innerHTML = `${thumbContent} <span>${name}</span> ${removeBtn}`;
+        container.appendChild(tab);
+    });
+    
+    const addBtn = document.getElementById('add-student-btn');
+    if (addBtn) {
+        addBtn.style.display = state.students.length < MAX_STUDENTS ? 'inline-flex' : 'none';
+    }
+}
+
+function switchStudent(index) {
+    state.activeStudentIndex = index;
+    const student = state.students[index];
+    
+    // Populate form inputs
+    Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = student.formData[stateKey] || '';
+    });
+
+    // Sync department dropdown
+    const deptEl = document.getElementById('department');
+    if (deptEl) deptEl.value = student.formData.department || '';
+    
+    // Update photo preview
+    const thumb = document.getElementById('photo-preview-thumb');
+    const placeholder = document.getElementById('photo-placeholder');
+    const wrapper = document.getElementById('photo-preview-wrapper');
+    if (student.photoDataUrl) {
+        thumb.src = student.photoDataUrl;
+        if(wrapper) wrapper.style.display = 'inline-block';
+        if(placeholder) placeholder.style.display = 'none';
+    } else {
+        if(wrapper) wrapper.style.display = 'none';
+        if(placeholder) placeholder.style.display = 'flex';
+    }
+    
+    // Update signature pad
+    sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+    const watermark = sigCanvas.parentElement.querySelector('.signature-watermark');
+    if (student.signatureImage) {
+        if (watermark) watermark.style.opacity = '0';
+        sigCtx.drawImage(student.signatureImage, 0, 0, sigCanvas.width, sigCanvas.height);
+    } else {
+        if (watermark) watermark.style.opacity = '1';
+    }
+    
+    renderStudentTabs();
+    renderCanvases();
+}
+
+function addStudent() {
+    if (state.students.length >= MAX_STUDENTS) return;
+    
+    state.students.push({
+        photoImage: null,
+        photoDataUrl: null,
+        rawSourceImage: null,
+        signatureImage: null,
+        signatureDataUrl: null,
+        formData: { name: '', idNumber: '', course: '', department: '', dob: '', parentName: '', address: '', telephone: '' }
+    });
+    
+    switchStudent(state.students.length - 1);
+}
+
+function removeStudent(index) {
+    if (state.students.length <= 1) return;
+    
+    const s = state.students[index];
+    const hasData = s.formData.name || s.formData.idNumber || s.photoDataUrl || s.signatureDataUrl;
+    if (hasData && !confirm("Remove student and all their data?")) {
+        return;
+    }
+    
+    state.students.splice(index, 1);
+    if (state.activeStudentIndex >= state.students.length) {
+        switchStudent(state.students.length - 1);
+    } else {
+        switchStudent(state.activeStudentIndex); // Re-render current
+    }
+}
+
+document.getElementById('add-student-btn')?.addEventListener('click', addStudent);
+
+// Call initially
+setTimeout(renderStudentTabs, 100);
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   14. INTERACTIVE PHOTO CROPPER LOGIC
+═══════════════════════════════════════════════════════════════════════════ */
+let cropZoom = 1;
+let baseScale = 1;
+let isDraggingCrop = false;
+let startDragX = 0, startDragY = 0;
+let imgOffsetX = 0, imgOffsetY = 0;
+
+function openCropper() {
+    const student = state.students[state.activeStudentIndex];
+    if (!student.rawSourceImage) return;
+    
+    document.getElementById('cropper-modal').classList.add('active');
+    const imgEl = document.getElementById('cropper-img');
+    imgEl.src = student.rawSourceImage.src;
+    
+    // Calculate base scale after modal is painted
+    requestAnimationFrame(() => {
+        const frame = document.querySelector('.cropper-frame');
+        if (frame && student.rawSourceImage.width) {
+            const frameRect = frame.getBoundingClientRect();
+            const scaleX = frameRect.width / student.rawSourceImage.width;
+            const scaleY = frameRect.height / student.rawSourceImage.height;
+            baseScale = Math.max(scaleX, scaleY);
+        } else {
+            baseScale = 1;
+        }
+        
+        cropZoom = 1;
+        document.getElementById('cropper-zoom').value = 1;
+        imgOffsetX = 0;
+        imgOffsetY = 0;
+        updateCropperTransform();
+    });
+}
+
+function closeCropper() {
+    document.getElementById('cropper-modal').classList.remove('active');
+}
+
+function updateCropperTransform() {
+    const imgEl = document.getElementById('cropper-img');
+    if (imgEl) imgEl.style.transform = `translate(${imgOffsetX}px, ${imgOffsetY}px) scale(${baseScale * cropZoom})`;
+}
+
+document.getElementById('cropper-zoom')?.addEventListener('input', e => {
+    cropZoom = parseFloat(e.target.value);
+    updateCropperTransform();
+});
+
+const viewport = document.getElementById('cropper-viewport');
+if (viewport) {
+    viewport.addEventListener('mousedown', startCropDrag);
+    viewport.addEventListener('mousemove', doCropDrag);
+    window.addEventListener('mouseup', endCropDrag);
+    viewport.addEventListener('touchstart', startCropDrag, {passive:false});
+    viewport.addEventListener('touchmove', doCropDrag, {passive:false});
+    window.addEventListener('touchend', endCropDrag);
+}
+
+function getEventPos(e) {
+    return e.touches && e.touches.length > 0 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+}
+
+function startCropDrag(e) {
+    isDraggingCrop = true;
+    const p = getEventPos(e);
+    startDragX = p.x - imgOffsetX;
+    startDragY = p.y - imgOffsetY;
+    if(e.cancelable) e.preventDefault();
+}
+
+function doCropDrag(e) {
+    if (!isDraggingCrop) return;
+    const p = getEventPos(e);
+    imgOffsetX = p.x - startDragX;
+    imgOffsetY = p.y - startDragY;
+    updateCropperTransform();
+    if(e.cancelable) e.preventDefault();
+}
+
+function endCropDrag() {
+    isDraggingCrop = false;
+}
+
+document.getElementById('cropper-cancel-btn')?.addEventListener('click', closeCropper);
+document.getElementById('cropper-cancel')?.addEventListener('click', closeCropper);
+
+document.getElementById('cropper-save-btn')?.addEventListener('click', () => {
+    const frame = document.querySelector('.cropper-frame');
+    if (!frame) return;
+    const frameRect = frame.getBoundingClientRect();
+    const vpRect = viewport.getBoundingClientRect();
+    
+    // Frame center relative to viewport center
+    const frameCx = frameRect.left + frameRect.width/2 - (vpRect.left + vpRect.width/2);
+    const frameCy = frameRect.top + frameRect.height/2 - (vpRect.top + vpRect.height/2);
+    
+    const cropCnv = document.getElementById('crop-canvas');
+    cropCnv.width = 315;
+    cropCnv.height = 355;
+    const ctx = cropCnv.getContext('2d');
+    
+    const domToNativeX = 315 / frameRect.width;
+    const domToNativeY = 355 / frameRect.height;
+    
+    const student = state.students[state.activeStudentIndex];
+    const rawImage = student.rawSourceImage;
+    if (!rawImage) return;
+
+    ctx.save();
+    ctx.translate(315/2, 355/2); 
+    ctx.translate(imgOffsetX * domToNativeX - frameCx * domToNativeX, imgOffsetY * domToNativeY - frameCy * domToNativeY);
+    ctx.scale(baseScale * cropZoom * domToNativeX, baseScale * cropZoom * domToNativeY);
+    ctx.drawImage(rawImage, -rawImage.width/2, -rawImage.height/2);
+    ctx.restore();
+    
+    const dataUrl = cropCnv.toDataURL('image/png');
+    const img = new Image();
+    img.onload = () => {
+        student.photoImage = img;
+        student.photoDataUrl = dataUrl;
+        
+        const thumb = document.getElementById('photo-preview-thumb');
+        const wrapper = document.getElementById('photo-preview-wrapper');
+        const placeholder = document.getElementById('photo-placeholder');
+        if (thumb) thumb.src = dataUrl;
+        if (wrapper) wrapper.style.display = 'inline-block';
+        if (placeholder) placeholder.style.display = 'none';
+        
+        renderCanvases();
+        renderStudentTabs();
+        closeCropper();
+    };
+    img.src = dataUrl;
+});
+
+document.getElementById('recrop-btn')?.addEventListener('click', () => {
+    openCropper();
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   15. EXPORT DROPDOWNS & SAVE AS IMAGE
+═══════════════════════════════════════════════════════════════════════════ */
+
+// Toggle Desktop Dropdown
+document.getElementById('save-image-btn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    document.getElementById('export-dropdown-menu')?.classList.toggle('show');
+});
+
+// Hide dropdown on outside click
+document.addEventListener('click', () => {
+    document.getElementById('export-dropdown-menu')?.classList.remove('show');
+});
+
+function showMobileExportMenu() {
+    document.getElementById('mobile-export-sheet')?.classList.add('show');
+}
+function hideMobileExportMenu() {
+    document.getElementById('mobile-export-sheet')?.classList.remove('show');
+}
+
+function saveAsImage(side) {
+    const student = state.students[state.activeStudentIndex];
+    const baseName = `ISU_ID_${(student.formData.name || 'Student').replace(/\s+/g, '_')}`;
+    
+    if (side === 'front' || side === 'both') {
+        const link = document.createElement('a');
+        link.download = `${baseName}_Front.png`;
+        link.href = frontCanvas.toDataURL('image/png');
+        link.click();
+    }
+    
+    if (side === 'back' || side === 'both') {
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.download = `${baseName}_Back.png`;
+            link.href = backCanvas.toDataURL('image/png');
+            link.click();
+        }, side === 'both' ? 500 : 0);
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   16. CSV BULK IMPORT
+═══════════════════════════════════════════════════════════════════════════ */
+document.getElementById('csv-upload')?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = event => {
+        const text = event.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+        if (lines.length <= 1) {
+            showToast('CSV file is empty or missing headers.', 'error');
+            return;
+        }
+
+        // Simple CSV parser supporting quotes
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                if (char === '"' && line[i+1] === '"') {
+                    current += '"';
+                    i++;
+                } else if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current.trim());
+            return result;
+        }
+
+        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
+        
+        // Find indices for common headers
+        const getIndex = (possibleNames) => {
+            for (const name of possibleNames) {
+                const idx = headers.findIndex(h => new RegExp(`\\b${name}\\b`, 'i').test(h));
+                if (idx !== -1) return idx;
+            }
+            return -1;
+        };
+
+        const idxName = getIndex(['name', 'full']);
+        const idxId = getIndex(['id', 'student', 'number']);
+        const idxCourse = getIndex(['course', 'program', 'degree']);
+        const idxDob = getIndex(['dob', 'birth', 'date']);
+        const idxParent = getIndex(['parent', 'guardian']);
+        const idxAddress = getIndex(['address', 'home']);
+        const idxTel = getIndex(['tel', 'phone', 'mobile', 'contact']);
+
+        let addedCount = 0;
+
+        for (let i = 1; i < lines.length; i++) {
+            const row = parseCSVLine(lines[i]);
+            if (row.length < 2) continue; // Skip empty/malformed rows
+
+            const newStudent = {
+                photoImage: null,
+                photoDataUrl: null,
+                rawSourceImage: null,
+                signatureImage: null,
+                signatureDataUrl: null,
+                formData: {
+                    name: idxName !== -1 ? (row[idxName] || '').toUpperCase() : '',
+                    idNumber: idxId !== -1 ? (row[idxId] || '').toUpperCase() : '',
+                    course: idxCourse !== -1 ? (row[idxCourse] || '').toUpperCase() : '',
+                    department: '',
+                    dob: idxDob !== -1 ? (row[idxDob] || '') : '', // Expected YYYY-MM-DD
+                    parentName: idxParent !== -1 ? (row[idxParent] || '').toUpperCase() : '',
+                    address: idxAddress !== -1 ? (row[idxAddress] || '').toUpperCase() : '',
+                    telephone: idxTel !== -1 ? (row[idxTel] || '').toUpperCase() : ''
+                }
+            };
+            
+            // If the first tab is empty and it's our first add, replace it
+            if (state.students.length === 1 && state.students[0].formData.name === '' && state.students[0].formData.idNumber === '' && !state.students[0].photoDataUrl) {
+                state.students[0] = newStudent;
+            } else {
+                state.students.push(newStudent);
+            }
+            addedCount++;
+        }
+
+        if (addedCount > 0) {
+            // Update Max Batch stats if exceeded
+            const batchLimitEl = document.getElementById('hero-batch-limit');
+            if (batchLimitEl && state.students.length > 5) {
+                batchLimitEl.textContent = state.students.length + '+';
+            }
+            
+            // Switch to the first newly added student
+            switchStudent(state.students.length - addedCount);
+            showToast(`Successfully imported ${addedCount} student(s) from CSV.`, 'success');
+        } else {
+            showToast('No valid student rows found in the CSV.', 'error');
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // Reset file input
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   17. AI SIGNATURE — Photo upload → Claude Vision → BG removal → ID
+═══════════════════════════════════════════════════════════════════════════ */
+
+/** Currently loaded raw signature photo (before AI processing) */
+let sigRawPhotoDataUrl = null;
+
+/**
+ * Switch between "Draw" and "AI from Photo" signature modes.
+ * @param {'draw'|'upload'} mode
+ */
+function switchSigMode(mode) {
+    const drawMode   = document.getElementById('sig-draw-mode');
+    const uploadMode = document.getElementById('sig-upload-mode');
+    const tabDraw    = document.getElementById('sig-tab-draw');
+    const tabUpload  = document.getElementById('sig-tab-upload');
+
+    if (mode === 'draw') {
+        drawMode.style.display   = '';
+        uploadMode.style.display = 'none';
+        tabDraw.classList.add('active');
+        tabUpload.classList.remove('active');
+    } else {
+        drawMode.style.display   = 'none';
+        uploadMode.style.display = '';
+        tabDraw.classList.remove('active');
+        tabUpload.classList.add('active');
+    }
+}
+
+/** Handle file selection from the signature photo input */
+document.getElementById('sig-photo-input')?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        sigRawPhotoDataUrl = ev.target.result;
+
+        // Show preview image
+        const preview     = document.getElementById('sig-upload-preview');
+        const placeholder = document.getElementById('sig-upload-placeholder');
+        const enhanceBtn  = document.getElementById('sig-enhance-btn');
+        const clearBtn    = document.getElementById('sig-upload-clear');
+        const resultPane  = document.getElementById('sig-result-preview');
+        const statusPane  = document.getElementById('sig-ai-status');
+
+        preview.src             = sigRawPhotoDataUrl;
+        preview.style.display   = 'block';
+        placeholder.style.display = 'none';
+        enhanceBtn.style.display  = 'inline-flex';
+        clearBtn.style.display    = 'inline-flex';
+        resultPane.style.display  = 'none';
+        statusPane.style.display  = 'none';
+    };
+    reader.readAsDataURL(file);
+    e.target.value = ''; // allow re-upload of same file
+});
+
+/** Allow clicking the upload area (but not the buttons/preview inside it) */
+document.getElementById('sig-upload-area')?.addEventListener('click', e => {
+    if (e.target.id === 'sig-upload-area' || e.target.closest('.sig-upload-placeholder')) {
+        document.getElementById('sig-photo-input').click();
+    }
+});
+
+/** Clear uploaded signature photo and reset UI */
+function clearUploadedSig() {
+    sigRawPhotoDataUrl = null;
+
+    const preview     = document.getElementById('sig-upload-preview');
+    const placeholder = document.getElementById('sig-upload-placeholder');
+    const enhanceBtn  = document.getElementById('sig-enhance-btn');
+    const clearBtn    = document.getElementById('sig-upload-clear');
+    const resultPane  = document.getElementById('sig-result-preview');
+    const statusPane  = document.getElementById('sig-ai-status');
+
+    preview.style.display     = 'none';
+    placeholder.style.display = 'flex';
+    enhanceBtn.style.display  = 'none';
+    clearBtn.style.display    = 'none';
+    resultPane.style.display  = 'none';
+    statusPane.style.display  = 'none';
+
+    // Clear from student state too
+    const student = state.students[state.activeStudentIndex];
+    student.signatureImage    = null;
+    student.signatureDataUrl  = null;
+    renderCanvases();
+}
+
+/**
+ * Extract the base64 data (without the "data:image/...;base64," prefix)
+ * and the media type from a data URL.
+ */
+function parseDataUrl(dataUrl) {
+    const [header, data] = dataUrl.split(',');
+    const mediaType = header.match(/data:([^;]+)/)[1];
+    return { data, mediaType };
+}
+
+/**
+ * Set the AI processing status message shown below the photo.
+ * @param {string} msg  - Status text
+ * @param {boolean} show - Whether to show the status bar
+ */
+function setAiStatus(msg, show = true) {
+    const bar  = document.getElementById('sig-ai-status');
+    const text = document.getElementById('sig-ai-status-text');
+    if (bar)  bar.style.display  = show ? 'flex' : 'none';
+    if (text) text.textContent   = msg;
+}
+
+/**
+ * Remove the near-white background from a canvas in place.
+ * Works by setting pixels whose lightness is above a threshold to transparent.
+ *
+ * Strategy:
+ *  1. Convert each pixel to its luminance.
+ *  2. Pixels brighter than the threshold → alpha = 0 (transparent).
+ *  3. Dark pixels (ink) → kept; alpha boosted toward 255 for crispness.
+ *
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} threshold  - Luminance cutoff 0-255 (default 210)
+ */
+function removeWhiteBackground(canvas, threshold = 210) {
+    const ctx      = canvas.getContext('2d');
+    const imgData  = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d        = imgData.data;
+
+    for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        // Perceived luminance
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+
+        if (lum > threshold) {
+            // Near-white → fully transparent
+            d[i + 3] = 0;
+        } else {
+            // Ink pixel — boost opacity proportionally to how dark it is
+            const inkStrength = 1 - lum / threshold;
+            d[i + 3] = Math.min(255, Math.round(inkStrength * 320));
+            // Tint ink toward pure black for a clean look on the ID card
+            const mix = 0.35;
+            d[i]     = Math.round(r * (1 - mix));
+            d[i + 1] = Math.round(g * (1 - mix));
+            d[i + 2] = Math.round(b * (1 - mix));
+        }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+}
+
+/**
+ * Calculates the optimal threshold to separate foreground (ink) from background (paper)
+ * using Otsu's binarization method.
+ * @param {ImageData} imgData
+ * @returns {number} Optimal threshold (0-255)
+ */
+function getOtsuThreshold(imgData) {
+    const d = imgData.data;
+    const len = d.length;
+    
+    // 1. Convert to grayscale and compute histogram
+    const histogram = new Array(256).fill(0);
+    let totalPixels = 0;
+    
+    for (let i = 0; i < len; i += 4) {
+        const r = d[i], g = d[i+1], b = d[i+2], a = d[i+3];
+        if (a < 50) continue; // Skip transparent
+        const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+        histogram[gray]++;
+        totalPixels++;
+    }
+
+    if (totalPixels === 0) return 128;
+
+    // 2. Run Otsu's algorithm
+    let sum = 0;
+    for (let i = 0; i < 256; i++) {
+        sum += i * histogram[i];
+    }
+
+    let sumB = 0;
+    let wB = 0;
+    let wF = 0;
+    let varMax = 0;
+    let threshold = 128;
+
+    for (let t = 0; t < 256; t++) {
+        wB += histogram[t];
+        if (wB === 0) continue;
+
+        wF = totalPixels - wB;
+        if (wF === 0) break;
+
+        sumB += t * histogram[t];
+
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+
+        // Calculate Between Class Variance
+        const varBetween = wB * wF * (mB - mF) * (mB - mF);
+
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = t;
+        }
+    }
+    
+    return threshold;
+}
+
+/**
+ * Scans the canvas pixels and detects the tight bounding box of ink content
+ * (pixels whose luminance is below the threshold).
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} threshold
+ * @returns {{x: number, y: number, w: number, h: number}} Bounding box
+ */
+function getContentBoundingBox(canvas, threshold = 210) {
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = imgData.data;
+    const w = canvas.width;
+    const h = canvas.height;
+
+    let minX = w, minY = h, maxX = 0, maxY = 0;
+    let found = false;
+
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const idx = (y * w + x) * 4;
+            const r = d[idx], g = d[idx + 1], b = d[idx + 2], a = d[idx + 3];
+            if (a < 50) continue; // Skip transparent
+            const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+            
+            if (lum < threshold) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+                found = true;
+            }
+        }
+    }
+
+    if (!found) {
+        return { x: 0, y: 0, w, h };
+    }
+
+    // Add padding to prevent clipping signature strokes
+    const padding = 10;
+    minX = Math.max(0, minX - padding);
+    minY = Math.max(0, minY - padding);
+    maxX = Math.min(w - 1, maxX + padding);
+    maxY = Math.min(h - 1, maxY + padding);
+
+    return {
+        x: minX,
+        y: minY,
+        w: maxX - minX + 1,
+        h: maxY - minY + 1
+    };
+}
+
+/**
+ * Main signature extraction pipeline:
+ *  1. Load the signature image client-side.
+ *  2. Calculate optimal threshold automatically via Otsu's method.
+ *  3. Autocrop signature to its tight content bounds.
+ *  4. Draw onto destination signature canvas with centered padding.
+ *  5. Enhance contrast and strip background to transparent.
+ *  6. Persist to student state and render on the ID.
+ */
+async function enhanceSignatureWithAI() {
+    if (!sigRawPhotoDataUrl) return;
+
+    const enhanceBtn = document.getElementById('sig-enhance-btn');
+    const clearBtn   = document.getElementById('sig-upload-clear');
+    const resultPane = document.getElementById('sig-result-preview');
+
+    enhanceBtn.disabled = true;
+    clearBtn.disabled   = true;
+    resultPane.style.display = 'none';
+    setAiStatus('Scanning and extracting signature...', true);
+
+    try {
+        // Wait 50ms so UI updates and spinner shows
+        await new Promise(res => setTimeout(res, 50));
+
+        /* ── Step 1: Load the source image ── */
+        const sourceImg = await new Promise((res, rej) => {
+            const img = new Image();
+            img.onload  = () => res(img);
+            img.onerror = () => rej(new Error('Failed to load image'));
+            img.src = sigRawPhotoDataUrl;
+        });
+
+        /* ── Step 2: Draw to a normalized scanning canvas ── */
+        const maxScanDim = 1200;
+        let scanW = sourceImg.width;
+        let scanH = sourceImg.height;
+        if (scanW > maxScanDim || scanH > maxScanDim) {
+            if (scanW > scanH) {
+                scanH = Math.round((scanH * maxScanDim) / scanW);
+                scanW = maxScanDim;
+            } else {
+                scanW = Math.round((scanW * maxScanDim) / scanH);
+                scanH = maxScanDim;
+            }
+        }
+
+        const scanCanvas = document.createElement('canvas');
+        scanCanvas.width  = scanW;
+        scanCanvas.height = scanH;
+        const sCtx = scanCanvas.getContext('2d');
+        sCtx.drawImage(sourceImg, 0, 0, scanW, scanH);
+
+        const scanImgData = sCtx.getImageData(0, 0, scanW, scanH);
+
+        /* ── Step 3: Run Otsu's thresholding to find optimal cutoff ── */
+        const threshold = getOtsuThreshold(scanImgData);
+
+        /* ── Step 4: Detect content bounding box (autocrop) ── */
+        const box = getContentBoundingBox(scanCanvas, threshold);
+
+        /* ── Step 5: Draw cropped signature onto target canvas ── */
+        const OUT_W = 638;
+        const OUT_H = 240;
+
+        const workCanvas = document.createElement('canvas');
+        workCanvas.width  = OUT_W;
+        workCanvas.height = OUT_H;
+        const wCtx = workCanvas.getContext('2d');
+
+        // Fill white background first (so contrast boost works properly)
+        wCtx.fillStyle = '#ffffff';
+        wCtx.fillRect(0, 0, OUT_W, OUT_H);
+
+        // Draw cropped signature with aspect ratio preservation (centered with 90% size)
+        const scale = Math.min(OUT_W / box.w, OUT_H / box.h) * 0.9;
+        const destW = box.w * scale;
+        const destH = box.h * scale;
+        const destX = (OUT_W - destW) / 2;
+        const destY = (OUT_H - destH) / 2;
+
+        wCtx.drawImage(scanCanvas, box.x, box.y, box.w, box.h, destX, destY, destW, destH);
+
+        /* ── Step 6: Apply Contrast Boost for crisp lines ── */
+        const imgData2  = wCtx.getImageData(0, 0, OUT_W, OUT_H);
+        const pixels    = imgData2.data;
+        const contrast   = 45 / 100; // Boost contrast by 45% for crisp pen strokes
+        const factor     = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
+
+        for (let i = 0; i < pixels.length; i += 4) {
+            for (let c = 0; c < 3; c++) {
+                let v = pixels[i + c];
+                v = Math.round(factor * (v - 128) + 128);
+                pixels[i + c] = Math.max(0, Math.min(255, v));
+            }
+        }
+        wCtx.putImageData(imgData2, 0, 0);
+
+        /* ── Step 7: Remove background using threshold ── */
+        removeWhiteBackground(workCanvas, 220);
+
+        /* ── Step 8: Render result preview ── */
+        const resultCanvas = document.getElementById('sig-result-canvas');
+        resultCanvas.width  = OUT_W;
+        resultCanvas.height = OUT_H;
+        const rCtx = resultCanvas.getContext('2d');
+        rCtx.clearRect(0, 0, OUT_W, OUT_H);
+        rCtx.drawImage(workCanvas, 0, 0);
+
+        setAiStatus('', false);
+        resultPane.style.display = 'flex';
+
+        /* ── Step 9: Persist to student state & re-render ID card ── */
+        const finalDataUrl = workCanvas.toDataURL('image/png');
+        const finalImg     = new Image();
+        finalImg.onload = () => {
+            const student = state.students[state.activeStudentIndex];
+            student.signatureImage   = finalImg;
+            student.signatureDataUrl = finalDataUrl;
+            renderCanvases();
+        };
+        finalImg.src = finalDataUrl;
+
+    } catch (err) {
+        console.error('[ISU ID] Signature enhancement failed:', err);
+        setAiStatus('Enhancement failed. Try again or draw your signature manually.', true);
+    } finally {
+        enhanceBtn.disabled = false;
+        clearBtn.disabled   = false;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   17. SESSION SAVE — Auto-persist students[] to localStorage after every render
+       Serialises formData + dataUrl strings (images are already base64).
+       On load, a restore banner lets the user resume or start fresh.
+═══════════════════════════════════════════════════════════════════════════ */
+const SESSION_KEY = 'isu_id_session_v1';
+
+/**
+ * Serialise the current students array into localStorage.
+ * We skip the Image objects (not serialisable) — they are rebuilt from
+ * the *DataUrl strings when needed.
+ */
+/**
+ * Serialise the current students array into localStorage.
+ * We skip the Image objects (not serialisable) — they are rebuilt from
+ * the *DataUrl strings when needed.
+ * Throttled to at most once every 2 s to avoid repeated stringify of large
+ * base64 photo dataUrls on every keystroke.
+ */
+const saveSessionToStorage = throttle(function _saveSession() {
+    try {
+        const snapshot = state.students.map(s => ({
+            photoDataUrl:     s.photoDataUrl     || null,
+            signatureDataUrl: s.signatureDataUrl || null,
+            formData:         { ...s.formData }
+        }));
+        // Also save the global version setting
+        const payload = { version: state.idVersion, students: snapshot };
+        const json = JSON.stringify(payload);
+        if (json.length > 4.5 * 1024 * 1024) {
+            console.warn('[ISU ID] Session too large, skipping save to avoid quota error.');
+            if (!state._quotaWarned) {
+                showToast("Batch is too large to auto-save.", "warning");
+                state._quotaWarned = true;
+            }
+            return;
+        }
+        localStorage.setItem(SESSION_KEY, json);
+    } catch (e) {
+        // Quota exceeded or private-mode restriction
+        console.warn('[ISU ID] Session save failed:', e);
+    }
+}, 2000);
+
+
+/**
+ * Restore a previously saved session.
+ * Rebuilds Image objects from stored dataUrls.
+ */
+async function restoreSessionFromStorage() {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return false;
+
+    let payload;
+    try { payload = JSON.parse(raw); } catch { return false; }
+
+    // Support both old format (array) and new format ({ version, students })
+    let snapshot, savedVersion;
+    if (Array.isArray(payload)) {
+        snapshot = payload;
+        savedVersion = 'old';
+    } else if (payload && Array.isArray(payload.students)) {
+        snapshot = payload.students;
+        savedVersion = payload.version || 'old';
+    } else {
+        return false;
+    }
+
+    if (snapshot.length === 0) return false;
+
+    // Restore global version state
+    if (savedVersion) {
+        state.idVersion = savedVersion;
+        setIdVersion(savedVersion, /*silent=*/true);
+    }
+
+    // Rebuild students array with Image objects rehydrated
+    const rebuilt = await Promise.all(snapshot.map(async s => {
+        const student = {
+            photoImage:       null,
+            photoDataUrl:     s.photoDataUrl || null,
+            rawSourceImage:   null,
+            signatureImage:   null,
+            signatureDataUrl: s.signatureDataUrl || null,
+            formData:         { ...s.formData }
+        };
+
+        if (s.photoDataUrl) {
+            student.photoImage = await loadImageFromDataUrl(s.photoDataUrl);
+        }
+        if (s.signatureDataUrl) {
+            student.signatureImage = await loadImageFromDataUrl(s.signatureDataUrl);
+        }
+
+        return student;
+    }));
+
+    state.students = rebuilt;
+    return true;
+}
+
+/** Promise-wrapper to create an Image from a data URL */
+function loadImageFromDataUrl(dataUrl) {
+    return new Promise(resolve => {
+        const img = new Image();
+        img.onload  = () => resolve(img);
+        img.onerror = () => resolve(null);
+        img.src = dataUrl;
+    });
+}
+
+/** Wipe saved session */
+function clearSavedSession() {
+    localStorage.removeItem(SESSION_KEY);
+}
+
+/** Show / hide the session restore banner */
+function showRestoreBanner() {
+    const banner = document.getElementById('session-restore-banner');
+    if (banner) banner.classList.add('show');
+}
+
+function hideRestoreBanner() {
+    const banner = document.getElementById('session-restore-banner');
+    if (banner) banner.classList.remove('show');
+}
+
+/** Called by the "Restore" button on the banner */
+async function onRestoreSession() {
+    hideRestoreBanner();
+    const ok = await restoreSessionFromStorage();
+    if (ok) {
+        switchStudent(0);   // Reload first student into the form
+        renderStudentTabs();
+    }
+}
+
+/** Called by the "Discard" button on the banner */
+function onDiscardSession() {
+    clearSavedSession();
+    hideRestoreBanner();
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   18. OCR AUTOFILL — Snap or upload a printed ID / registration form photo.
+       Tesseract.js extracts text → regex patterns pull name, ID, course, DOB.
+       Fields are pre-filled and the form re-renders instantly.
+═══════════════════════════════════════════════════════════════════════════ */
+
+let ocrRawDataUrl = null;   // Raw photo dataUrl for the OCR modal
+
+let _tesseractLoaded = false;
+
+/**
+ * Lazily inject the Tesseract.js CDN script the first time the modal opens.
+ * This removes ~4 MB WASM from the critical page-load path.
+ */
+function ensureTesseractLoaded() {
+    return new Promise((resolve, reject) => {
+        if (_tesseractLoaded || typeof Tesseract !== 'undefined') {
+            _tesseractLoaded = true;
+            return resolve();
+        }
+        const s = document.createElement('script');
+        s.src = 'https://unpkg.com/tesseract.js@5.1.1/dist/tesseract.min.js';
+        s.integrity = 'sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F';
+        s.crossOrigin = 'anonymous';
+        s.onload  = () => { _tesseractLoaded = true; resolve(); };
+        s.onerror = () => reject(new Error('Failed to load Tesseract.js'));
+        document.head.appendChild(s);
+    });
+}
+
+/** Open the OCR upload modal */
+function openOcrModal() {
+    const modal = document.getElementById('ocr-modal');
+    if (modal) modal.classList.add('active');
+    ocrRawDataUrl = null;
+    resetOcrModal();
+    // Pre-load Tesseract in background while the user uploads their photo
+    ensureTesseractLoaded().catch(() => {});
+}
+
+
+/** Close the OCR upload modal */
+function closeOcrModal() {
+    const modal = document.getElementById('ocr-modal');
+    if (modal) modal.classList.remove('active');
+}
+
+/** Reset all UI inside the OCR modal to its initial state */
+function resetOcrModal() {
+    const preview     = document.getElementById('ocr-preview-img');
+    const placeholder = document.getElementById('ocr-placeholder');
+    const scanBtn     = document.getElementById('ocr-scan-btn');
+    const statusPane  = document.getElementById('ocr-status');
+    const resultsPane = document.getElementById('ocr-results');
+
+    if (preview)     { preview.style.display = 'none'; preview.src = ''; }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (scanBtn)     scanBtn.style.display = 'none';
+    if (statusPane)  statusPane.style.display = 'none';
+    if (resultsPane) resultsPane.style.display = 'none';
+}
+
+/** File selected in the OCR modal */
+document.getElementById('ocr-file-input')?.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+        ocrRawDataUrl = ev.target.result;
+
+        const preview     = document.getElementById('ocr-preview-img');
+        const placeholder = document.getElementById('ocr-placeholder');
+        const scanBtn     = document.getElementById('ocr-scan-btn');
+        const resultsPane = document.getElementById('ocr-results');
+        const statusPane  = document.getElementById('ocr-status');
+
+        if (preview)     { preview.src = ocrRawDataUrl; preview.style.display = 'block'; }
+        if (placeholder) placeholder.style.display = 'none';
+        if (scanBtn)     scanBtn.style.display = 'inline-flex';
+        if (resultsPane) resultsPane.style.display = 'none';
+        if (statusPane)  statusPane.style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+});
+
+/** Allow clicking the OCR upload zone */
+document.getElementById('ocr-upload-zone')?.addEventListener('click', e => {
+    if (e.target.id === 'ocr-upload-zone' || e.target.closest('.ocr-placeholder')) {
+        document.getElementById('ocr-file-input').click();
+    }
+});
+
+/**
+ * Set status message inside the OCR modal.
+ * @param {string} msg
+ * @param {boolean} show
+ */
+function setOcrStatus(msg, show = true) {
+    const pane = document.getElementById('ocr-status');
+    const text = document.getElementById('ocr-status-text');
+    if (pane) pane.style.display = show ? 'flex' : 'none';
+    if (text) text.textContent = msg;
+}
+
+/**
+ * Try to extract a value from OCR text using an array of regex patterns.
+ * Returns the first non-empty captured group or null.
+ * @param {string} text
+ * @param {RegExp[]} patterns
+ * @returns {string|null}
+ */
+function ocrExtract(text, patterns) {
+    for (const re of patterns) {
+        const m = text.match(re);
+        if (m && m[1] && m[1].trim()) return m[1].trim();
+    }
+    return null;
+}
+
+/**
+ * Run Tesseract OCR on the loaded photo, then parse the result to fill form fields.
+ */
+async function runOcrScan() {
+    if (!ocrRawDataUrl) return;
+
+    const scanBtn = document.getElementById('ocr-scan-btn');
+    if (scanBtn) { scanBtn.disabled = true; }
+
+    setOcrStatus('Loading OCR engine…', true);
+    document.getElementById('ocr-results').style.display = 'none';
+
+    try {
+        // Ensure Tesseract.js is loaded (lazy-loaded on first OCR modal open)
+        await ensureTesseractLoaded();
+
+        setOcrStatus('Recognising text… (this may take 10–30 s)', true);
+
+
+        const result = await Tesseract.recognize(
+            ocrRawDataUrl,
+            'eng',          // Language
+            { logger: m => {
+                if (m.status === 'recognizing text') {
+                    setOcrStatus(`Recognising text… ${Math.round(m.progress * 100)}%`, true);
+                }
+            }}
+        );
+
+        const raw = result.data.text;
+        console.log('[ISU ID OCR] Raw text:', raw);
+
+        /* ── Field extraction ── */
+        // Name: look for a full-caps line or label
+        const extractedName = ocrExtract(raw, [
+            /Name[:\s]+([A-Z][A-Z\s,.-]{4,60})/im,
+            /Student[:\s]+([A-Z][A-Z\s,.-]{4,60})/im,
+            // Fallback: longest ALL-CAPS line (likely the name)
+            /^([A-Z]{2}[A-Z,\s.-]{6,50})$/m
+        ]);
+
+        // ID Number: common formats like 25-00001, 2025-00001, 2025-BSCS-001
+        const extractedId = ocrExtract(raw, [
+            /(?:ID|Student)\s*(?:No|Number|#)?[:\s]+([0-9]{2,4}[-—][0-9A-Z]{3,10})/im,
+            /\b(20\d{2}[-—]\d{4,6})\b/,
+            /\b(\d{2}[-—]\d{4,6})\b/
+        ]);
+
+        // Course / Degree
+        const extractedCourse = ocrExtract(raw, [
+            /(?:Course|Program|Degree)[:\s]+([A-Za-z\s]{5,60})/im,
+            /\b(Bachelor\s+of\s+[A-Za-z\s]{4,50})/im,
+            /\b(BS[CS]?\s+[A-Za-z\s]{3,40})/im
+        ]);
+
+        // Date of Birth: various date formats
+        const extractedDob = ocrExtract(raw, [
+            /(?:DOB|Birth(?:day|\s*Date)?|Born)[:\s]+(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4})/im,
+            /(?:DOB|Birth(?:day|\s*Date)?|Born)[:\s]+(\d{4}[\/-]\d{1,2}[\/-]\d{1,2})/im,
+            /\b(\d{4}-\d{2}-\d{2})\b/  // ISO 8601 fallback
+        ]);
+
+        /* ── Display extracted results in modal ── */
+        const fillField = (id, val) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val || '—';
+        };
+        fillField('ocr-result-name',   extractedName);
+        fillField('ocr-result-id',     extractedId);
+        fillField('ocr-result-course', extractedCourse);
+        fillField('ocr-result-dob',    extractedDob);
+
+        setOcrStatus('', false);
+        document.getElementById('ocr-results').style.display = 'block';
+        const applyBtn = document.getElementById('ocr-apply-btn');
+        if (applyBtn) applyBtn.style.display = 'inline-flex';
+
+        // Store for apply step
+        document.getElementById('ocr-results').dataset.name   = extractedName   || '';
+        document.getElementById('ocr-results').dataset.id     = extractedId     || '';
+        document.getElementById('ocr-results').dataset.course = extractedCourse || '';
+        document.getElementById('ocr-results').dataset.dob    = extractedDob    || '';
+
+    } catch (err) {
+        console.error('[ISU ID OCR] Failed:', err);
+        setOcrStatus('OCR failed: ' + err.message, true);
+    } finally {
+        if (scanBtn) scanBtn.disabled = false;
+    }
+}
+
+/**
+ * Apply the OCR-extracted values to the active student's form fields and re-render.
+ */
+function applyOcrResults() {
+    const resultsEl = document.getElementById('ocr-results');
+    if (!resultsEl) return;
+
+    const student = state.students[state.activeStudentIndex];
+
+    const name   = resultsEl.dataset.name   || '';
+    const id     = resultsEl.dataset.id     || '';
+    const course = resultsEl.dataset.course || '';
+    const dob    = resultsEl.dataset.dob    || '';
+
+    if (name) {
+        student.formData.name = name.toUpperCase();
+        const el = document.getElementById('full-name');
+        if (el) el.value = student.formData.name;
+    }
+    if (id) {
+        student.formData.idNumber = id.toUpperCase();
+        const el = document.getElementById('id-number');
+        if (el) el.value = student.formData.idNumber;
+    }
+    if (course) {
+        student.formData.course = course.toUpperCase();
+        const el = document.getElementById('course');
+        if (el) el.value = student.formData.course;
+    }
+    if (dob) {
+        // Try to convert to YYYY-MM-DD for the date input
+        let iso = dob;
+        const mdy = dob.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
+        if (mdy) {
+            const y = mdy[3].length === 2 ? '20' + mdy[3] : mdy[3];
+            iso = `${y}-${mdy[1].padStart(2,'0')}-${mdy[2].padStart(2,'0')}`;
+        }
+        student.formData.dob = iso;
+        const el = document.getElementById('dob');
+        if (el) el.value = iso;
+    }
+
+    renderStudentTabs();
+    renderCanvases();
+    closeOcrModal();
+
+    // Jump to next unfilled step
+    if (!student.formData.name) goToStep(2);
+    else if (!student.formData.idNumber) goToStep(3);
+    else if (!student.formData.course) goToStep(4);
+    else if (!student.formData.dob) goToStep(5);
+    else if (!student.formData.parentName) goToStep(6);
+    else if (!student.formData.address) goToStep(7);
+    else if (!student.formData.telephone) goToStep(8);
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   20. ENHANCEMENT SUITE — Campus Themes, QR Generator, Security Hologram,
+       Batch Table Manager, Card Inspector & Web Audio FX
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/** Campus Config Dictionary — 11 ISU Campuses */
+const CAMPUS_CONFIG = {
+    cabagan: {
+        name: 'Cabagan Main Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · CABAGAN',
+        primary: '#0f5132',
+        accent: '#d4af37',
+        particleColor: 0x15B915
+    },
+    echague: {
+        name: 'Echague Main Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ECHAGUE',
+        primary: '#1b365d',
+        accent: '#eaaa00',
+        particleColor: 0x3b82f6
+    },
+    cauayan: {
+        name: 'Cauayan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · CAUAYAN',
+        primary: '#800020',
+        accent: '#dfb15b',
+        particleColor: 0xef4444
+    },
+    ilagan: {
+        name: 'Ilagan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ILAGAN',
+        primary: '#4a154b',
+        accent: '#c0c0c0',
+        particleColor: 0xa855f7
+    },
+    roxas: {
+        name: 'Roxas Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ROXAS',
+        primary: '#008080',
+        accent: '#ffbf00',
+        particleColor: 0x14b8a6
+    },
+    angadanan: {
+        name: 'Angadanan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · ANGADANAN',
+        primary: '#1e4d2b',
+        accent: '#b87333',
+        particleColor: 0x10b981
+    },
+    san_mateo: {
+        name: 'San Mateo Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · SAN MATEO',
+        primary: '#92400e',
+        accent: '#f59e0b',
+        particleColor: 0xf59e0b
+    },
+    jones: {
+        name: 'Jones Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · JONES',
+        primary: '#0f172a',
+        accent: '#06b6d4',
+        particleColor: 0x06b6d4
+    },
+    palanan: {
+        name: 'Palanan Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · PALANAN',
+        primary: '#0284c7',
+        accent: '#f97316',
+        particleColor: 0x0284c7
+    },
+    san_mariano: {
+        name: 'San Mariano Campus',
+        headerText: 'ISABELA STATE UNIVERSITY · SAN MARIANO',
+        primary: '#047857',
+        accent: '#eab308',
+        particleColor: 0x047857
+    },
+    santiago: {
+        name: 'Santiago City Extension',
+        headerText: 'ISABELA STATE UNIVERSITY · SANTIAGO',
+        primary: '#581c87',
+        accent: '#f43f5e',
+        particleColor: 0xf43f5e
+    }
+};
+
+/** Set active Campus Theme */
+function setCampusTheme(campusKey, skipSound = false) {
+    if (!CAMPUS_CONFIG[campusKey]) return;
+    state.campusTheme = campusKey;
+    if (!skipSound) playAudioFx('click');
+
+    // Update active state on campus pill buttons
+    document.querySelectorAll('.campus-pill').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.campus === campusKey);
+    });
+
+    const config = CAMPUS_CONFIG[campusKey];
+    document.documentElement.style.setProperty('--green-600', config.primary);
+    document.documentElement.style.setProperty('--gold-400', config.accent);
+
+    // Notify window for Three.js particle constellation color animation in animations.js
+    if (typeof window.onCampusThemeChange === 'function') {
+        window.onCampusThemeChange(config);
+    }
+
+    showToast(`Switched campus theme to ${config.name}`, 'info');
+    renderCanvases();
+}
+
+/** Toggle Security Hologram & Watermark Overlay */
+function toggleHologramOverlay() {
+    state.showHologram = !state.showHologram;
+    playAudioFx('click');
+    const btn = document.getElementById('btn-toggle-hologram');
+    if (btn) btn.classList.toggle('active', state.showHologram);
+    showToast(state.showHologram ? 'Security Watermark & Hologram Enabled' : 'Hologram Overlay Disabled', 'info');
+    renderCanvases();
+}
+
+/** Web Audio API Synthesizer */
+function playAudioFx(type) {
+    if (!state.audioEnabled) return;
+    try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        if (!window._appAudioCtx) {
+            window._appAudioCtx = new AudioCtx();
+        }
+        const ctx = window._appAudioCtx;
+        if (ctx.state === 'suspended') {
+            ctx.resume();
+        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        const now = ctx.currentTime;
+
+        if (type === 'flip') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.exponentialRampToValueAtTime(150, now + 0.08);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (type === 'chime' || type === 'success') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(523.25, now);
+            osc.frequency.setValueAtTime(659.25, now + 0.06);
+            osc.frequency.setValueAtTime(783.99, now + 0.12);
+            gain.gain.setValueAtTime(0.1, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+            osc.start(now);
+            osc.stop(now + 0.25);
+        } else if (type === 'click' || type === 'tab') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            gain.gain.setValueAtTime(0.06, now);
+            gain.gain.linearRampToValueAtTime(0.01, now + 0.03);
+            osc.start(now);
+            osc.stop(now + 0.03);
+        }
+    } catch (e) {}
+}
+
+/** Toggle Web Audio FX Mute */
+function toggleAudioFx() {
+    state.audioEnabled = !state.audioEnabled;
+    const btn = document.getElementById('btn-toggle-audio');
+    const icon = document.getElementById('audio-icon');
+    if (btn) btn.classList.toggle('active', state.audioEnabled);
+    if (icon) icon.className = state.audioEnabled ? 'ph ph-speaker-high' : 'ph ph-speaker-slash';
+    showToast(state.audioEnabled ? 'Sound FX Enabled' : 'Sound Muted', 'info');
+    if (state.audioEnabled) playAudioFx('click');
+}
+
+/** Render Hologram Security Watermark on Canvas */
+function drawHologramWatermark(ctx, width, height) {
+    if (!state.showHologram) return;
+    ctx.save();
+
+    // Subtle official seal watermark pattern in center
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(width / 2, height / 2, width * 0.25, 0, Math.PI * 2);
+    ctx.fill();
+
+    // UV Guilloche security curves across card
+    ctx.globalAlpha = 0.07;
+    ctx.strokeStyle = CAMPUS_CONFIG[state.campusTheme]?.accent || '#d4af37';
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        const yOffset = height * (0.18 + i * 0.16);
+        for (let x = 0; x <= width; x += 10) {
+            const y = yOffset + Math.sin(x * 0.02 + i * 1.5) * 15;
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    // Iridescent ribbon sheen reflection
+    const grad = ctx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    grad.addColorStop(0.4, 'rgba(255, 255, 255, 0.02)');
+    grad.addColorStop(0.5, 'rgba(255, 215, 0, 0.1)');
+    grad.addColorStop(0.6, 'rgba(0, 255, 255, 0.08)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.restore();
+}
+
+/** Render QR Code on Canvas */
+function renderQrCodeOnCanvas(ctx, student, x, y, size) {
+    const studentId = student.formData.idNumber || 'ISU-CAB-00000';
+    const name = student.formData.name || 'STUDENT';
+    const payload = `ISU-VERIFY:${studentId}:${name.toUpperCase()}`;
+
+    if (typeof QRCode !== 'undefined') {
+        const tempDiv = document.createElement('div');
+        tempDiv.style.display = 'none';
+        document.body.appendChild(tempDiv);
+        try {
+            new QRCode(tempDiv, {
+                text: payload,
+                width: size,
+                height: size,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+            const img = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+            if (img) {
+                ctx.drawImage(img, x, y, size, size);
+            } else {
+                drawFallbackQr(ctx, payload, x, y, size);
+            }
+        } catch (e) {
+            drawFallbackQr(ctx, payload, x, y, size);
+        } finally {
+            document.body.removeChild(tempDiv);
+        }
+    } else {
+        drawFallbackQr(ctx, payload, x, y, size);
+    }
+}
+
+/** Fallback QR Code matrix generator */
+function drawFallbackQr(ctx, payload, x, y, size) {
+    ctx.save();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x, y, size, size);
+    ctx.fillStyle = '#000000';
+
+    const grid = 15;
+    const cell = size / grid;
+
+    // Outer border & positioning finders
+    ctx.fillRect(x, y, cell * 5, cell * 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + cell, y + cell, cell * 3, cell * 3);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x + cell * 2, y + cell * 2, cell, cell);
+
+    ctx.fillRect(x + size - cell * 5, y, cell * 5, cell * 5);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(x + size - cell * 4, y + cell, cell * 3, cell * 3);
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(x + size - cell * 3, y + cell * 2, cell, cell);
+
+    // Simple deterministic pattern based on char codes
+    for (let r = 0; r < grid; r++) {
+        for (let c = 0; c < grid; c++) {
+            if ((r < 5 && c < 5) || (r < 5 && c > 9)) continue;
+            const code = payload.charCodeAt((r * grid + c) % payload.length);
+            if ((code + r * 3 + c * 7) % 2 === 0) {
+                ctx.fillRect(x + c * cell, y + r * cell, cell, cell);
+            }
+        }
+    }
+    ctx.restore();
+}
+
+/** Batch Data Table Manager Modal */
+function openBatchModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('batch-modal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    renderBatchTable();
+}
+
+function closeBatchModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('batch-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function renderBatchTable() {
+    const tbody = document.getElementById('batch-table-body');
+    const statsBadge = document.getElementById('batch-stats-badge');
+    if (!tbody) return;
+
+    if (statsBadge) {
+        statsBadge.textContent = `${state.students.length} Student${state.students.length === 1 ? '' : 's'}`;
+    }
+
+    tbody.innerHTML = '';
+    state.students.forEach((st, idx) => {
+        const tr = document.createElement('tr');
+        if (idx === state.activeStudentIndex) tr.classList.add('active-row');
+
+        const hasPhoto = !!st.photoDataUrl;
+        const hasSig = !!st.signatureDataUrl;
+        const name = st.formData.name || '—';
+        const idNum = st.formData.idNumber || '—';
+        const course = st.formData.course || st.formData.department || '—';
+
+        tr.innerHTML = `
+            <td><strong>#${idx + 1}</strong></td>
+            <td>${name}</td>
+            <td><code>${idNum}</code></td>
+            <td>${course}</td>
+            <td><span class="badge-status ${hasPhoto ? 'yes' : 'no'}">${hasPhoto ? '✓ Yes' : '✗ Missing'}</span></td>
+            <td><span class="badge-status ${hasSig ? 'yes' : 'no'}">${hasSig ? '✓ Yes' : '✗ Missing'}</span></td>
+            <td>
+                <div style="display:flex; gap:4px;">
+                    <button class="batch-btn-sm" onclick="selectBatchStudent(${idx})">Select</button>
+                    <button class="batch-btn-sm danger" onclick="deleteBatchStudent(${idx})">Delete</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function selectBatchStudent(index) {
+    if (typeof switchStudent === 'function') {
+        switchStudent(index);
+        closeBatchModal();
+        showToast(`Switched to Student #${index + 1}`, 'info');
+    }
+}
+
+function deleteBatchStudent(index) {
+    if (state.students.length <= 1) {
+        showToast('Cannot delete the last student tab', 'warning');
+        return;
+    }
+    if (confirm(`Remove Student #${index + 1} from batch?`)) {
+        state.students.splice(index, 1);
+        if (state.activeStudentIndex >= state.students.length) {
+            state.activeStudentIndex = state.students.length - 1;
+        }
+        renderStudentTabs();
+        renderCanvases();
+        renderBatchTable();
+        showToast('Student removed', 'info');
+    }
+}
+
+function filterBatchTable() {
+    const q = (document.getElementById('batch-search-input')?.value || '').toLowerCase().trim();
+    const rows = document.querySelectorAll('#batch-table-body tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+
+function exportBatchCsv() {
+    if (!state.students || !state.students.length) return;
+    const headers = ['Full Name', 'Student ID', 'Course', 'Department', 'Date of Birth', 'Guardian', 'Address', 'Contact Number'];
+    const rows = state.students.map(st => [
+        `"${st.formData.name || ''}"`,
+        `"${st.formData.idNumber || ''}"`,
+        `"${st.formData.course || ''}"`,
+        `"${st.formData.department || ''}"`,
+        `"${st.formData.dob || ''}"`,
+        `"${st.formData.parentName || ''}"`,
+        `"${st.formData.address || ''}"`,
+        `"${st.formData.telephone || ''}"`
+    ]);
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `isu_students_batch_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    playAudioFx('chime');
+    showToast('Exported student batch CSV', 'success');
+}
+
+/** High-Res Card Inspector Modal */
+function openCardInspectModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('card-inspect-modal');
+    if (modal) {
+        modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+    }
+    renderInspectCanvas();
+}
+
+function closeCardInspectModal() {
+    playAudioFx('click');
+    const modal = document.getElementById('card-inspect-modal');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+function switchInspectFace(face) {
+    state.inspectFace = face;
+    playAudioFx('click');
+    document.getElementById('inspect-btn-front')?.classList.toggle('active', face === 'front');
+    document.getElementById('inspect-btn-back')?.classList.toggle('active', face === 'back');
+    renderInspectCanvas();
+}
+
+function renderInspectCanvas() {
+    const cvs = document.getElementById('inspect-canvas');
+    if (!cvs) return;
+    const ctx = cvs.getContext('2d');
+    const srcCvs = state.inspectFace === 'back' ? backCanvas : frontCanvas;
+
+    cvs.width = srcCvs.width;
+    cvs.height = srcCvs.height;
+    ctx.drawImage(srcCvs, 0, 0);
+}
+
