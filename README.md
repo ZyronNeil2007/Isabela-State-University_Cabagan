@@ -2,9 +2,9 @@
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
-🔗 **Live Demo Git Page**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)
-
-🔗 **Live Demo (Vercel)**: [isabela-state-university-cabagan.vercel.app](https://isabela-state-university-cabagan.vercel.app)
+🔗 **Live Demo Git Page**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)\n
+🔗 **Live Demo (Vercel)**: [isabela-state-university-cabagan.vercel.app](https://isabela-state-university-cabagan.vercel.app)\n
+🔗 **Live Demo (Netlify)**: [idgenratorisuc.netlify.app](https://idgenratorisuc.netlify.app)
 
 
 ---
