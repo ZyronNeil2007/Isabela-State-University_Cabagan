@@ -1,0 +1,24 @@
+{
+  "name": "ISU Premium ID Generator — Isabela State University",
+  "short_name": "ISU ID Generator",
+  "description": "Generate digital and print-ready Isabela State University student IDs with real-time preview and digital signature.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#010d01",
+  "theme_color": "#021a02",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/isu_logo_256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/isu_logo_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -374,7 +374,6 @@
     // Guard: only animate elements that exist
     const exists = sel => document.querySelector(sel) !== null;
 
-    if (exists('.hero-badge'))     gsap.set('.hero-badge',       { y: -20, autoAlpha: 0 });
     if (exists('.hero-word'))      gsap.set('.hero-word',        { y: 60,  autoAlpha: 0 });
     if (exists('.hero-subtitle'))  gsap.set('.hero-subtitle',    { y: 28,  autoAlpha: 0 });
     if (exists('.hfp'))            gsap.set('.hfp',              { x: -20, autoAlpha: 0 });
@@ -386,9 +385,6 @@
     if (exists('.hero-scroll-indicator')) gsap.set('.hero-scroll-indicator', { autoAlpha: 0 });
 
     const tl = gsap.timeline({ delay: 0.1 });
-
-    if (exists('.hero-badge'))
-      tl.to('.hero-badge', { y: 0, autoAlpha: 1, duration: 0.55, ease: 'back.out(1.7)' });
 
     if (exists('.hero-word'))
       tl.to('.hero-word', { y: 0, autoAlpha: 1, duration: 0.65, ease: 'power3.out',
@@ -572,9 +568,6 @@
 
     const ST_HERO = { trigger: hero, start: 'top top', end: 'bottom top', scrub: 1.5 };
 
-    // ISU seal watermark drift
-    const seal = document.querySelector('.hero-seal');
-    if (seal) gsap.to(seal, { y: 100, ease: 'none', scrollTrigger: ST_HERO });
 
     // Glow blob fade / scale
     const glowPrimary = document.querySelector('.hero-glow-primary');
@@ -665,14 +658,6 @@
       });
     }
 
-    // ── Hero badge dot ────────────────────────────────────────────
-    const heroBadgeDot = document.querySelector('.hero-badge-dot');
-    if (heroBadgeDot) {
-      animate(heroBadgeDot, {
-        scale: [1, 1.9, 1], opacity: [1, 0.15, 1],
-        duration: 2200, loop: true, ease: 'inOutQuad'
-      });
-    }
 
     // ── Floating badges — soft float loop ────────────────────────
     document.querySelectorAll('.hero-floating-badge').forEach((badge, i) => {

@@ -9,6 +9,21 @@
     <meta name="theme-color" content="#021a02">
     <title>ISU Premium ID Generator — Isabela State University</title>
 
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/png" href="images/isu_logo_256.png">
+    <link rel="apple-touch-icon" href="images/isu_logo_256.png">
+    <link rel="manifest" href="manifest.webmanifest">
+
+    <!-- Open Graph & Social Cards -->
+    <meta property="og:title" content="ISU Premium ID Generator — Isabela State University">
+    <meta property="og:description" content="Generate a premium digital and print-ready Isabela State University Student ID in seconds with live preview and digital signature.">
+    <meta property="og:image" content="images/isu_logo_512.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="ISU Premium ID Generator">
+    <meta name="twitter:description" content="Generate digital and print-ready Isabela State University Student IDs in seconds.">
+    <meta name="twitter:image" content="images/isu_logo_512.png">
+
     <!-- DNS prefetch for CDN resources -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com">
     <link rel="dns-prefetch" href="https://fonts.gstatic.com">
@@ -39,12 +54,9 @@
         integrity="sha384-9EQoUIJYrv09/oYhSxnw1VpLcfPw3BM9dE7+D/3wGUPeLLa7F9Z6OAoD+i/M6FK9" crossorigin="anonymous"
         defer></script>
 
-    <!-- QRCode.js for ID Verification QR Rendering -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-        integrity="sha384-3nhO2w16gLkW0yM2v20bV86y/eBq6j9wJ2Wb3u7y6X1n/7R+m6t2y4j0L" crossorigin="anonymous"
-        defer></script>
 
-    <link rel="stylesheet" href="style.css?v=3.7.0">
+
+    <link rel="stylesheet" href="style.css?v=3.8.0">
 </head>
 
 
@@ -63,14 +75,11 @@
     <!-- ═══════════════════════════════════════════════════════
          NAVBAR
     ═══════════════════════════════════════════════════════ -->
-    <!-- Scroll progress indicator -->
-    <div id="scroll-progress" aria-hidden="true"></div>
-
     <nav id="navbar" class="liquid-glass">
         <div class="nav-container">
             <div class="logo-container" onclick="document.getElementById('home').scrollIntoView({behavior:'smooth'})"
                 role="button" tabindex="0" aria-label="Back to home">
-                <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
+                <img src="images/isu_logo_256.png" alt="Isabela State University Logo" class="logo-img" width="44" height="44" decoding="async">
                 <span class="logo-text">Isabela State University Cabagan </span>
             </div>
             <div class="desktop-menu">
@@ -108,7 +117,7 @@
     <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
         <div class="mobile-drawer-header">
             <div class="mobile-drawer-brand">
-                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <img src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="36" height="36" decoding="async">
                 <span class="logo-text">ISU ID Generator</span>
             </div>
             <button class="btn-close" id="mobile-drawer-close" aria-label="Close navigation menu">
@@ -143,32 +152,18 @@
     ═══════════════════════════════════════════════════════ -->
     <section id="home" class="hero-section">
 
-        <!-- Three.js particle constellation canvas -->
-        <canvas id="hero-webgl-canvas" aria-hidden="true"></canvas>
-
-        <!-- Animated mesh grid background -->
+        <!-- Static mesh grid background -->
         <div class="hero-mesh" aria-hidden="true"></div>
 
-        <!-- Morphing ambient glow -->
+        <!-- Ambient static glow -->
         <div class="hero-glow-primary" aria-hidden="true"></div>
         <div class="hero-glow-gold" aria-hidden="true"></div>
-
-        <!-- ISU Seal watermark -->
-        <div class="hero-seal" aria-hidden="true">
-            <img src="images/isu_logo.png" alt="" class="hero-seal-img" loading="lazy">
-        </div>
 
         <!-- Main content column -->
         <div class="hero-content">
 
             <!-- LEFT COLUMN: Text + CTAs + Stats -->
             <div class="hero-left-col">
-
-                <!-- Eyebrow badge -->
-                <div class="hero-badge" style="--delay:0s">
-                    <span class="hero-badge-dot"></span>
-                    v3.7.0 &nbsp;&middot;&nbsp; 2026 New ID &nbsp;&middot;&nbsp; Monorepo Structure
-                </div>
 
                 <!-- Staggered headline -->
                 <h1 class="hero-title">
@@ -963,7 +958,7 @@
     <footer>
         <div class="footer-container liquid-glass">
             <div class="footer-logo">
-                <img src="images/isu_logo.png" alt="ISU Logo" class="logo-img">
+                <img src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="32" height="32" decoding="async">
                 <div class="footer-logo-text">
                     <span class="footer-uni-name">Isabela State University</span>
                     <span class="footer-tagline">Cabagan, Isabela</span>
@@ -971,7 +966,7 @@
             </div>
             <p class="footer-text">
                 © 2026 Designed &amp; Developed by Zyron Neil.
-                <span>v3.7.0 · 2026 ID Generator</span>
+                <span>v3.8.0 · 2026 ID Generator</span>
             </p>
             <div class="social-links">
                 <a href="mailto:zyronneilbautista10@gmail.com" aria-label="Email" class="icon-link liquid-glass">
@@ -1228,7 +1223,7 @@
                 <!-- Brand -->
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="images/isu_logo.png" alt="Isabela State University Logo" class="logo-img">
+                        <img src="images/isu_logo_256.png" alt="Isabela State University Logo" class="logo-img" width="44" height="44" loading="lazy" decoding="async">
                         <div class="footer-logo-text">
                             <span class="footer-logo-name">ISU ID Generator</span>
                             <span class="footer-logo-sub">Isabela State University · Cabagan</span>
@@ -1295,8 +1290,8 @@
                         class="footer-copy-link" target="_blank" rel="noopener noreferrer">MIT License</a>.
                 </p>
                 <div class="footer-version">
-                    <span class="footer-version-badge">v3.7.0</span>
-                    <span class="footer-version-label">Monorepo Restructure &amp; Repository Organization</span>
+                    <span class="footer-version-badge">v3.8.0</span>
+                    <span class="footer-version-label">Performance &amp; UI Refinement</span>
                 </div>
             </div>
 
@@ -1304,29 +1299,26 @@
     </footer>
 
     <!-- jsPDF for PDF batch export -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+        integrity="sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk" crossorigin="anonymous"
+        defer></script>
     <!-- Tesseract.js is lazy-loaded by app.js when the OCR modal is first opened -->
 
     <!-- GSAP + ScrollTrigger -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+        integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt" crossorigin="anonymous"
+        defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"
+        integrity="sha384-Z3REaz79l2IaAZqJsSABtTbhjgOUYyV3p90XNnAPCSHg3EMTz1fouunq9WZRtj3d" crossorigin="anonymous"
+        defer></script>
 
     <!-- Anime.js v4 (UMD bundle — exposes global `anime` object) -->
-    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"
+        integrity="sha384-InMmvD3VoYcY7hGjSC80aLb2bNNE4CzpX+Eq6FVDlmB0IKgDvmfPw4UY8L/M++iG" crossorigin="anonymous"
+        defer></script>
 
-    <!-- Scroll Reveal + Progress Bar (inline, no deps) -->
+    <!-- Scroll Reveal + Mobile Navigation & Service Worker -->
     <script>
-        // ── Scroll Progress Bar (fallback — animations.js installs a smoother version) ──
-        const progressBar = document.getElementById('scroll-progress');
-        window._progressBarOwned = false; // animations.js sets this true when it takes over
-        function updateProgress() {
-            if (window._progressBarOwned) return; // yield to animations.js
-            const h = document.documentElement;
-            const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
-            if (progressBar) progressBar.style.width = pct + '%';
-        }
-        window.addEventListener('scroll', updateProgress, { passive: true });
-
         // ── Scroll Reveal via IntersectionObserver ──
         const srObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -1408,12 +1400,19 @@
         // ── Dynamic Copyright Year ──
         const yearEl = document.getElementById('footer-year');
         if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+        // ── Service Worker Registration (PWA & Offline Instant Load) ──
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration skipped:', err));
+            });
+        }
     </script>
 
-    <script src="app.js"></script>
+    <script src="app.js" defer></script>
 
     <!-- Animation enhancement layer (GSAP + Anime.js + Three.js) -->
-    <script src="animations.js"></script>
+    <script src="animations.js" defer></script>
 </body>
 
 </html>

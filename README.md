@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.7.0
+# 🎓 Isabela State University Premium ID Generator v3.8.0
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
@@ -97,7 +97,26 @@ isu_id/
 
 ## 📋 Changelog
 
-### v3.7.0 *(2026-08-29)*
+### v3.8.0 *(2026-09-13)*
+- `ui` — Removed hero section background watermark logo (`.hero-seal`) for a cleaner, distraction-free landing.
+- `ui` — Removed hero eyebrow version badge (`.hero-badge`) to simplify the hero heading area.
+- `perf` — Stopped all background CSS animations in the hero (mesh drift, ambient glow breath, floating orbs) — hero elements are now fully static, reducing CPU/GPU idle load.
+- `perf` — Disabled Three.js WebGL particle constellation canvas (`#hero-webgl-canvas`) — the canvas is now hidden to eliminate the main-thread 60fps render loop on page load.
+- `perf` — Removed GSAP scroll parallax on hero glows/orbs and hero seal — ScrollTrigger no longer attaches redundant scroll listeners for removed elements.
+- `perf` — Canvas resize guard in `renderCanvases()`: only reassigns canvas dimensions when they actually change, preventing unnecessary GPU buffer discards on every render call.
+- `perf` — Mini canvas (mobile stepper header) now also benefits from dimension change guard.
+- `perf` — QR Code rendering now uses a memoized offscreen cache (`_qrCache`) — avoids DOM reflows and repeated encoding when the QR payload and size are unchanged.
+- `pwa` — Added `manifest.webmanifest` (PWA web app manifest) with standalone display, theme color, and icon definitions for 256px and 512px ISU logos.
+- `pwa` — Added `sw.js` Service Worker with stale-while-revalidate caching strategy for offline-first instant loading.
+- `pwa` — Registered service worker in `web/index.html` inline script on `window.load`.
+- `fix` — Holographic shimmer canvas now pauses its rAF loop when the browser tab is hidden (`document.hidden`) and resumes on `visibilitychange`, preventing wasted GPU work in background tabs.
+- `fix` — Removed `QRCode.js` script tag from `web/index.html` and inline QR call from `renderCanvases()` — QR rendering is handled by the dedicated `renderQrCodeOnCanvas()` function only.
+- `fix` — Document fonts: re-render canvases after `document.fonts.ready` resolves to prevent font-swap layout shifts on initial load.
+- `sec` — Added SHA-384 Subresource Integrity hashes to GSAP, GSAP ScrollTrigger, Anime.js, and jsPDF CDN `<script>` tags.
+- `sec` — All CDN scripts marked `defer` for non-blocking parallel loading.
+- `dx` — Logo images across navbar, mobile drawer, footer, and Android asset references updated from `isu_logo.png` to the optimised `isu_logo_256.png` (navbar/mobile/footer-small) and `isu_logo_512.png` (footer-brand) with explicit `width`, `height`, and `decoding="async"` attributes for CLS prevention.
+- `dx` — Removed scroll progress bar (`#scroll-progress`) element, its CSS, and JavaScript — simplified both HTML and animation layer.
+- `android` — `versionCode` bumped from 2 to 3, `versionName` from `3.7.0` to `3.8.0`.
 - `refactor` — Separated the repository into a monorepo structure: `web/` for the client-side web application and `android/` for the Android Studio project.
 - `chore` — Updated `.gitignore` with comprehensive patterns for both `web/` and `android/` build artifacts.
 - `docs` — Updated `README.md`, `wiki/Architecture.md`, and `wiki/Setup_and_Usage.md` to document the new folder structure and running instructions for both platforms.
