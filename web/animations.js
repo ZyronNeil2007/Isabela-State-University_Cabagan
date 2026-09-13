@@ -62,197 +62,11 @@
      MODULE A — Three.js Hero Particle Constellation
   ════════════════════════════════════════════════════════════════════ */
   function initThreeHero() {
-    if (prefersReducedMotion()) return;
-
-    const canvas  = document.getElementById('hero-webgl-canvas');
-    const section = document.getElementById('home');
-    if (!canvas || !section) return;
-
-    const THREE = window.THREE;
-    if (!THREE) {
-      console.warn('[animations.js] Three.js not available — hero particles skipped.');
-      return;
-    }
-
-    // ── Setup ──────────────────────────────────────────────────────
-    const { w: initW, h: initH } = canvasSize(canvas, section);
-
-    const scene    = new THREE.Scene();
-    const camera   = new THREE.PerspectiveCamera(60, initW / initH, 0.1, 500);
-    camera.position.z = 5;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: false });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.setSize(initW, initH, false);
-    renderer.setClearColor(0x000000, 0);
-
-    // ── Particles ──────────────────────────────────────────────────
-    const COUNT  = window.innerWidth < 768 ? 350 : 700;
-    const posArr = new Float32Array(COUNT * 3);
-    const szArr  = new Float32Array(COUNT);
-    const alpArr = new Float32Array(COUNT);
-    const spdArr = new Float32Array(COUNT);
-
-    for (let i = 0; i < COUNT; i++) {
-      posArr[i * 3]     = (Math.random() - 0.5) * 14;
-      posArr[i * 3 + 1] = (Math.random() - 0.5) * 8;
-      posArr[i * 3 + 2] = (Math.random() - 0.5) * 3;
-      szArr[i]  = Math.random() * 2.5 + 0.8;
-      alpArr[i] = Math.random() * 0.55 + 0.2;
-      spdArr[i] = Math.random() * 0.0007 + 0.0002;
-    }
-
-    const SPLIT = Math.floor(COUNT * 0.8);
-
-    // ── Vertex / Fragment shaders ──────────────────────────────────
-    const VERT = `
-      attribute float size;
-      attribute float alpha;
-      varying float vAlpha;
-      void main() {
-        vAlpha = alpha;
-        vec4 mv = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * (280.0 / -mv.z);
-        gl_Position  = projectionMatrix * mv;
-      }
-    `;
-    const FRAG = `
-      uniform vec3 uColor;
-      varying float vAlpha;
-      void main() {
-        float d = distance(gl_PointCoord, vec2(0.5));
-        if (d > 0.5) discard;
-        float s = 1.0 - d * 2.0;
-        gl_FragColor = vec4(uColor, vAlpha * s * s);
-      }
-    `;
-
-    function makeMat(hex) {
-      return new THREE.ShaderMaterial({
-        uniforms: { uColor: { value: new THREE.Color(hex) } },
-        vertexShader: VERT, fragmentShader: FRAG,
-        transparent: true, depthWrite: false,
-        blending: THREE.AdditiveBlending
-      });
-    }
-
-    // Green layer
-    const geoGreen = new THREE.BufferGeometry();
-    const gPos = new Float32Array(posArr.buffer, 0, SPLIT * 3);
-    geoGreen.setAttribute('position', new THREE.BufferAttribute(gPos.slice(), 3));
-    geoGreen.setAttribute('size',     new THREE.BufferAttribute(szArr.slice(0, SPLIT), 1));
-    geoGreen.setAttribute('alpha',    new THREE.BufferAttribute(alpArr.slice(0, SPLIT), 1));
-    const ptGreen = new THREE.Points(geoGreen, makeMat(0x22c55e));
-
-    // Gold layer
-    const geoGold = new THREE.BufferGeometry();
-    const goldPos = posArr.slice(SPLIT * 3);
-    geoGold.setAttribute('position', new THREE.BufferAttribute(goldPos, 3));
-    geoGold.setAttribute('size',     new THREE.BufferAttribute(szArr.slice(SPLIT), 1));
-    geoGold.setAttribute('alpha',    new THREE.BufferAttribute(alpArr.slice(SPLIT), 1));
-    const ptGold = new THREE.Points(geoGold, makeMat(0xd4af37));
-
-    scene.add(ptGreen, ptGold);
-
-    // Dynamic color listener for Campus Theme changes
-    window.onCampusThemeChange = function(campusConfig) {
-      if (ptGreen && ptGreen.material && ptGreen.material.uniforms && ptGreen.material.uniforms.uColor) {
-        const targetColor = new THREE.Color(campusConfig.particleColor || 0x15B915);
-        gsap.to(ptGreen.material.uniforms.uColor.value, {
-          r: targetColor.r,
-          g: targetColor.g,
-          b: targetColor.b,
-          duration: 1.2,
-          ease: 'power2.out'
-        });
-      }
-    };
-
-    // ── Constellation lines (limited to 150 checks) ───────────────
-    const lineVerts = [];
-    const CHECK = Math.min(SPLIT, 150);
-    const greenPosAttr = geoGreen.attributes.position.array;
-    for (let i = 0; i < CHECK; i++) {
-      const ax = greenPosAttr[i*3], ay = greenPosAttr[i*3+1], az = greenPosAttr[i*3+2];
-      for (let j = i+1; j < CHECK; j++) {
-        const bx = greenPosAttr[j*3], by = greenPosAttr[j*3+1], bz = greenPosAttr[j*3+2];
-        if ((ax-bx)**2 + (ay-by)**2 + (az-bz)**2 < 2.56) { // 1.6² threshold
-          lineVerts.push(ax, ay, az, bx, by, bz);
-        }
-      }
-    }
-    if (lineVerts.length > 0) {
-      const lineGeo = new THREE.BufferGeometry();
-      lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(lineVerts, 3));
-      scene.add(new THREE.LineSegments(lineGeo,
-        new THREE.LineBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.05 })
-      ));
-    }
-
-    // ── Mouse parallax ────────────────────────────────────────────
-    let mX = 0, mY = 0;
-    const onMM = e => {
-      mX = (e.clientX / window.innerWidth  - 0.5) * 0.35;
-      mY = (e.clientY / window.innerHeight - 0.5) * 0.18;
-    };
-    window.addEventListener('mousemove', onMM, { passive: true });
-
-    // ── Resize ────────────────────────────────────────────────────
-    const onResize = () => {
-      const { w, h } = canvasSize(canvas, section);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
-    };
-    window.addEventListener('resize', onResize, { passive: true });
-
-    // ── Render loop ───────────────────────────────────────────────
-    let rafId = null;
-    let running = false;
-    let t = 0;
-
-    function tick() {
-      rafId = requestAnimationFrame(tick);
-      t += 0.001;
-
-      // Drift particles upward
-      const pa = geoGreen.attributes.position;
-      for (let i = 0; i < SPLIT; i++) {
-        pa.array[i*3+1] += spdArr[i];
-        if (pa.array[i*3+1] > 4.5) pa.array[i*3+1] = -4.5;
-      }
-      pa.needsUpdate = true;
-
-      // Lerp scene rotation toward mouse
-      scene.rotation.x += (mY - scene.rotation.x) * 0.025;
-      scene.rotation.y += (mX - scene.rotation.y) * 0.025;
-
-      // Breathing
-      ptGreen.scale.setScalar(1 + Math.sin(t * 1.3) * 0.018);
-      ptGold.scale.setScalar(1 + Math.cos(t * 1.1) * 0.022);
-
-      renderer.render(scene, camera);
-    }
-
-    function startLoop() {
-      if (running) return;
-      running = true;
-      tick();
-    }
-    function stopLoop() {
-      if (!running) return;
-      running = false;
-      cancelAnimationFrame(rafId);
-      rafId = null;
-    }
-
-    startLoop();
-
-    // Pause when off-screen
-    new IntersectionObserver(([entry]) => {
-      entry.isIntersecting ? startLoop() : stopLoop();
-    }, { threshold: 0.01 }).observe(section);
+    // Disabled as requested: background particle constellation animation removed for performance
+    return;
   }
+
+
 
   /* ════════════════════════════════════════════════════════════════════
      MODULE E — Three.js Holographic Card Shimmer
@@ -357,12 +171,20 @@
     }
 
     const observer = new IntersectionObserver(([entry]) => {
-      isVisible = entry.isIntersecting;
+      isVisible = entry.isIntersecting && !document.hidden;
       if (isVisible) holoLoop();
       else cancelAnimationFrame(rafId);
     }, { threshold: 0.01 });
 
     observer.observe(canvas.parentElement);
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        cancelAnimationFrame(rafId);
+      } else if (isVisible) {
+        holoLoop();
+      }
+    });
   }
 
   /* ════════════════════════════════════════════════════════════════════
@@ -374,7 +196,6 @@
     // Guard: only animate elements that exist
     const exists = sel => document.querySelector(sel) !== null;
 
-    if (exists('.hero-badge'))     gsap.set('.hero-badge',       { y: -20, autoAlpha: 0 });
     if (exists('.hero-word'))      gsap.set('.hero-word',        { y: 60,  autoAlpha: 0 });
     if (exists('.hero-subtitle'))  gsap.set('.hero-subtitle',    { y: 28,  autoAlpha: 0 });
     if (exists('.hfp'))            gsap.set('.hfp',              { x: -20, autoAlpha: 0 });
@@ -386,9 +207,6 @@
     if (exists('.hero-scroll-indicator')) gsap.set('.hero-scroll-indicator', { autoAlpha: 0 });
 
     const tl = gsap.timeline({ delay: 0.1 });
-
-    if (exists('.hero-badge'))
-      tl.to('.hero-badge', { y: 0, autoAlpha: 1, duration: 0.55, ease: 'back.out(1.7)' });
 
     if (exists('.hero-word'))
       tl.to('.hero-word', { y: 0, autoAlpha: 1, duration: 0.65, ease: 'power3.out',
@@ -570,28 +388,9 @@
     const hero = document.getElementById('home');
     if (!hero) return;
 
-    const ST_HERO = { trigger: hero, start: 'top top', end: 'bottom top', scrub: 1.5 };
 
-    // ISU seal watermark drift
-    const seal = document.querySelector('.hero-seal');
-    if (seal) gsap.to(seal, { y: 100, ease: 'none', scrollTrigger: ST_HERO });
+    // Background glows and orbs are kept static without scroll parallax overhead
 
-    // Glow blob fade / scale
-    const glowPrimary = document.querySelector('.hero-glow-primary');
-    const glowGold    = document.querySelector('.hero-glow-gold');
-    if (glowPrimary) gsap.to(glowPrimary, { scale: 1.35, autoAlpha: 0, ease: 'none',
-      scrollTrigger: { ...ST_HERO, scrub: 2 } });
-    if (glowGold)    gsap.to(glowGold,    { scale: 1.45, autoAlpha: 0, ease: 'none',
-      scrollTrigger: { ...ST_HERO, scrub: 2.5 } });
-
-    // Floating orbs at different depths
-    const orbY = [75, 130, 100, 165];
-    document.querySelectorAll('.orb').forEach((orb, i) => {
-      gsap.to(orb, {
-        y: orbY[i] ?? 100, ease: 'none',
-        scrollTrigger: { trigger: 'body', start: 'top top', end: 'max', scrub: 2 }
-      });
-    });
 
     // Hero left column subtle float up
     const heroLeft = document.querySelector('.hero-left-col');
@@ -665,14 +464,6 @@
       });
     }
 
-    // ── Hero badge dot ────────────────────────────────────────────
-    const heroBadgeDot = document.querySelector('.hero-badge-dot');
-    if (heroBadgeDot) {
-      animate(heroBadgeDot, {
-        scale: [1, 1.9, 1], opacity: [1, 0.15, 1],
-        duration: 2200, loop: true, ease: 'inOutQuad'
-      });
-    }
 
     // ── Floating badges — soft float loop ────────────────────────
     document.querySelectorAll('.hero-floating-badge').forEach((badge, i) => {
@@ -720,22 +511,7 @@
       navCta.addEventListener('mouseleave', () => animate(navCta, { scale: 1,    duration: 360, ease: 'outElastic(1, 0.3)' }));
     }
 
-    // ── Smooth scroll progress bar (lerp rAF) ────────────────────
-    const progressBar = document.getElementById('scroll-progress');
-    if (progressBar) {
-      window._progressBarOwned = true;
-      let target = 0, current = 0;
-      window.addEventListener('scroll', () => {
-        const d = document.documentElement;
-        target = Math.min(100, (d.scrollTop / (d.scrollHeight - d.clientHeight)) * 100);
-      }, { passive: true });
-      const updateBar = () => {
-        current += (target - current) * 0.1;
-        progressBar.style.width = current.toFixed(2) + '%';
-        requestAnimationFrame(updateBar);
-      };
-      updateBar();
-    }
+
 
     // ── HIW step icon bounce on enter ────────────────────────────
     const stepIcons = document.querySelectorAll('.hiw-step-icon');

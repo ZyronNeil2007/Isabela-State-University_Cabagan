@@ -718,24 +718,25 @@ function renderCanvases() {
     const is2026  = state.idVersion === '2026';
     const cfg     = is2026 ? CONFIG_2026 : CONFIG;
 
-    // ── Resize canvases to match the active template ────────
-    if (is2026) {
-        const ft = state.front2026Template;
-        const bt = state.back2026Template;
-        frontCanvas.width  = ft ? ft.width  : 675;
-        frontCanvas.height = ft ? ft.height : 1050;
-        backCanvas.width   = bt ? bt.width  : 704;
-        backCanvas.height  = bt ? bt.height : 1050;
-    } else {
-        const ft = state.frontTemplate;
-        const bt = state.backTemplate;
-        frontCanvas.width  = ft ? ft.width  : 638;
-        frontCanvas.height = ft ? ft.height : 1013;
-        backCanvas.width   = bt ? bt.width  : 638;
-        backCanvas.height  = bt ? bt.height : 1013;
+    // ── Resize canvases only when dimensions change (prevents GPU buffer discarding) ──
+    const targetFrontW = is2026 ? (state.front2026Template?.width || 675) : (state.frontTemplate?.width || 638);
+    const targetFrontH = is2026 ? (state.front2026Template?.height || 1050) : (state.frontTemplate?.height || 1013);
+    const targetBackW  = is2026 ? (state.back2026Template?.width || 704) : (state.backTemplate?.width || 638);
+    const targetBackH  = is2026 ? (state.back2026Template?.height || 1050) : (state.backTemplate?.height || 1013);
+
+    if (frontCanvas.width !== targetFrontW)   frontCanvas.width = targetFrontW;
+    if (frontCanvas.height !== targetFrontH) frontCanvas.height = targetFrontH;
+    if (backCanvas.width !== targetBackW)     backCanvas.width = targetBackW;
+    if (backCanvas.height !== targetBackH)   backCanvas.height = targetBackH;
+
+    if (miniCanvasFront) {
+        if (miniCanvasFront.width !== targetFrontW)  miniCanvasFront.width = targetFrontW;
+        if (miniCanvasFront.height !== targetFrontH) miniCanvasFront.height = targetFrontH;
     }
-    if (miniCanvasFront) { miniCanvasFront.width = frontCanvas.width; miniCanvasFront.height = frontCanvas.height; }
-    if (miniCanvasBack)  { miniCanvasBack.width  = backCanvas.width;  miniCanvasBack.height  = backCanvas.height; }
+    if (miniCanvasBack) {
+        if (miniCanvasBack.width !== targetBackW)  miniCanvasBack.width = targetBackW;
+        if (miniCanvasBack.height !== targetBackH) miniCanvasBack.height = targetBackH;
+    }
 
     // ── Front Face ──────────────────────────────────────────
     frontCtx.clearRect(0, 0, frontCanvas.width, frontCanvas.height);
@@ -898,9 +899,6 @@ function renderCanvases() {
         }
         renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
     }
-
-    // Real-time verification QR Code on back face
-    renderQrCodeOnCanvas(backCtx, student, is2026 ? 510 : 460, is2026 ? 60 : 70, is2026 ? 140 : 120);
 
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
@@ -1362,6 +1360,11 @@ document.getElementById('download-btn').addEventListener('click', async () => {
 window.addEventListener('load', () => {
     // Load ID card templates & render
     loadTemplates();
+
+    // Re-render once web fonts are fully ready to prevent font-swap layout shifts
+    if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => renderCanvases()).catch(() => {});
+    }
 
     // Check if a previous session exists and show restore banner
     (() => {
@@ -2849,18 +2852,29 @@ function drawHologramWatermark(ctx, width, height) {
     ctx.restore();
 }
 
+/** Memoized QR Code offscreen cache to avoid DOM reflows and repeated encoding */
+const _qrCache = {
+    payload: '',
+    size: 0,
+    element: null
+};
+
 /** Render QR Code on Canvas */
 function renderQrCodeOnCanvas(ctx, student, x, y, size) {
     const studentId = student.formData.idNumber || 'ISU-CAB-00000';
     const name = student.formData.name || 'STUDENT';
     const payload = `ISU-VERIFY:${studentId}:${name.toUpperCase()}`;
 
+    // Fast path: draw from cached offscreen element if payload & size match
+    if (_qrCache.payload === payload && _qrCache.size === size && _qrCache.element) {
+        ctx.drawImage(_qrCache.element, x, y, size, size);
+        return;
+    }
+
     if (typeof QRCode !== 'undefined') {
-        const tempDiv = document.createElement('div');
-        tempDiv.style.display = 'none';
-        document.body.appendChild(tempDiv);
+        const offscreenDiv = document.createElement('div');
         try {
-            new QRCode(tempDiv, {
+            new QRCode(offscreenDiv, {
                 text: payload,
                 width: size,
                 height: size,
@@ -2868,20 +2882,21 @@ function renderQrCodeOnCanvas(ctx, student, x, y, size) {
                 colorLight: "#ffffff",
                 correctLevel: QRCode.CorrectLevel.M
             });
-            const img = tempDiv.querySelector('img') || tempDiv.querySelector('canvas');
+            const img = offscreenDiv.querySelector('img') || offscreenDiv.querySelector('canvas');
             if (img) {
+                _qrCache.payload = payload;
+                _qrCache.size = size;
+                _qrCache.element = img;
                 ctx.drawImage(img, x, y, size, size);
-            } else {
-                drawFallbackQr(ctx, payload, x, y, size);
+                return;
             }
         } catch (e) {
             drawFallbackQr(ctx, payload, x, y, size);
-        } finally {
-            document.body.removeChild(tempDiv);
+            return;
         }
-    } else {
-        drawFallbackQr(ctx, payload, x, y, size);
     }
+
+    drawFallbackQr(ctx, payload, x, y, size);
 }
 
 /** Fallback QR Code matrix generator */

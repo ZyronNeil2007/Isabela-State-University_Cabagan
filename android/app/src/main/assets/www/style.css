@@ -558,36 +558,6 @@ footer {
     }
 }
 
-/* ── ISU Seal watermark (faint background) ─────────────────────────── */
-.hero-seal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: clamp(280px, 35vw, 500px);
-    height: clamp(280px, 35vw, 500px);
-    opacity: 0.025;
-    pointer-events: none;
-    z-index: 0;
-    will-change: transform;
-}
-
-.hero-seal-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 50%;
-}
-
-@keyframes sealRotate {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
 
 /* ── Main hero content column ────────────────────────────────────────── */
 .hero-content {
@@ -3160,11 +3130,6 @@ footer {
         height: 200px;
     }
 
-    .hero-seal {
-        width: 130px;
-        height: 130px;
-        opacity: 0.015;
-    }
 
     /* Marquee: tighter spacing */
     .hero-marquee {
@@ -5429,8 +5394,7 @@ a[aria-label="Email"]:hover {
 
 .hero-mesh,
 .hero-glow-primary,
-.hero-glow-gold,
-.hero-seal {
+.hero-glow-gold {
     position: relative;
     z-index: 1;
 }
@@ -5465,7 +5429,6 @@ a[aria-label="Email"]:hover {
 }
 
 /* -- GSAP will-change hints -- */
-.hero-badge,
 .hero-word,
 .hero-subtitle,
 .hero-actions,
@@ -5511,8 +5474,7 @@ a[aria-label="Email"]:hover {
 .bento-stat-num { display: inline-block; transform-origin: center center; }
 .icon-link { display: inline-flex; align-items: center; justify-content: center; transform-origin: center center; }
 
-.live-dot,
-.hero-badge-dot {
+.live-dot {
     display: inline-block;
     transform-origin: center center;
     will-change: transform, opacity;

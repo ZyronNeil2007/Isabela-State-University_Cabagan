@@ -248,7 +248,6 @@ body {
     position: absolute;
     border-radius: 50%;
     filter: blur(80px);
-    will-change: transform;
 }
 
 .orb-1 {
@@ -257,7 +256,6 @@ body {
     background: radial-gradient(circle, rgba(21, 185, 21, 0.16) 0%, rgba(10, 100, 10, 0.08) 50%, transparent 70%);
     top: -15%;
     left: -15%;
-    animation: floatOrb1 25s ease-in-out infinite;
 }
 
 .orb-2 {
@@ -266,7 +264,6 @@ body {
     background: radial-gradient(circle, rgba(4, 57, 4, 0.30) 0%, transparent 70%);
     bottom: 5%;
     right: -10%;
-    animation: floatOrb2 30s ease-in-out infinite;
 }
 
 .orb-3 {
@@ -276,7 +273,6 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    animation: floatOrb3 20s ease-in-out infinite;
 }
 
 .orb-4 {
@@ -285,7 +281,6 @@ body {
     background: radial-gradient(circle, rgba(160, 120, 48, 0.09) 0%, transparent 70%);
     bottom: 10%;
     left: -8%;
-    animation: floatOrb1 35s 5s ease-in-out infinite alternate;
 }
 
 /* Ensure all page content sits above orbs */
@@ -477,13 +472,14 @@ footer {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - var(--navbar-height) - 4rem);
-    padding-bottom: 0;
+    min-height: auto;
+    padding-top: calc(var(--navbar-height, 60px) + 1.25rem);
+    padding-bottom: 1.25rem;
     overflow: hidden;
     contain: layout style;
 }
 
-/* ── Animated CSS mesh grid background ────────────────────────────────── */
+/* ── Static CSS mesh grid background ─────────────────────────────────── */
 .hero-mesh {
     position: absolute;
     inset: -10% -5%;
@@ -491,24 +487,14 @@ footer {
         linear-gradient(rgba(21, 185, 21, 0.04) 1px, transparent 1px),
         linear-gradient(90deg, rgba(21, 185, 21, 0.04) 1px, transparent 1px);
     background-size: 60px 60px;
-    animation: meshDrift 30s linear infinite;
+    animation: none;
     pointer-events: none;
     z-index: 0;
     mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
 }
 
-@keyframes meshDrift {
-    0% {
-        transform: translate(0, 0);
-    }
-
-    100% {
-        transform: translate(60px, 60px);
-    }
-}
-
-/* ── Morphing ambient glows ──────────────────────────────────────────── */
+/* ── Static ambient glows ───────────────────────────────────────────── */
 .hero-glow-primary {
     position: absolute;
     top: -10%;
@@ -521,10 +507,9 @@ footer {
             rgba(21, 185, 21, 0.04) 40%,
             transparent 70%);
     filter: blur(60px);
-    animation: glowBreath 8s ease-in-out infinite;
+    animation: none;
     pointer-events: none;
     z-index: 0;
-    will-change: opacity, transform;
 }
 
 .hero-glow-gold {
@@ -538,10 +523,9 @@ footer {
             rgba(201, 168, 76, 0.08) 0%,
             transparent 70%);
     filter: blur(80px);
-    animation: glowBreath 10s 3s ease-in-out infinite alternate;
+    animation: none;
     pointer-events: none;
     z-index: 0;
-    will-change: opacity;
 }
 
 @keyframes glowBreath {
@@ -558,36 +542,6 @@ footer {
     }
 }
 
-/* ── ISU Seal watermark (faint background) ─────────────────────────── */
-.hero-seal {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: clamp(280px, 35vw, 500px);
-    height: clamp(280px, 35vw, 500px);
-    opacity: 0.025;
-    pointer-events: none;
-    z-index: 0;
-    will-change: transform;
-}
-
-.hero-seal-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 50%;
-}
-
-@keyframes sealRotate {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
 
 /* ── Main hero content column ────────────────────────────────────────── */
 .hero-content {
@@ -602,7 +556,7 @@ footer {
     width: 100%;
     max-width: var(--container-max);
     margin: 0 auto;
-    padding: clamp(5.5rem, 12vw, 8rem) clamp(1.25rem, 5vw, 2.5rem) clamp(3rem, 6vw, 5rem);
+    padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem) 1rem;
     animation: heroFadeUp 0.9s var(--ease-out) both;
 }
 
@@ -1080,7 +1034,7 @@ footer {
     font-weight: 500;
     letter-spacing: 0.10em;
     text-transform: uppercase;
-    padding: 1rem 0 1.5rem;
+    padding: 0.5rem 0 1rem;
     transition: color var(--dur-base) ease;
     position: relative;
     z-index: 1;
@@ -3160,11 +3114,6 @@ footer {
         height: 200px;
     }
 
-    .hero-seal {
-        width: 130px;
-        height: 130px;
-        opacity: 0.015;
-    }
 
     /* Marquee: tighter spacing */
     .hero-marquee {
@@ -4224,18 +4173,12 @@ a[aria-label="Email"]:hover {
     --bento-radius: 22px;
 }
 
-/* ── Scroll Progress Bar ── */
-#scroll-progress {
-    position: fixed;
-    top: 0;
-    left: 0;
-    height: 3px;
-    width: 0%;
-    background: linear-gradient(90deg, var(--forest-600), var(--green-vivid), var(--gold-400));
-    background-size: 200% 100%;
-    z-index: 9999;
-    transition: width 0.1s linear;
-    animation: progressShimmer 2s linear infinite;
+/* ── Section Rendering Performance & Containment ── */
+.features-section,
+.hiw-section,
+.site-footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
 }
 
 /* ── Scroll Reveal System ── */
@@ -4340,21 +4283,21 @@ a[aria-label="Email"]:hover {
 /* ─── HERO: 2-column desktop layout ≥ 960px ──────────────────────────────── */
 @media (min-width: 960px) {
     .hero-section {
-        min-height: 100svh;
+        min-height: auto;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        padding-top: calc(var(--navbar-height, 60px) + 1.5rem);
+        padding-bottom: 1.5rem;
     }
 
     .hero-content {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: clamp(2rem, 5vw, 5rem);
+        gap: clamp(1.5rem, 3.5vw, 3.5rem);
         align-items: center;
         text-align: left; /* default left on desktop */
-        padding: 0 clamp(1.5rem, 4vw, 3rem);
-        padding-top: 6rem; /* navbar clearance */
-        padding-bottom: 3rem;
+        padding: 1rem clamp(1.5rem, 4vw, 3rem);
         animation: none; /* children animate individually */
     }
 
@@ -5387,8 +5330,6 @@ a[aria-label="Email"]:hover {
     .hero-glow-primary,
     .hero-glow-gold { animation: none !important; }
 
-    /* Stop scroll progress shimmer */
-    #scroll-progress { animation: none !important; }
 
     /* Stop section title shimmer */
     .section-title--hl,
@@ -5411,15 +5352,9 @@ a[aria-label="Email"]:hover {
    ANIMATION LAYER - Three.js / GSAP / Anime.js  (added by animations.js)
    ========================================================================= */
 
-/* -- Three.js Hero Particle Canvas -- */
+/* -- Three.js Hero Particle Canvas (disabled for performance & clean aesthetic) -- */
 #hero-webgl-canvas {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-    display: block;
+    display: none !important;
 }
 
 .hero-section {
@@ -5429,9 +5364,9 @@ a[aria-label="Email"]:hover {
 
 .hero-mesh,
 .hero-glow-primary,
-.hero-glow-gold,
-.hero-seal {
-    position: relative;
+.hero-glow-gold {
+    position: absolute !important;
+    pointer-events: none;
     z-index: 1;
 }
 
@@ -5465,7 +5400,6 @@ a[aria-label="Email"]:hover {
 }
 
 /* -- GSAP will-change hints -- */
-.hero-badge,
 .hero-word,
 .hero-subtitle,
 .hero-actions,
@@ -5511,8 +5445,7 @@ a[aria-label="Email"]:hover {
 .bento-stat-num { display: inline-block; transform-origin: center center; }
 .icon-link { display: inline-flex; align-items: center; justify-content: center; transform-origin: center center; }
 
-.live-dot,
-.hero-badge-dot {
+.live-dot {
     display: inline-block;
     transform-origin: center center;
     will-change: transform, opacity;
@@ -5524,8 +5457,6 @@ a[aria-label="Email"]:hover {
     animation: none !important;
 }
 
-/* Anime.js lerp handles scroll progress width */
-#scroll-progress { transition: none; will-change: width; }
 
 .hfp { display: inline-flex; transform-origin: left center; }
 .stepper-btn, .version-toggle-btn { transform-origin: center center; }
