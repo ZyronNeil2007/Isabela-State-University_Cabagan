@@ -4,7 +4,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 🔗 **Live Demo Git Page**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)
 
-🔗 **Live Demo Vercel**: [isabela-state-university-cabagan.vercel.app](isabela-state-university-cabagan.vercel.app)
+🔗 **Live Demo (Vercel)**: [isabela-state-university-cabagan.vercel.app](https://isabela-state-university-cabagan.vercel.app)
 
 
 ---
