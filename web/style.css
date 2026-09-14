@@ -219,7 +219,19 @@ body {
     align-items: center;
     justify-content: flex-start;
     gap: clamp(2rem, 4vw, 3rem);
+    position: relative;
+}
 
+/*
+ * PERF FIX 1: Background is painted once on a fixed pseudo-element.
+ * This avoids the repaint triggered by `background-attachment: fixed`
+ * on the body during every scroll frame.
+ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
     /* Premium layered gradient background */
     background:
         radial-gradient(ellipse 80% 60% at 15% 0%, rgba(10, 80, 10, 0.38) 0%, transparent 60%),
@@ -227,9 +239,7 @@ body {
         radial-gradient(ellipse 40% 40% at 60% 30%, rgba(21, 185, 21, 0.07) 0%, transparent 55%),
         radial-gradient(ellipse 45% 35% at 90% 5%, rgba(160, 120, 48, 0.08) 0%, transparent 60%),
         linear-gradient(160deg, var(--forest-950) 0%, var(--forest-900) 45%, var(--forest-800) 100%);
-    background-attachment: fixed;
-
-    position: relative;
+    pointer-events: none;
 }
 
 
@@ -247,7 +257,13 @@ body {
 .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
+    /*
+     * PERF FIX 2: Removed filter:blur(80px) — a large-radius CSS blur
+     * is one of the most GPU-intensive operations in the browser.
+     * The orbs already use radial-gradient(…, transparent) which gives
+     * a soft, naturally-diffused edge without any blur calculation.
+     * On mobile we additionally hide them via the media query below.
+     */
 }
 
 .orb-1 {
@@ -506,7 +522,8 @@ footer {
             rgba(21, 185, 21, 0.12) 0%,
             rgba(21, 185, 21, 0.04) 40%,
             transparent 70%);
-    filter: blur(60px);
+    /* PERF FIX 2b: Reduced hero glow blur from 60px → 30px */
+    filter: blur(30px);
     animation: none;
     pointer-events: none;
     z-index: 0;
@@ -522,7 +539,8 @@ footer {
     background: radial-gradient(ellipse,
             rgba(201, 168, 76, 0.08) 0%,
             transparent 70%);
-    filter: blur(80px);
+    /* PERF FIX 2b: Reduced hero gold glow blur from 80px → 40px */
+    filter: blur(40px);
     animation: none;
     pointer-events: none;
     z-index: 0;
@@ -5794,4 +5812,107 @@ a[aria-label="Email"]:hover {
     gap: 0.35rem;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERFORMANCE — Mobile / Low-End GPU Overrides
+   PERF FIX 3: Disable expensive backdrop-filter on mobile (≤ 860px).
+   Mobile/tablet GPUs struggle to composite multiple blur layers while
+   scrolling. Replace with semi-opaque solid fallbacks for readability.
+═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+
+    /* Hide orbs entirely on mobile — they add GPU overhead with no benefit
+       on small screens where they're largely off-viewport anyway. */
+    .floating-orbs {
+        display: none;
+    }
+
+    /* Glass Tier 1 — main panels */
+    .glass-panel {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(4, 30, 4, 0.82) !important;
+    }
+
+    /* Form groups — Tier 2 */
+    .form-group {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(2, 20, 2, 0.75) !important;
+    }
+
+    /* Liquid Glass — navbar / footer elements — Tier 3 */
+    .liquid-glass {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 20, 3, 0.88) !important;
+    }
+
+    /* Navbar scrolled state */
+    #navbar.scrolled {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(2, 15, 2, 0.92) !important;
+    }
+
+    /* Top nav blur backdrop */
+    .top-nav-backdrop {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Hero floating badges */
+    .hero-floating-badge {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(4, 40, 4, 0.85) !important;
+    }
+
+    /* Hero stats strip */
+    .hero-stats {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.80) !important;
+    }
+
+    /* Ghost button */
+    .btn-ghost {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.70) !important;
+    }
+
+    /* Nav action buttons */
+    .btn-nav {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 20, 3, 0.65) !important;
+    }
+
+    /* Cropper modal overlay */
+    .cropper-modal-overlay {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Session restore banner */
+    .session-banner {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(0, 40, 20, 0.92) !important;
+    }
+
+    /* Export dropdown */
+    .export-dropdown-menu {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.95) !important;
+    }
+
+    /* Hero glow elements — hide entirely on mobile (not visible anyway) */
+    .hero-glow-primary,
+    .hero-glow-gold {
+        display: none;
+    }
+}
 

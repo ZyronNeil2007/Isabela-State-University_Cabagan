@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.8.0
+# 🎓 Isabela State University Premium ID Generator v3.8.1
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
@@ -98,6 +98,15 @@ isu_id/
 ---
 
 ## 📋 Changelog
+
+### v3.8.1 *(2026-09-14)*
+- `perf` — **Eliminated Scroll Repaint Bottleneck**: Removed `background-attachment: fixed` from `body` and moved the complex layered radial gradient to a `body::before` pseudo-element with `position: fixed; inset: 0; z-index: -1`. Background is now painted once into a dedicated compositor layer, resolving document-wide repainting on every scroll pixel.
+- `perf` — **Eliminated Expensive GPU Blur Kernels**: Removed `filter: blur(80px)` from `.orb` elements. Decorative orbs utilize native `radial-gradient(..., transparent)` for soft diffusion with zero blur shader math overhead.
+- `perf` — **Reduced Ambient Hero Glow Blurs**: Scaled down `.hero-glow-primary` filter blur from 60px to 30px, and `.hero-glow-gold` from 80px to 40px to free up GPU rendering capacity.
+- `perf` — **Mobile GPU Optimization (`@media max-width: 860px`)**: Disabled expensive `backdrop-filter` calculations across all glass panels, form groups, liquid glass navbar/footer elements, badges, buttons, and modals on mobile/tablet viewports (≤860px). Provided solid semi-opaque dark fallbacks for crystal-clear readability and zero-stutter scrolling.
+- `perf` — **Mobile Visual Cleanup**: Hidden decorative `.floating-orbs` and hero glows on mobile devices to eliminate unnecessary off-screen compositing overhead.
+- `pwa` — Bumped Service Worker cache to `isu-id-v3.8.1` with updated precache asset references.
+- `android` — Synchronized performance-optimized stylesheet to Android assets (`android/app/src/main/assets/www/style.css`), bumped `versionCode` to `4` and `versionName` to `3.8.1`.
 
 ### v3.8.0 *(2026-09-13)*
 - `ui` — Removed hero section background watermark logo (`.hero-seal`) for a cleaner, distraction-free landing.
