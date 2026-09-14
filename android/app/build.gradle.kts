@@ -13,8 +13,8 @@ android {
         applicationId = "com.isu.id"
         minSdk = 24
         targetSdk = 34
-        versionCode = 3
-        versionName = "3.8.0"
+        versionCode = 4
+        versionName = "3.8.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
