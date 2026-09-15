@@ -297,8 +297,8 @@ Created, designed, and developed by **Zyron Neil**.
 | Platform | Link |
 |---|---|
 | 🐙 GitHub | [github.com/ZyronNeil2007](https://github.com/ZyronNeil2007) |
-| 💼 LinkedIn | [linkedin.com/in/your-profile](https://linkedin.com/in/your-profile) *(replace with your actual profile)* |
-| 🌐 Portfolio | [your-portfolio.dev](https://your-portfolio.dev) *(replace with your actual portfolio URL)* |
+| 💼 LinkedIn | [linkedin.com/in/your-profile](www.linkedin.com/in/neil-bautista-8656b4362) |
+| 🌐 Portfolio | [your-portfolio.dev](https://your-portfolio.dev)|
 
 Feel free to reach out for collaborations, campus deployment inquiries, or feature requests specific to ISU academic workflows.
 
