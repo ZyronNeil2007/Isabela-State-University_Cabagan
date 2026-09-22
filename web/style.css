@@ -5848,10 +5848,17 @@ a[aria-label="Email"]:hover {
         background: rgba(3, 20, 3, 0.88) !important;
     }
 
-    /* Navbar scrolled state */
+    /* Exception: restore blur on the top nav bar only */
+    #navbar.liquid-glass {
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        background: var(--glass-t3-bg) !important;
+    }
+
+    /* Navbar scrolled state — also keep blur */
     #navbar.scrolled {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
         background: rgba(2, 15, 2, 0.92) !important;
     }
 
