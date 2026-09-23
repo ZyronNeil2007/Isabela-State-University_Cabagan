@@ -1,4 +1,4 @@
-# 🎓 Isabela State University ID Generator v3.8.1
+# Isabela State University ID Generator v3.8.1
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
