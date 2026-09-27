@@ -26,7 +26,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ---
 
-## ✨ Features
+## The Features
 
 ### 🆕 v3.6 — University Multi-Campus & Security Studio Edition
 - **🏛️ All 11 ISU Campus Themes**: Instant theme switching across all 11 ISU campuses (Cabagan, Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City). Propagates accent colors to UI buttons, live canvas graphics, and WebGL Three.js hero particles.
