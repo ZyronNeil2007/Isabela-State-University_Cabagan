@@ -1,5 +1,5 @@
 # AGENTS.md — Agent & Contributor Ruleset
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 > This file is the source of truth for all agents, AI assistants, and human contributors working on this codebase. Read it before making any changes.
 
@@ -15,7 +15,8 @@
 | **Entry Point** | `web/index.html` |
 | **Primary Logic** | `web/app.js` |
 | **Styling** | `web/style.css` |
-| **Animations** | `web/animations.js` |
+| **Animations** | CSS only (`animations.js` and GSAP / Anime.js / Three.js were removed in v3.9.0) |
+| **Fonts** | `web/fonts/` — Roboto Condensed (SIL OFL 1.1), self-hosted for the ID card canvas |
 | **Android App** | `android/` (Kotlin + Jetpack Compose + WebView shell) |
 
 ---
@@ -63,7 +64,6 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
 | `web/index.html` | Structure | HTML layout, ARIA, CDN imports, section IDs | Add inline `<script>` blocks beyond the PWA registration snippet; add styles beyond `:root` overrides |
 | `web/style.css` | Styling | All CSS; design tokens in `:root`; 22 documented sections | Use `!important` excessively; add Tailwind; use inline styles in JS unless dynamically computed |
 | `web/app.js` | Logic | State management, canvas rendering, all feature modules | Move logic to HTML; use `document.write`; use synchronous XHR |
-| `web/animations.js` | Motion | GSAP, Anime.js, Three.js animations only | Add business logic; modify state object; call `renderCanvases()` |
 | `web/sw.js` | PWA | Service Worker; cache versioning | Add fetch interception for POST requests |
 | `web/manifest.webmanifest` | PWA | App identity, icons, display mode | Change `start_url` without updating SW cache name |
 
@@ -96,15 +96,16 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
      N. SECTION NAME
   ─────────────────────────────────────────────────────────── */
   ```
-- Animations must respect `prefers-reduced-motion`. Check `animations.js` module G for the pattern.
-- Mobile performance rules (≤ 860px): disable `backdrop-filter`, hide decorative orbs/glows.
+- Animations must respect `prefers-reduced-motion` (section 20 of `style.css` collapses every duration). Also honour `prefers-reduced-transparency`, `prefers-contrast` and `forced-colors`.
+- **Glass (v3.9.0 deviation, deliberate):** panels (T1/T2) are flat surfaces. `backdrop-filter` is used only on the functional layer that floats over scrolling content: `#navbar` and, at ≤ 860px, the sticky `.stepper-header` / `.stepper-nav`. Nothing else blurs. `prefers-reduced-transparency` swaps those for solid fills.
+- Accent colours derive from `--green-600` / `--gold-400` (set by `setCampusTheme()`); buttons use `--accent` (88% of the campus colour mixed with black) so white text stays ≥ 4.5:1 on all 11 campuses. Re-check contrast if `CAMPUS_CONFIG` changes.
 
 ### 4.3 HTML
 - Use semantic HTML5 elements (`<nav>`, `<main>`, `<section>`, `<footer>`, `<article>`, `<header>`).
 - Every interactive element must have a descriptive `id` attribute (used by `getElementById` in JS).
 - Use `aria-label`, `aria-hidden`, `role`, `aria-expanded` per existing patterns.
 - File inputs for images: `accept="image/*"`.
-- Modals: must have `class="modal-overlay"` and include `aria-hidden` toggling.
+- Modals: use `.cropper-modal-overlay` + `role="dialog"` + `aria-modal="true"` + `aria-labelledby`. They are hidden with `visibility:hidden` (not `aria-hidden`) and shown by adding `.active`; `app.js` module 21 handles Escape, focus-in, Tab trap and focus return.
 
 ---
 
@@ -255,13 +256,11 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 
 ---
 
-## 11. Animation Module Rules (`animations.js`)
+## 11. Motion Rules (CSS only since v3.9.0)
 
-- Must register `gsap.registerPlugin(ScrollTrigger)` at the top.
-- Always check `prefersReducedMotion()` inside each function — never at parse time.
-- Three.js `initThreeHero()` is currently **disabled** (returns immediately). Do not re-enable without profiling.
-- The holographic shimmer rAF loop must pause when `document.hidden === true`.
-- `window.onCampusThemeChange` is a public callback registered by `animations.js`. `app.js` calls it on campus theme switch to update particle colors.
+- `animations.js`, GSAP, ScrollTrigger, Anime.js and Three.js were removed. Do not re-add a motion library; use CSS transitions with the `--ease` / `--dur` tokens.
+- The card's holographic sheen is the `.holo-sheen` element; `app.js` module 22 only writes `--mx` / `--my` on pointer move.
+- `window.onCampusThemeChange` is an optional hook; `app.js` calls it if defined. Nothing registers it any more.
 
 ---
 
@@ -273,7 +272,7 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 - QR generation uses **ZXing**.
 - Photo crop uses **uCrop** library.
 - Session persistence uses **Room** (SQLite) + **DataStore** (preferences).
-- The `android/app/src/main/assets/www/` directory contains a mirrored copy of the web app's `style.css` — keep it in sync with `web/style.css`.
+- The `android/app/src/main/assets/www/` directory contains a mirrored copy of the web app's `style.css` — keep it in sync with `web/` on every release. **As of v3.9.0 it is NOT synced (still v3.5.0)** — see release notes.
 
 ---
 

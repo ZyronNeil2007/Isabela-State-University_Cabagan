@@ -24,6 +24,10 @@
  * 17.  AI SIGNATURE   — photo scan → background removal
  * 18.  SESSION SAVE   — localStorage auto-save & restore
  * 19.  OCR AUTOFILL   — Tesseract.js scan existing ID/form
+ * 20.  ENHANCEMENT    — campus themes, hologram, audio, batch table, inspector
+ * 21.  MODAL A11Y     — focus management, Escape to close
+ * 22.  HOLO SHEEN     — pointer-driven iridescent highlight on the card
+ * 23.  SITE CHROME    — mobile drawer, scroll-spy, footer year
  * ═══════════════════════════════════════════════════════════════════════════
  */
 
@@ -365,9 +369,13 @@ function initSignaturePad() {
 function getPointerPos(e) {
     const rect = sigCanvas.getBoundingClientRect();
     const source = e.touches && e.touches.length > 0 ? e.touches[0] : e;
+    // The pad is sized from its parent's width, which is 0 while its step is
+    // hidden — so always map CSS pixels onto canvas pixels instead of assuming 1:1.
+    const scaleX = rect.width  ? sigCanvas.width  / rect.width  : 1;
+    const scaleY = rect.height ? sigCanvas.height / rect.height : 1;
     return {
-        x: source.clientX - rect.left,
-        y: source.clientY - rect.top
+        x: (source.clientX - rect.left) * scaleX,
+        y: (source.clientY - rect.top)  * scaleY
     };
 }
 
@@ -419,6 +427,7 @@ sigCanvas.addEventListener('mouseout',   stopDrawing);
 sigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
 sigCanvas.addEventListener('touchmove',  draw,         { passive: false });
 sigCanvas.addEventListener('touchend',   stopDrawing);
+sigCanvas.addEventListener('touchcancel', stopDrawing);
 
 document.getElementById('clear-signature').addEventListener('click', () => {
     sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
@@ -526,13 +535,12 @@ Object.entries(INPUT_KEY_MAP).forEach(([id, stateKey]) => {
 function setIdVersion(version, silent = false) {
     state.idVersion = version;
 
-    if (!silent) {
-        // Toggle button active states
-        const btnOld  = document.getElementById('btn-old-id');
-        const btn2026 = document.getElementById('btn-2026-id');
-        if (btnOld)  btnOld.classList.toggle('active',  version === 'old');
-        if (btn2026) btn2026.classList.toggle('active', version === '2026');
-    }
+    // Always sync the buttons: a restored session also needs the right one
+    // highlighted. (`silent` is kept for call-site compatibility.)
+    const btnOld  = document.getElementById('btn-old-id');
+    const btn2026 = document.getElementById('btn-2026-id');
+    if (btnOld)  { btnOld.classList.toggle('active',  version === 'old');  btnOld.setAttribute('aria-pressed',  String(version === 'old')); }
+    if (btn2026) { btn2026.classList.toggle('active', version === '2026'); btn2026.setAttribute('aria-pressed', String(version === '2026')); }
 
     // Show/hide course vs department fields
     const courseWrapper = document.getElementById('course-field-wrapper');
@@ -710,6 +718,49 @@ function formatCourseText(course) {
 }
 
 /**
+ * Split a stored date of birth into zero-padded parts WITHOUT using Date().
+ * new Date('05/14/2002') is parsed as local midnight, and reading it back with
+ * getUTC*() lands on the previous day in any UTC+ zone (e.g. Asia/Manila).
+ * Accepts YYYY-MM-DD (date input) and M/D/YYYY · M-D-YYYY · M.D.YYYY (CSV, OCR).
+ *
+ * @param {string} raw
+ * @returns {{y:string,m:string,d:string}|null}
+ */
+function parseDobParts(raw) {
+    const s = String(raw || '').trim();
+    let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (m) return { y: m[1], m: m[2].padStart(2, '0'), d: m[3].padStart(2, '0') };
+
+    m = s.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+    if (m) {
+        let a = parseInt(m[1], 10), b = parseInt(m[2], 10);
+        if (a > 12 && b <= 12) [a, b] = [b, a];          // clearly D/M/YYYY
+        return { y: m[3], m: String(a).padStart(2, '0'), d: String(b).padStart(2, '0') };
+    }
+    return null;
+}
+
+/** Normalise any accepted date string to YYYY-MM-DD (unchanged if unrecognised). */
+function normalizeDobToIso(raw) {
+    const p = parseDobParts(raw);
+    return p ? `${p.y}-${p.m}-${p.d}` : String(raw || '').trim();
+}
+
+/**
+ * Format a stored date of birth for printing on the card.
+ * @param {string} raw
+ * @param {string} sep         separator, e.g. '/' or '-'
+ * @param {'mdy'|'dmy'} order
+ * @param {string} placeholder shown when empty
+ */
+function formatDobForCard(raw, sep, order, placeholder) {
+    if (!raw) return placeholder;
+    const p = parseDobParts(raw);
+    if (!p) return String(raw);
+    return (order === 'mdy' ? [p.m, p.d, p.y] : [p.d, p.m, p.y]).join(sep);
+}
+
+/**
  * Main render function — draws both card faces and the mini preview.
  * Called every time state changes (input, photo upload, signature).
  */
@@ -861,18 +912,7 @@ function renderCanvases() {
         renderText2026(backCtx, cfg.text.telephone,
             student.formData.telephone || '09123456789');
 
-        let dobText = '01/01/2000';
-        if (student.formData.dob) {
-            const d = new Date(student.formData.dob);
-            if (!isNaN(d.getTime())) {
-                const yyyy = d.getUTCFullYear();
-                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-                const dd = String(d.getUTCDate()).padStart(2, '0');
-                dobText = `${mm}/${dd}/${yyyy}`;
-            } else {
-                dobText = student.formData.dob;
-            }
-        }
+        const dobText = formatDobForCard(student.formData.dob, '/', 'mdy', '01/01/2000');
         renderText2026(backCtx, cfg.text.dob, dobText);
     } else {
         // Old ID back: white clear rect + text overlay
@@ -885,18 +925,7 @@ function renderCanvases() {
             'Address: ' + (student.formData.address || '123 MAIN ST, CAUAYAN CITY, ISABELA'));
         renderText(backCtx, CONFIG.text.telephone,
             'Telephone No.: ' + (student.formData.telephone || '+63 912 345 6789'));
-        let dobText = '01-01-2000';
-        if (student.formData.dob) {
-            const d = new Date(student.formData.dob);
-            if (!isNaN(d.getTime())) {
-                const yyyy = d.getUTCFullYear();
-                const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
-                const dd = String(d.getUTCDate()).padStart(2, '0');
-                dobText = `${dd}-${mm}-${yyyy}`;
-            } else {
-                dobText = student.formData.dob.split('-').reverse().join('-');
-            }
-        }
+        const dobText = formatDobForCard(student.formData.dob, '-', 'dmy', '01-01-2000');
         renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
     }
 
@@ -997,7 +1026,9 @@ function buildStepperDots() {
         dot.title          = STEP_TITLES[i - 1];
         dot.setAttribute('role', 'button');
         dot.setAttribute('aria-label', `Go to step ${i}: ${STEP_TITLES[i - 1]}`);
+        dot.tabIndex = 0;
         dot.addEventListener('click', () => goToStep(i));
+        dot.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToStep(i); } });
         container.appendChild(dot);
     }
 }
@@ -1013,7 +1044,11 @@ function buildDesktopProgressBar() {
         seg.className    = 'progress-segment';
         seg.dataset.step = i;
         seg.title        = STEP_TITLES[i - 1];
+        seg.setAttribute('role', 'button');
+        seg.setAttribute('aria-label', `Go to step ${i}: ${STEP_TITLES[i - 1]}`);
+        seg.tabIndex = 0;
         seg.addEventListener('click', () => goToStep(i));
+        seg.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToStep(i); } });
         bar.appendChild(seg);
     }
 }
@@ -1081,6 +1116,11 @@ function goToStep(n) {
     // ── Desktop header + segmented bar ──
     updateDesktopHeader(currentStep);
     updateDesktopProgressBar(currentStep);
+    const progressBar = document.getElementById('desktop-progress-bar');
+    if (progressBar) progressBar.setAttribute('aria-valuenow', String(currentStep));
+
+    // The signature pad can only be measured once its step is visible
+    if (currentStep === TOTAL_STEPS) initSignaturePad();
 
     // ── Back / Next / Done button state ──
     const backBtn = document.getElementById('stepper-back');
@@ -1200,6 +1240,18 @@ function initNavbar() {
 }
 
 
+/** Escape a value for safe interpolation into innerHTML. */
+function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, ch => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+}
+
+/** File-name safe version of a student name. */
+function safeFileName(name, fallback = 'Student') {
+    return String(name || fallback).trim().replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_') || fallback;
+}
+
 /**
  * Display a temporary glassmorphism toast notification.
  * @param {string} message 
@@ -1210,6 +1262,8 @@ function showToast(message, type = 'success') {
     if (!toast) {
         toast = document.createElement('div');
         toast.id = 'isu-toast';
+        toast.setAttribute('role', 'status');
+        toast.setAttribute('aria-live', 'polite');
         toast.style.cssText = `
             position: fixed;
             bottom: 24px;
@@ -1223,7 +1277,8 @@ function showToast(message, type = 'success') {
             padding: 12px 24px;
             border-radius: 50px;
             z-index: 9999;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
+            pointer-events: none;
             font-size: 14px;
             font-weight: 500;
             display: flex;
@@ -1242,7 +1297,7 @@ function showToast(message, type = 'success') {
     if (type === 'error') { icon = 'ph-x-circle'; color = '#f87171'; }
     if (type === 'warning') { icon = 'ph-warning'; color = '#fbbf24'; }
     
-    toast.innerHTML = `<i class="ph ${icon}" style="color: ${color}; font-size: 18px;"></i> <span>${message}</span>`;
+    toast.innerHTML = `<i class="ph ${icon}" style="color: ${color}; font-size: 18px;"></i> <span>${escapeHtml(message)}</span>`;
     
     // Animate in
     requestAnimationFrame(() => {
@@ -1272,7 +1327,14 @@ document.getElementById('download-btn').addEventListener('click', async () => {
     // Yield to browser to paint the loading state before heavy work
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 50)));
 
+    // Declared before `try` so the `finally` block can always restore it —
+    // inside the try it was in the temporal dead zone if anything threw early.
+    const originalIndex = state.activeStudentIndex;
+
     try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error('jsPDF is not loaded');
+        }
         const { jsPDF } = window.jspdf;
         // Create an A4 landscape PDF (297mm x 210mm)
         const pdf = new jsPDF({
@@ -1288,8 +1350,6 @@ document.getElementById('download-btn').addEventListener('click', async () => {
         const gapY = 6;        // Vertical gap between front and back
         const startX = (297 - (cardW * 5 + gapX * 4)) / 2; // Centered horizontally
         const startY = 20;
-
-        const originalIndex = state.activeStudentIndex;
 
         for (let i = 0; i < studentCount; i++) {
             if (i > 0 && i % 5 === 0) {
@@ -1332,16 +1392,21 @@ document.getElementById('download-btn').addEventListener('click', async () => {
             
             pdf.setFontSize(6);
             pdf.setTextColor(150, 150, 150);
-            pdf.text('✂ Cut', frontX + cardW/2, frontY - p - 1, { align: 'center' });
-            pdf.text('✂ Cut', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
+            pdf.text('cut here', frontX + cardW/2, frontY - p - 1, { align: 'center' });
+            pdf.text('cut here', backX + cardW/2, backY + cardH + p + 2, { align: 'center' });
         }
 
-        const filename = studentCount === 1 ? `ISU_ID_${(state.students[0].formData.name || 'Student').replace(/\s+/g, '_')}_Print_Ready.pdf` : `ISU_ID_Batch_${studentCount}_Students.pdf`;
+        const filename = studentCount === 1 ? `ISU_ID_${safeFileName(state.students[0].formData.name)}_Print_Ready.pdf` : `ISU_ID_Batch_${studentCount}_Students.pdf`;
         pdf.save(filename);
 
     } catch (err) {
         console.error('[ISU ID] PDF Export failed:', err);
-        showToast('Export failed. Please try again.', 'error');
+        showToast(
+            err && err.message === 'jsPDF is not loaded'
+                ? 'PDF library did not load. Check your connection and reload the page.'
+                : 'Export failed. Please try again.',
+            'error'
+        );
     } finally {
         // Restore active state
         state.activeStudentIndex = originalIndex;
@@ -1362,8 +1427,12 @@ window.addEventListener('load', () => {
     loadTemplates();
 
     // Re-render once web fonts are fully ready to prevent font-swap layout shifts
-    if (document.fonts && document.fonts.ready) {
-        document.fonts.ready.then(() => renderCanvases()).catch(() => {});
+    if (document.fonts && document.fonts.load) {
+        // Canvas text never triggers a font download by itself, so ask for the faces explicitly
+        Promise.all([
+            document.fonts.load('400 20px "Roboto Condensed"'),
+            document.fonts.load('700 20px "Roboto Condensed"')
+        ]).then(() => renderCanvases()).catch(() => {});
     }
 
     // Check if a previous session exists and show restore banner
@@ -1414,35 +1483,40 @@ function renderStudentTabs() {
     const container = document.getElementById('student-tabs');
     if (!container) return;
     container.innerHTML = '';
-    
+
     state.students.forEach((student, index) => {
+        const isActive = index === state.activeStudentIndex;
         const tab = document.createElement('div');
-        tab.className = 'student-tab' + (index === state.activeStudentIndex ? ' active' : '');
-        tab.onclick = (e) => {
-            if (!e.target.closest('.btn-remove-student')) {
-                switchStudent(index);
-            }
-        };
-        
-        let thumbContent = '';
-        if (student.photoDataUrl) {
-            thumbContent = `<img src="${student.photoDataUrl}" class="student-tab-thumb" alt="thumb">`;
-        } else {
-            thumbContent = `<div class="student-tab-thumb" style="display:flex;align-items:center;justify-content:center;font-size:10px;"><i class="ph ph-user"></i></div>`;
-        }
-        
+        tab.className = 'student-tab' + (isActive ? ' active' : '');
+
         let name = student.formData.name || `Student ${index + 1}`;
         if (name.length > 12) name = name.substring(0, 10) + '...';
-        
-        let removeBtn = '';
+
+        const thumb = student.photoDataUrl
+            ? `<img src="${student.photoDataUrl}" class="student-tab-thumb" alt="">`
+            : `<span class="student-tab-thumb student-tab-thumb--empty" aria-hidden="true"><i class="ph ph-user"></i></span>`;
+
+        // Names can come from an imported CSV, so they are always escaped.
+        tab.innerHTML = `
+            <button type="button" class="student-tab-select" aria-pressed="${isActive}"
+                    aria-label="Student ${index + 1}: ${escapeHtml(student.formData.name || 'unnamed')}">
+                ${thumb}<span class="student-tab-name">${escapeHtml(name)}</span>
+            </button>`;
+        tab.querySelector('.student-tab-select').addEventListener('click', () => switchStudent(index));
+
         if (state.students.length > 1) {
-            removeBtn = `<button class="btn-remove-student" onclick="removeStudent(${index})"><i class="ph ph-x"></i></button>`;
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.className = 'btn-remove-student';
+            remove.setAttribute('aria-label', `Remove student ${index + 1}`);
+            remove.innerHTML = '<i class="ph ph-x"></i>';
+            remove.addEventListener('click', () => removeStudent(index));
+            tab.appendChild(remove);
         }
-        
-        tab.innerHTML = `${thumbContent} <span>${name}</span> ${removeBtn}`;
+
         container.appendChild(tab);
     });
-    
+
     const addBtn = document.getElementById('add-student-btn');
     if (addBtn) {
         addBtn.style.display = state.students.length < MAX_STUDENTS ? 'inline-flex' : 'none';
@@ -1666,7 +1740,12 @@ document.getElementById('cropper-save-btn')?.addEventListener('click', () => {
     img.src = dataUrl;
 });
 
-document.getElementById('recrop-btn')?.addEventListener('click', () => {
+document.getElementById('recrop-btn')?.addEventListener('click', async () => {
+    const student = state.students[state.activeStudentIndex];
+    // The original upload is not persisted, so after a restore re-crop the saved crop.
+    if (!student.rawSourceImage && student.photoDataUrl) {
+        student.rawSourceImage = await loadImageFromDataUrl(student.photoDataUrl);
+    }
     openCropper();
 });
 
@@ -1694,7 +1773,7 @@ function hideMobileExportMenu() {
 
 function saveAsImage(side) {
     const student = state.students[state.activeStudentIndex];
-    const baseName = `ISU_ID_${(student.formData.name || 'Student').replace(/\s+/g, '_')}`;
+    const baseName = `ISU_ID_${safeFileName(student.formData.name)}`;
     
     if (side === 'front' || side === 'both') {
         const link = document.createElement('a');
@@ -1716,67 +1795,101 @@ function saveAsImage(side) {
 /* ═══════════════════════════════════════════════════════════════════════════
    16. CSV BULK IMPORT
 ═══════════════════════════════════════════════════════════════════════════ */
+/**
+ * Accepted header names per field. Headers are lower-cased and stripped to
+ * letters/digits before matching, so "Student ID", "student_id" and "idNumber"
+ * all work — and "address" can never be mistaken for "id".
+ */
+const CSV_HEADER_ALIASES = {
+    name:       ['name', 'fullname', 'studentname'],
+    idNumber:   ['id', 'idnumber', 'idno', 'studentid', 'studentnumber', 'studentno'],
+    course:     ['course', 'program', 'degree', 'degreeprogram', 'courseprogram'],
+    department: ['department', 'college', 'collegedepartment'],
+    dob:        ['dob', 'birthdate', 'dateofbirth', 'birthday', 'birth'],
+    parentName: ['parent', 'guardian', 'parentname', 'guardianname', 'parentguardian', 'parentguardianname', 'contactperson'],
+    address:    ['address', 'homeaddress'],
+    telephone:  ['tel', 'telephone', 'phone', 'mobile', 'contactno', 'contactnumber', 'phonenumber', 'mobilenumber']
+};
+
+/**
+ * RFC 4180-style CSV parser: quoted fields, escaped quotes (""), commas and
+ * line breaks inside quotes, CRLF/LF, and a leading UTF-8 BOM (Excel).
+ * @param {string} text
+ * @returns {string[][]} non-empty rows
+ */
+function parseCsv(text) {
+    const src = String(text).replace(/^\uFEFF/, '');
+    const rows = [];
+    let row = [], field = '', inQuotes = false;
+
+    const endRow = () => {
+        row.push(field.trim());
+        field = '';
+        if (row.some(c => c !== '')) rows.push(row);
+        row = [];
+    };
+
+    for (let i = 0; i < src.length; i++) {
+        const ch = src[i];
+        if (inQuotes) {
+            if (ch === '"' && src[i + 1] === '"') { field += '"'; i++; }
+            else if (ch === '"')                  { inQuotes = false; }
+            else                                  { field += ch; }
+        } else if (ch === '"') {
+            inQuotes = true;
+        } else if (ch === ',') {
+            row.push(field.trim());
+            field = '';
+        } else if (ch === '\n' || ch === '\r') {
+            if (ch === '\r' && src[i + 1] === '\n') i++;
+            endRow();
+        } else {
+            field += ch;
+        }
+    }
+    endRow();
+    return rows;
+}
+
 document.getElementById('csv-upload')?.addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('CSV file is too large. Maximum size is 5MB.', 'warning');
+        e.target.value = '';
+        return;
+    }
 
     const reader = new FileReader();
+    reader.onerror = () => showToast('Could not read the CSV file.', 'error');
     reader.onload = event => {
-        const text = event.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
-        if (lines.length <= 1) {
+        const rows = parseCsv(event.target.result);
+        if (rows.length <= 1) {
             showToast('CSV file is empty or missing headers.', 'error');
             return;
         }
 
-        // Simple CSV parser supporting quotes
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                if (char === '"' && line[i+1] === '"') {
-                    current += '"';
-                    i++;
-                } else if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current.trim());
-                    current = '';
-                } else {
-                    current += char;
-                }
-            }
-            result.push(current.trim());
-            return result;
+        const headers = rows[0].map(h => h.toLowerCase().replace(/[^a-z0-9]/g, ''));
+        const col = {};
+        Object.entries(CSV_HEADER_ALIASES).forEach(([field, aliases]) => {
+            col[field] = aliases.map(a => headers.indexOf(a)).find(idx => idx !== -1) ?? -1;
+        });
+
+        if (Object.values(col).every(idx => idx === -1)) {
+            showToast("Couldn't recognise the CSV columns. Use headers like Name, Student ID, Course.", 'error');
+            return;
         }
 
-        const headers = parseCSVLine(lines[0]).map(h => h.toLowerCase());
-        
-        // Find indices for common headers
-        const getIndex = (possibleNames) => {
-            for (const name of possibleNames) {
-                const idx = headers.findIndex(h => new RegExp(`\\b${name}\\b`, 'i').test(h));
-                if (idx !== -1) return idx;
-            }
-            return -1;
+        const cell = (row, field, upper) => {
+            let v = col[field] !== -1 ? (row[col[field]] || '') : '';
+            if (/^'[=+\-@]/.test(v)) v = v.slice(1);   // undo the export-time formula guard
+            return upper ? v.toUpperCase() : v;
         };
-
-        const idxName = getIndex(['name', 'full']);
-        const idxId = getIndex(['id', 'student', 'number']);
-        const idxCourse = getIndex(['course', 'program', 'degree']);
-        const idxDob = getIndex(['dob', 'birth', 'date']);
-        const idxParent = getIndex(['parent', 'guardian']);
-        const idxAddress = getIndex(['address', 'home']);
-        const idxTel = getIndex(['tel', 'phone', 'mobile', 'contact']);
 
         let addedCount = 0;
 
-        for (let i = 1; i < lines.length; i++) {
-            const row = parseCSVLine(lines[i]);
-            if (row.length < 2) continue; // Skip empty/malformed rows
-
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
             const newStudent = {
                 photoImage: null,
                 photoDataUrl: null,
@@ -1784,17 +1897,20 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
                 signatureImage: null,
                 signatureDataUrl: null,
                 formData: {
-                    name: idxName !== -1 ? (row[idxName] || '').toUpperCase() : '',
-                    idNumber: idxId !== -1 ? (row[idxId] || '').toUpperCase() : '',
-                    course: idxCourse !== -1 ? (row[idxCourse] || '').toUpperCase() : '',
-                    department: '',
-                    dob: idxDob !== -1 ? (row[idxDob] || '') : '', // Expected YYYY-MM-DD
-                    parentName: idxParent !== -1 ? (row[idxParent] || '').toUpperCase() : '',
-                    address: idxAddress !== -1 ? (row[idxAddress] || '').toUpperCase() : '',
-                    telephone: idxTel !== -1 ? (row[idxTel] || '').toUpperCase() : ''
+                    name:       cell(row, 'name', true),
+                    idNumber:   cell(row, 'idNumber', true),
+                    course:     cell(row, 'course', true),
+                    department: cell(row, 'department', true),
+                    dob:        normalizeDobToIso(cell(row, 'dob', false)),
+                    parentName: cell(row, 'parentName', true),
+                    address:    cell(row, 'address', true),
+                    telephone:  cell(row, 'telephone', true)
                 }
             };
-            
+
+            // A row with neither a name nor an ID has nothing to print
+            if (!newStudent.formData.name && !newStudent.formData.idNumber) continue;
+
             // If the first tab is empty and it's our first add, replace it
             if (state.students.length === 1 && state.students[0].formData.name === '' && state.students[0].formData.idNumber === '' && !state.students[0].photoDataUrl) {
                 state.students[0] = newStudent;
@@ -1810,7 +1926,7 @@ document.getElementById('csv-upload')?.addEventListener('change', e => {
             if (batchLimitEl && state.students.length > 5) {
                 batchLimitEl.textContent = state.students.length + '+';
             }
-            
+
             // Switch to the first newly added student
             switchStudent(state.students.length - addedCount);
             showToast(`Successfully imported ${addedCount} student(s) from CSV.`, 'success');
@@ -1844,11 +1960,15 @@ function switchSigMode(mode) {
         uploadMode.style.display = 'none';
         tabDraw.classList.add('active');
         tabUpload.classList.remove('active');
+        tabDraw.setAttribute('aria-pressed', 'true');
+        tabUpload.setAttribute('aria-pressed', 'false');
     } else {
         drawMode.style.display   = 'none';
         uploadMode.style.display = '';
         tabDraw.classList.remove('active');
         tabUpload.classList.add('active');
+        tabDraw.setAttribute('aria-pressed', 'false');
+        tabUpload.setAttribute('aria-pressed', 'true');
     }
 }
 
@@ -2221,7 +2341,7 @@ async function enhanceSignatureWithAI() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   17. SESSION SAVE — Auto-persist students[] to localStorage after every render
+   18. SESSION SAVE — Auto-persist students[] to localStorage after every render
        Serialises formData + dataUrl strings (images are already base64).
        On load, a restore banner lets the user resume or start fresh.
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -2365,7 +2485,7 @@ function onDiscardSession() {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   18. OCR AUTOFILL — Snap or upload a printed ID / registration form photo.
+   19. OCR AUTOFILL — Snap or upload a printed ID / registration form photo.
        Tesseract.js extracts text → regex patterns pull name, ID, course, DOB.
        Fields are pre-filled and the form re-renders instantly.
 ═══════════════════════════════════════════════════════════════════════════ */
@@ -2606,13 +2726,8 @@ function applyOcrResults() {
         if (el) el.value = student.formData.course;
     }
     if (dob) {
-        // Try to convert to YYYY-MM-DD for the date input
-        let iso = dob;
-        const mdy = dob.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/);
-        if (mdy) {
-            const y = mdy[3].length === 2 ? '20' + mdy[3] : mdy[3];
-            iso = `${y}-${mdy[1].padStart(2,'0')}-${mdy[2].padStart(2,'0')}`;
-        }
+        // Convert to YYYY-MM-DD for the date input
+        const iso = normalizeDobToIso(dob);
         student.formData.dob = iso;
         const el = document.getElementById('dob');
         if (el) el.value = iso;
@@ -2622,14 +2737,18 @@ function applyOcrResults() {
     renderCanvases();
     closeOcrModal();
 
-    // Jump to next unfilled step
-    if (!student.formData.name) goToStep(2);
-    else if (!student.formData.idNumber) goToStep(3);
-    else if (!student.formData.course) goToStep(4);
-    else if (!student.formData.dob) goToStep(5);
-    else if (!student.formData.parentName) goToStep(6);
-    else if (!student.formData.address) goToStep(7);
-    else if (!student.formData.telephone) goToStep(8);
+    // Jump to the first step whose field is still empty
+    // (3 name · 4 ID · 5 course/department · 6 DOB · 7 guardian · 8 address · 9 phone)
+    const f = student.formData;
+    const nextStep =
+        !f.name       ? 3 :
+        !f.idNumber   ? 4 :
+        (state.idVersion === '2026' ? !f.department : !f.course) ? 5 :
+        !f.dob        ? 6 :
+        !f.parentName ? 7 :
+        !f.address    ? 8 :
+        !f.telephone  ? 9 : null;
+    if (nextStep) goToStep(nextStep);
 }
 
 
@@ -2748,7 +2867,7 @@ function toggleHologramOverlay() {
     state.showHologram = !state.showHologram;
     playAudioFx('click');
     const btn = document.getElementById('btn-toggle-hologram');
-    if (btn) btn.classList.toggle('active', state.showHologram);
+    if (btn) { btn.classList.toggle('active', state.showHologram); btn.setAttribute('aria-pressed', String(state.showHologram)); }
     showToast(state.showHologram ? 'Security Watermark & Hologram Enabled' : 'Hologram Overlay Disabled', 'info');
     renderCanvases();
 }
@@ -2805,7 +2924,7 @@ function toggleAudioFx() {
     state.audioEnabled = !state.audioEnabled;
     const btn = document.getElementById('btn-toggle-audio');
     const icon = document.getElementById('audio-icon');
-    if (btn) btn.classList.toggle('active', state.audioEnabled);
+    if (btn) { btn.classList.toggle('active', state.audioEnabled); btn.setAttribute('aria-pressed', String(state.audioEnabled)); }
     if (icon) icon.className = state.audioEnabled ? 'ph ph-speaker-high' : 'ph ph-speaker-slash';
     showToast(state.audioEnabled ? 'Sound FX Enabled' : 'Sound Muted', 'info');
     if (state.audioEnabled) playAudioFx('click');
@@ -2977,9 +3096,9 @@ function renderBatchTable() {
 
         tr.innerHTML = `
             <td><strong>#${idx + 1}</strong></td>
-            <td>${name}</td>
-            <td><code>${idNum}</code></td>
-            <td>${course}</td>
+            <td>${escapeHtml(name)}</td>
+            <td><code>${escapeHtml(idNum)}</code></td>
+            <td>${escapeHtml(course)}</td>
             <td><span class="badge-status ${hasPhoto ? 'yes' : 'no'}">${hasPhoto ? '✓ Yes' : '✗ Missing'}</span></td>
             <td><span class="badge-status ${hasSig ? 'yes' : 'no'}">${hasSig ? '✓ Yes' : '✗ Missing'}</span></td>
             <td>
@@ -3007,12 +3126,13 @@ function deleteBatchStudent(index) {
         return;
     }
     if (confirm(`Remove Student #${index + 1} from batch?`)) {
+        // Removing a tab before the active one shifts the active index down
+        let nextActive = state.activeStudentIndex;
+        if (index < nextActive) nextActive -= 1;
         state.students.splice(index, 1);
-        if (state.activeStudentIndex >= state.students.length) {
-            state.activeStudentIndex = state.students.length - 1;
-        }
-        renderStudentTabs();
-        renderCanvases();
+        nextActive = Math.min(nextActive, state.students.length - 1);
+        // switchStudent re-syncs the form fields, tabs and canvases together
+        switchStudent(nextActive);
         renderBatchTable();
         showToast('Student removed', 'info');
     }
@@ -3027,28 +3147,37 @@ function filterBatchTable() {
     });
 }
 
+/**
+ * Quote one CSV cell. Cells that start with = or @ (or +/- followed by
+ * something other than a phone-style number) get a leading apostrophe so a
+ * spreadsheet never evaluates them as a formula.
+ */
+function csvCell(value) {
+    let s = String(value ?? '');
+    if (/^[=@\t\r]/.test(s) || (/^[+-]/.test(s) && !/^[+-][\d\s().-]+$/.test(s))) s = "'" + s;
+    return `"${s.replace(/"/g, '""')}"`;
+}
+
 function exportBatchCsv() {
     if (!state.students || !state.students.length) return;
     const headers = ['Full Name', 'Student ID', 'Course', 'Department', 'Date of Birth', 'Guardian', 'Address', 'Contact Number'];
     const rows = state.students.map(st => [
-        `"${st.formData.name || ''}"`,
-        `"${st.formData.idNumber || ''}"`,
-        `"${st.formData.course || ''}"`,
-        `"${st.formData.department || ''}"`,
-        `"${st.formData.dob || ''}"`,
-        `"${st.formData.parentName || ''}"`,
-        `"${st.formData.address || ''}"`,
-        `"${st.formData.telephone || ''}"`
-    ]);
+        st.formData.name, st.formData.idNumber, st.formData.course, st.formData.department,
+        st.formData.dob, st.formData.parentName, st.formData.address, st.formData.telephone
+    ].map(csvCell).join(','));
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
+    // A Blob (not a data: URI) — encodeURI leaves '#' unescaped, which truncated
+    // the file at the first "#" in an address. The BOM keeps Excel on UTF-8.
+    const csv  = '\uFEFF' + [headers.map(csvCell).join(','), ...rows].join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
+    link.setAttribute('href', url);
     link.setAttribute('download', `isu_students_batch_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
     playAudioFx('chime');
     showToast('Exported student batch CSV', 'success');
 }
@@ -3092,3 +3221,165 @@ function renderInspectCanvas() {
     ctx.drawImage(srcCvs, 0, 0);
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   21. MODAL A11Y — Escape to close, focus moves in, stays in, and returns
+       Observes the `.active` class the open/close functions already toggle,
+       so no individual modal needed to change.
+═══════════════════════════════════════════════════════════════════════════ */
+const MODAL_CLOSERS = {
+    'cropper-modal':      closeCropper,
+    'ocr-modal':          closeOcrModal,
+    'batch-modal':        closeBatchModal,
+    'card-inspect-modal': closeCardInspectModal
+};
+const FOCUSABLE_SELECTOR =
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="file"]):not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])';
+let _modalOpener = null;
+
+/** Focus `el`, retrying across the first frames while its container finishes becoming visible */
+function focusWhenVisible(el, container) {
+    const attempt = () => { if (!container.contains(document.activeElement)) el.focus({ preventScroll: true }); };
+    attempt();
+    requestAnimationFrame(() => { attempt(); setTimeout(attempt, 80); });
+}
+
+function getActiveModal() {
+    return [...document.querySelectorAll('.cropper-modal-overlay.active')].pop() || null;
+}
+
+const modalObserver = new MutationObserver(records => {
+    records.forEach(rec => {
+        const overlay = rec.target;
+        const isOpen  = overlay.classList.contains('active');
+        const wasOpen = /\bactive\b/.test(rec.oldValue || '');
+        if (isOpen && !wasOpen) {
+            _modalOpener = document.activeElement;
+            const first = overlay.querySelector('[data-autofocus]') || overlay.querySelector(FOCUSABLE_SELECTOR);
+            // The sheet is still visibility:hidden for the first frame of its
+            // transition, and hidden elements can't take focus — so retry.
+            if (first) focusWhenVisible(first, overlay);
+        } else if (!isOpen && wasOpen) {
+            if (_modalOpener && typeof _modalOpener.focus === 'function') _modalOpener.focus({ preventScroll: true });
+            _modalOpener = null;
+        }
+    });
+});
+document.querySelectorAll('.cropper-modal-overlay').forEach(overlay => {
+    modalObserver.observe(overlay, { attributes: true, attributeFilter: ['class'], attributeOldValue: true });
+
+    // Clicking the dimmed backdrop dismisses — except the cropper, where an
+    // accidental click would throw away the person's crop.
+    overlay.addEventListener('mousedown', e => {
+        if (e.target === overlay && overlay.id !== 'cropper-modal' && MODAL_CLOSERS[overlay.id]) {
+            MODAL_CLOSERS[overlay.id]();
+        }
+    });
+});
+
+document.addEventListener('keydown', e => {
+    const modal = getActiveModal();
+
+    if (e.key === 'Escape') {
+        if (modal && MODAL_CLOSERS[modal.id]) MODAL_CLOSERS[modal.id]();
+        hideMobileExportMenu();
+        return;
+    }
+
+    if (e.key === 'Tab' && modal) {
+        const items = [...modal.querySelectorAll(FOCUSABLE_SELECTOR)].filter(el => el.offsetParent !== null);
+        if (!items.length) return;
+        const first = items[0];
+        const last  = items[items.length - 1];
+        if (!modal.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+});
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   22. HOLO SHEEN — pointer position drives an iridescent highlight (pure CSS)
+       Replaces the Three.js shader: same effect, no 600 KB library.
+═══════════════════════════════════════════════════════════════════════════ */
+(() => {
+    const wrapper = document.getElementById('card-tilt-wrapper');
+    if (!wrapper) return;
+    wrapper.addEventListener('pointermove', e => {
+        const r = wrapper.getBoundingClientRect();
+        if (!r.width || !r.height) return;
+        wrapper.style.setProperty('--mx', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+        wrapper.style.setProperty('--my', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+    }, { passive: true });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   23. SITE CHROME — mobile drawer, scroll-spy, footer year
+═══════════════════════════════════════════════════════════════════════════ */
+(() => {
+    const hamburger   = document.getElementById('nav-hamburger');
+    const drawer      = document.getElementById('mobile-drawer');
+    const overlay     = document.getElementById('mobile-drawer-overlay');
+    const drawerClose = document.getElementById('mobile-drawer-close');
+
+    function openDrawer() {
+        if (!drawer) return;
+        drawer.classList.add('is-open');
+        overlay?.classList.add('is-open');
+        hamburger?.setAttribute('aria-expanded', 'true');
+        document.body.classList.add('drawer-open');
+        if (drawerClose) focusWhenVisible(drawerClose, drawer);
+    }
+    function closeDrawer() {
+        if (!drawer || !drawer.classList.contains('is-open')) return;
+        drawer.classList.remove('is-open');
+        overlay?.classList.remove('is-open');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('drawer-open');
+        hamburger?.focus({ preventScroll: true });
+    }
+
+    hamburger?.addEventListener('click', openDrawer);
+    drawerClose?.addEventListener('click', closeDrawer);
+    overlay?.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeDrawer();
+        // aria-modal drawer: keep Tab inside it while it is open
+        if (e.key === 'Tab' && drawer?.classList.contains('is-open')) {
+            const items = [...drawer.querySelectorAll('a[href], button:not([disabled])')];
+            if (!items.length) return;
+            const first = items[0], last = items[items.length - 1];
+            if (!drawer.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+            else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+    // Any link inside the drawer (in-page or external) dismisses it
+    drawer?.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+        drawer.classList.remove('is-open');
+        overlay?.classList.remove('is-open');
+        hamburger?.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('drawer-open');
+    }));
+
+    // Scroll-spy: mark the nav link of the section in view
+    const navLinks = document.querySelectorAll('.desktop-menu .nav-link[href^="#"]');
+    const spy = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            navLinks.forEach(link => {
+                const active = link.getAttribute('href') === `#${entry.target.id}`;
+                link.classList.toggle('nav-link--active', active);
+                if (active) link.setAttribute('aria-current', 'true'); else link.removeAttribute('aria-current');
+            });
+        });
+    }, { threshold: 0.35, rootMargin: '-60px 0px -30% 0px' });
+    ['home', 'features', 'how-it-works', 'generator'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) spy.observe(el);
+    });
+
+    const yearEl = document.getElementById('footer-year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+})();

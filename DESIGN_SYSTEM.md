@@ -1,5 +1,9 @@
 # DESIGN_SYSTEM.md — Design System Reference
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
+
+> **v3.9.0 redesign — this file's glass, orb, GSAP and Google Fonts sections describe v3.8.x and are superseded.**
+> Current system: Apple-style grouped surfaces (light first, automatic dark via `prefers-color-scheme`), flat panels, system UI font + self-hosted Roboto Condensed for the card, one accent derived from `--green-600` (campus colour), `backdrop-filter` only on the navbar and mobile sticky bars, CSS-only motion. Tokens live in `web/style.css` section 1; the section list is in its header comment.
+
 
 > This document describes the complete visual design system as implemented in `web/style.css`. All values are sourced directly from the codebase.
 

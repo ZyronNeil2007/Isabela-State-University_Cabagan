@@ -1,16 +1,17 @@
 /**
  * ISU ID Generator — Service Worker (PWA Offline & Instant Load Cache)
- * Cache version: isu-id-v3.8.2
+ * Cache version: isu-id-v3.9.0
  */
 
-const CACHE_NAME = 'isu-id-v3.8.2';
+const CACHE_NAME = 'isu-id-v3.9.0';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './style.css?v=3.8.2',
+  './style.css?v=3.9.0',
   './app.js',
-  './animations.js',
+  './fonts/roboto-condensed-latin-400-normal.woff2',
+  './fonts/roboto-condensed-latin-700-normal.woff2',
   './manifest.webmanifest',
   './images/isu_logo_256.png',
   './images/isu_logo_512.png',
@@ -48,14 +49,13 @@ self.addEventListener('fetch', event => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
-  const url = new URL(event.request.url);
-
-  // Stale-While-Revalidate for same-origin or CDN static assets
+  // Stale-While-Revalidate for same-origin assets and the CORS-enabled CDN
+  // scripts/fonts (icons and PDF export keep working offline after one visit)
   event.respondWith(
     caches.match(event.request).then(cachedResponse => {
       const fetchPromise = fetch(event.request)
         .then(networkResponse => {
-          if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          if (networkResponse && networkResponse.status === 200 && (networkResponse.type === 'basic' || networkResponse.type === 'cors')) {
             const responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME).then(cache => {
               cache.put(event.request, responseToCache);

@@ -1,5 +1,5 @@
 # ARCHITECTURE.md — Technical Architecture
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 ---
 
@@ -33,7 +33,7 @@ web/
 ├── index.html              # SPA entry point; DOM structure, ARIA, CDN imports
 ├── style.css               # Complete design system (22 documented sections, 5926 lines)
 ├── app.js                  # Application brain (3095 lines, 20 numbered modules)
-├── animations.js           # Motion layer (592 lines, 7 modules: A–G)
+├── fonts/                  # Roboto Condensed 400/700 woff2 (SIL OFL 1.1), self-hosted
 ├── sw.js                   # Service Worker (stale-while-revalidate strategy)
 ├── manifest.webmanifest    # PWA manifest (icons, display, theme color)
 ├── images/
@@ -78,21 +78,9 @@ The `app.js` file is organized into 20 numbered modules, delimited by `═══
 | 18 | OCR | `openOcrModal()`, `ensureTesseractLoaded()`, `runOcrScan()`, `ocrExtract()`, `applyOcrResults()` |
 | 20 | ENHANCEMENT SUITE | `CAMPUS_CONFIG`, `setCampusTheme()`, `toggleHologramOverlay()`, `playAudioFx()`, `toggleAudioFx()`, `renderQrCodeOnCanvas()`, `openBatchModal()`, `renderBatchTable()` |
 
-### 2.3 Module Map (`animations.js`)
+### 2.3 Motion (v3.9.0)
 
-| Module | Library | Status | Description |
-|---|---|---|---|
-| A — Hero Particles | Three.js | **Disabled** (returns immediately) | Background particle constellation |
-| B — Hero Entrance | GSAP | Active | Staggered fade-up of hero elements on load |
-| C — Scroll Reveals | GSAP ScrollTrigger | Active | Intersection-based fade-up for features, bento, steps |
-| D — Micro-interactions | Anime.js | Active | Button click scale, feature stagger |
-| E — Holographic Shimmer | Three.js | Active | GLSL shader on `#holo-canvas`; responds to mouse + VanillaTilt |
-| F — Scroll Parallax | GSAP ScrollTrigger | Disabled | Was attached to hero glows (removed) |
-| G — Reduced Motion | `prefers-reduced-motion` | Active | Lazy `matchMedia` flag checked in each function |
-
----
-
-## 3. Data Flow
+`animations.js` and its libraries were removed. Motion is CSS transitions (`--ease`, `--dur`), the 3D card flip, and a CSS-only holographic sheen driven by `--mx`/`--my` written from `app.js` module 22. All of it collapses under `prefers-reduced-motion`.
 
 ### 3.1 Core Render Loop
 
@@ -322,7 +310,6 @@ const INPUT_KEY_MAP = {
 | `sig-canvas` | Signature drawing pad | DOM-sized (CSS pixels) |
 | `crop-canvas` (offscreen) | Crop output | 315 × 355 px |
 | `holo-canvas` | WebGL holographic shimmer | Stage size (CSS) |
-| `#hero-webgl-canvas` | Three.js particles | **Disabled** |
 
 ### 5.2 Template System
 Two sets of PNG template images:
@@ -350,11 +337,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 | Script | Version | SRI |
 |---|---|---|
 | Phosphor Icons | Latest | SHA-384 hash present |
-| Three.js | r134 | SHA-384 hash present |
 | VanillaTilt.js | 1.8.1 | SHA-384 hash present |
-| GSAP | 3.12.5 | SHA-384 hash present |
-| GSAP ScrollTrigger | 3.12.5 | SHA-384 hash present |
-| Anime.js | v4 | SHA-384 hash present |
 | jsPDF | 2.5.1 | SHA-384 hash present |
 | Tesseract.js | 5.1.1 | SHA-384 hash present (lazy-loaded) |
 
@@ -374,7 +357,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 ### 7.1 Service Worker (`sw.js`)
 
-- **Cache version**: `isu-id-v3.8.2` (must be bumped on every release that changes cached assets).
+- **Cache version**: `isu-id-v3.9.0` (must be bumped on every release that changes cached assets).
 - **Install**: Opens cache, `addAll()` the precache list. Calls `skipWaiting()` to immediately activate.
 - **Activate**: Deletes all caches not matching the current `CACHE_NAME`. Calls `clients.claim()`.
 - **Fetch**: Stale-While-Revalidate strategy — serves cached response immediately, fetches network in background, updates cache on success.
@@ -385,7 +368,8 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ./index.html
 ./style.css?v=3.8.2
 ./app.js
-./animations.js
+./fonts/roboto-condensed-latin-400-normal.woff2
+./fonts/roboto-condensed-latin-700-normal.woff2
 ./manifest.webmanifest
 ./images/isu_logo_256.png
 ./images/isu_logo_512.png
@@ -418,14 +402,9 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 | Library | Version | CDN | Role | Load |
 |---|---|---|---|---|
-| Plus Jakarta Sans | — | Google Fonts | UI font | `<link>` preconnect |
-| Roboto Condensed | — | Google Fonts | ID card canvas font | `<link>` preconnect |
+| Roboto Condensed | 400, 700 | self-hosted `web/fonts/` | ID card canvas font | `@font-face`, preloaded; page UI uses the system font |
 | Phosphor Icons | Latest | jsdelivr | UI icons | `<script>` defer, SRI |
-| Three.js | r134 | cdn.jsdelivr | WebGL shader (holo shimmer) | `<script>` defer, SRI |
 | VanillaTilt.js | 1.8.1 | cdn.jsdelivr | 3D tilt hover on card | `<script>` defer, SRI |
-| GSAP | 3.12.5 | cdn.jsdelivr | Scroll/entrance animations | `<script>` defer, SRI |
-| GSAP ScrollTrigger | 3.12.5 | cdn.jsdelivr | Scroll-driven reveals | `<script>` defer |
-| Anime.js | v4 | cdn.jsdelivr | Micro-interactions | `<script>` defer, SRI |
 | jsPDF | 2.5.1 | cdnjs | A4 PDF generation | `<script>` defer, SRI |
 | Tesseract.js | 5.1.1 | unpkg | OCR WASM engine | Lazy — `<script>` injected on demand |
 | QRCode.js | — | — | QR code generation | ⚠️ NEEDS VERIFICATION — referenced in code but script tag was removed per changelog |
@@ -460,7 +439,7 @@ minSdk           = 24    // Android 7.0 Nougat
 targetSdk        = 34    // Android 14
 compileSdk       = 34
 versionCode      = 4
-versionName      = "3.8.2"
+versionName      = "3.8.2"  // not bumped with web v3.9.0
 ```
 
 ### 9.3 Android vs. Web Feature Parity
@@ -491,7 +470,6 @@ versionName      = "3.8.2"
 | QR code memoization | `_qrCache` object; skips re-encoding if payload and size unchanged |
 | Session save throttle | `throttle(saveSessionToStorage, 2000)` — max 1 localStorage write per 2s |
 | Tesseract.js lazy load | ~4 MB WASM injected only on first OCR modal open |
-| Three.js particles | Disabled (`initThreeHero()` returns immediately) |
 | WebGL shimmer pause | rAF pauses on `document.hidden`; resumes on `visibilitychange` |
 
 ### 10.2 CSS Performance (Web)
@@ -501,10 +479,10 @@ versionName      = "3.8.2"
 | Fixed background | `body::before { position: fixed }` — painted once per compositor layer |
 | No orb `filter: blur()` | Removed v3.8.1; uses `radial-gradient` for natural soft edges |
 | Reduced hero glow blur | `.hero-glow-primary`: 60px → 30px; `.hero-glow-gold`: 80px → 40px |
-| Mobile `backdrop-filter` disabled | All glass tiers use solid fallback at ≤ 860px |
+| `backdrop-filter` limited | Only the navbar and (≤ 860px) the sticky stepper bars blur; every panel is a flat surface |
 | Orbs hidden on mobile | `.floating-orbs { display: none }` at ≤ 860px |
 | Hero glows hidden on mobile | `.hero-glow-*` hidden at ≤ 860px |
-| Static hero elements | Hero animations stopped in v3.8.0; no CSS animation running on hero on idle |
+| No motion libraries | GSAP, Anime.js, Three.js and `animations.js` removed in v3.9.0 (~700 KB less to download and parse) |
 | `contain: layout style` | Applied to `.hero-section` for CSS containment |
 
 ---
@@ -538,7 +516,7 @@ isu_id/
 │   ├── index.html
 │   ├── style.css                   # 5926 lines, 22 sections
 │   ├── app.js                      # 3095 lines, 20 modules
-│   ├── animations.js               # 592 lines, 7 modules (A–G)
+│   ├── fonts/                      # self-hosted Roboto Condensed
 │   ├── sw.js                       # Service Worker
 │   ├── manifest.webmanifest        # PWA Manifest
 │   ├── images/
@@ -556,7 +534,7 @@ isu_id/
 │
 ├── android/
 │   ├── app/
-│   │   ├── build.gradle.kts        # minSdk 24, versionCode 4, versionName 3.8.2
+│   │   ├── build.gradle.kts        # minSdk 24, versionCode 4, versionName 3.8.2 (Android not bumped; www copy still v3.5.0)
 │   │   ├── proguard-rules.pro
 │   │   └── src/main/
 │   │       ├── AndroidManifest.xml

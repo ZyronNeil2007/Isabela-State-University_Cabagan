@@ -16,7 +16,7 @@ The project is modularized into dedicated folders under `isu_id`:
   - `index.html`: The main entry point. Contains the layout, SVG icons, and DOM structure.
   - `style.css`: All application styling, neatly organized into documented sections.
   - `app.js`: The powerhouse of the application. Contains all logic, state management, and the Canvas rendering pipeline.
-  - `animations.js`: Visual motion layer (GSAP 3, Anime.js v4, Three.js hero particles).
+  - Motion is CSS-only since v3.9.0 (`animations.js` removed).
   - `images/`: Contains the blank ID template references (Front and Back), university logos, and static assets.
   - `scripts/`: Python utility scripts (e.g., `generate_dummy_students.py`, `resize_photos.py`).
 - **`android/`**: Android Studio Project

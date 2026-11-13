@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.8.2
+# 🎓 Isabela State University Premium ID Generator v3.9.0
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
@@ -38,7 +38,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ### 🆕 v3.5 — Bento Grid & Spatial Motion Overhaul
 - **🎨 Immersive Spatial Redesign**: Split-screen hero layout, animated 6-card Bento Grid for features, and a guided 3-step process.
-- **🚀 Advanced GSAP & Three.js Animations**: Particle constellation background in the hero section and holographic shimmer effects on the live card stage.
+- **✨ Quiet, CSS-only motion**: 3D card flip and a pointer-driven holographic sheen; respects reduced-motion.
 
 ### 🆕 v3.4 — Session Auto-Save & OCR Autofill
 - **💾 Auto-Save Session**: Auto-saves your entire session (all students, form data, photos, signatures) to `localStorage` after every change.
@@ -62,8 +62,8 @@ A premium, fully responsive **client-side** web application for generating high-
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
 | Styling | Vanilla CSS3 (custom properties, GPU transforms, glassmorphism) |
 | Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
-| 3D / Graphics | [Three.js r134](https://threejs.org/), [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
-| Animations | [GSAP 3](https://greensock.com/gsap/) + ScrollTrigger, [Anime.js v4](https://animejs.com/) |
+| 3D / Graphics | CSS 3D transforms, [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
+| Animations | CSS transitions only |
 | OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline WASM) |
 | Icons & Fonts | [Phosphor Icons](https://phosphoricons.com/), Google Fonts (Plus Jakarta Sans, Roboto Condensed) |
 
@@ -77,7 +77,7 @@ isu_id/
 │   ├── index.html          # Main HTML entry point
 │   ├── style.css           # Glassmorphism design system & styles
 │   ├── app.js              # Application core logic & Canvas rendering engine
-│   ├── animations.js       # GSAP, Anime.js & Three.js animations
+│   ├── fonts/              # Roboto Condensed (self-hosted)
 │   ├── images/             # Blank ID templates, logos & static assets
 │   └── scripts/            # Python utility scripts:
 │                           #   • dummy_data_generator.py — generates realistic
@@ -157,6 +157,13 @@ Automatically populate the student form from a photo of any printed ID or regist
 ---
 
 ## 📋 Changelog
+
+### v3.9.0 *(2026-11-13)*
+- `ui` — **Redesign**: Apple-style grouped surfaces, light and dark following the system, flat panels, one accent taken from the chosen campus colour. Hero is now one message, one action and the card. Mobile keeps the sticky mini-preview and a bottom Back/Next bar.
+- `a11y` — Dialogs: Escape, focus moves in/out, Tab trap, `aria-modal`; `aria-pressed` on toggles; visible focus rings; 16 px inputs; `prefers-reduced-motion`, `-transparency`, `-contrast` and `forced-colors` handled; button text ≥ 4.5:1 on all 11 campus colours.
+- `fix` — Birth dates no longer shift a day (UTC+8); CSV import is RFC 4180-aware (quotes, BOM, `idNumber`/`student_id` headers, M/D/Y dates) and exported CSVs are Blob downloads with formula-injection guarding; CSV values are HTML-escaped in the batch table; PDF export recovers if jsPDF fails to load; deleting a batch student keeps the active tab correct; signature pad maps pointer positions correctly when CSS-scaled.
+- `perf` — Removed GSAP, ScrollTrigger, Anime.js, Three.js and `animations.js`; Roboto Condensed self-hosted (no Google Fonts request); Phosphor pinned to 2.1.2 with a verified SRI hash; service worker also caches CORS CDN assets so icons and PDF export work offline.
+- `docs` — AGENTS.md / ARCHITECTURE.md updated for the above. **Android: not changed; its bundled `www/` copy is still v3.5.0.**
 
 ### v3.8.2 *(2026-09-27)*
 - `docs` — **Source of Truth Architecture**: Established a complete, professional documentation suite (`PRD.md`, `AGENTS.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`) serving as the project's single source of truth.
