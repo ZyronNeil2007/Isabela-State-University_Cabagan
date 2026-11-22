@@ -117,7 +117,7 @@ const CONFIG = {
  * Front: 816 × 1296 px   Back: 816 × 1296 px   (CR80 = 54 × 85.6 mm, 384 dpi)
  *
  * All coordinates are native canvas pixels, taken from the CR80 design:
- *   - new_template_front.id.png  (blank CR80 front — labels, seal, photo frame)
+ *   - new_template_front.id.png  (blank CR80 front — labels, seal, university wordmark, photo frame)
  *   - new_template_back.id.png   (blank CR80 back  — labels, QR, registrar block)
  *   - front_reference.png / back_reference.png (filled references rendered by this app)
  *
@@ -125,6 +125,7 @@ const CONFIG = {
  * ─────
  *  Photo frame outer: left=181 top=300 size=453×453 (6px green border, 28px radius)
  *  Photo FILL area (inside the border): x=187 y=306 w=441 h=441, radius 22
+ *    (until a photo is added, cr80_photo_placeholder.png — the template's silhouette — fills it)
  *  Signature: sits in the free band between the photo frame and the name
  *  NAME value:           top=880  font 41px Poppins Bold      → text centre y = 907
  *  STUDENT NUMBER value: top=984  font 41px Poppins Bold      → text centre y = 1011
@@ -277,6 +278,7 @@ const state = {
     frontTemplate:     null,
     backTemplate:      null,
     front2026Template: null,
+    photoPlaceholder2026: null,   // silhouette shown in the 2026 photo frame until a photo is added
     back2026Template:  null,
     activeStudentIndex: 0,
     idVersion: '2026',  // 'old' | '2026'  (CR80 2026 design is the default)
@@ -593,11 +595,12 @@ function loadPoppinsFonts() {
 }
 
 async function loadTemplates() {
-    const [front, back, front2026, back2026] = await Promise.all([
+    const [front, back, front2026, back2026, photoPlaceholder2026] = await Promise.all([
         loadImage('images/template_front.id.png'),
         loadImage('images/template_back.id.png'),
-        loadImage('images/2026_id/new_template_front.id.png?v=cr80'),
+        loadImage('images/2026_id/new_template_front.id.png?v=cr80c'),
         loadImage('images/2026_id/new_template_back.id.png?v=cr80b'),
+        loadImage('images/2026_id/cr80_photo_placeholder.png'),
         // CR80 design uses Poppins on the canvas — make sure it is loaded before first draw
         loadPoppinsFonts()
     ]);
@@ -606,6 +609,7 @@ async function loadTemplates() {
     state.backTemplate      = back;
     state.front2026Template = front2026;
     state.back2026Template  = back2026;
+    state.photoPlaceholder2026 = photoPlaceholder2026;
 
     // Set canvas intrinsic sizes from the loaded images (use old template as default)
     frontCanvas.width  = front ? front.width  : 638;
@@ -757,8 +761,10 @@ function renderCanvases() {
             frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
         }
 
-        // 3. Draw photo ON TOP (clipped perfectly inside the frame)
-        if (student.photoImage) {
+        // 3. Draw photo ON TOP (clipped perfectly inside the frame).
+        //    No photo yet → the template's silhouette placeholder, like the HTML preview.
+        const photoImg2026 = student.photoImage || state.photoPlaceholder2026;
+        if (photoImg2026) {
             const { x, y, width, height, borderRadius: r = 18 } = cfg.photo;
             frontCtx.save();
             frontCtx.beginPath();
@@ -774,13 +780,13 @@ function renderCanvases() {
             frontCtx.closePath();
             frontCtx.clip();
 
-            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const imgRatio = photoImg2026.width / photoImg2026.height;
             const boxRatio = width / height;
             let dw = width, dh = height, dx = x, dy = y;
             if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
             else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
 
-            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.drawImage(photoImg2026, dx, dy, dw, dh);
             frontCtx.restore();
         }
 
@@ -982,7 +988,9 @@ function renderText2026(ctx, textConfig, textValue) {
     const startY      = textConfig.y - totalHeight / 2;
 
     lines.forEach((line, i) => {
-        const y = startY + i * lineHeight;
+        // Snap each line to a whole pixel (floor, like browsers do for line boxes) so the
+        // export matches the HTML card's crisp glyph edges
+        const y = Math.floor(startY + i * lineHeight);
         if (textConfig.maxWidth) {
             ctx.fillText(line, textConfig.x, y, textConfig.maxWidth);
         } else {
@@ -1003,6 +1011,9 @@ function renderText2026(ctx, textConfig, textValue) {
 
 /** Design-board width the CR80 faces are laid out on (px) */
 const CR80_BOARD_W = 816;
+
+/** Silhouette shown in the photo frame until the student's photo is added */
+const CR80_PHOTO_PLACEHOLDER = 'images/2026_id/cr80_photo_placeholder.png';
 
 /**
  * Shrink an element's font-size until it fits maxWidth (never below minPx).
@@ -1067,13 +1078,11 @@ function renderCr80Preview() {
     // ── Front ──
     const photo = $('cr80-photo');
     if (photo) {
-        if (student.photoDataUrl) {
-            if (photo.getAttribute('src') !== student.photoDataUrl) photo.src = student.photoDataUrl;
-            photo.hidden = false;
-        } else {
-            photo.removeAttribute('src');
-            photo.hidden = true;
-        }
+        // No photo yet → the template's silhouette placeholder (same as the export canvas)
+        const photoSrc = student.photoDataUrl || CR80_PHOTO_PLACEHOLDER;
+        if (photo.getAttribute('src') !== photoSrc) photo.src = photoSrc;
+        photo.alt = student.photoDataUrl ? 'Student photo' : 'Photo placeholder';
+        photo.hidden = false;
     }
     const sig = $('cr80-signature');
     if (sig) {

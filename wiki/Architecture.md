@@ -29,7 +29,8 @@ The core of the ID generator is the HTML5 Canvas API. The rendering pipeline wor
 1. **State Management:** When a user types in a field or uploads an image, the global `students` array (which holds up to 5 student objects) is updated.
 2. **Debounced Re-render:** The `renderCard()` function is triggered. It uses `requestAnimationFrame` and a debounce timer to prevent lag while typing.
 3. **Template Layering:** 
-   - The blank template image (e.g., `images/2026_id/new_template_front.id.png`) is drawn onto the `frontCanvas` and `backCanvas`.
+   - The blank template image (e.g., `images/2026_id/new_template_front.id.png`) is drawn onto the `frontCanvas` and `backCanvas` (the PNG/PDF export source).
+   - For the 2026 CR80 ID the preview section shows a live HTML/CSS card (`#cr80-front` / `#cr80-back`) filled by `renderCr80Preview()` from the same state; the canvases keep rendering in the background.
    - Uploaded photos are drawn using `drawImage()`, respecting aspect ratios and applying circular or rectangular clipping masks.
 4. **Text Layering:** 
    - A configuration object (e.g., `TEXT_CONFIG_2026`) dictates the exact X/Y coordinates, fonts, colors, and alignments for each specific field.

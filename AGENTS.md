@@ -64,6 +64,7 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
 | `web/style.css` | Styling | All CSS; design tokens in `:root`; 22 documented sections | Use `!important` excessively; add Tailwind; use inline styles in JS unless dynamically computed |
 | `web/app.js` | Logic | State management, canvas rendering, all feature modules | Move logic to HTML; use `document.write`; use synchronous XHR |
 | `web/animations.js` | Motion | GSAP, Anime.js, Three.js animations only | Add business logic; modify state object; call `renderCanvases()` |
+| `web/fonts/` | Assets | Local Poppins woff2 files (SIL OFL, see `Poppins-OFL.txt`) used by the CR80 ID | Add fonts without a license file |
 | `web/sw.js` | PWA | Service Worker; cache versioning | Add fetch interception for POST requests |
 | `web/manifest.webmanifest` | PWA | App identity, icons, display mode | Change `start_url` without updating SW cache name |
 
@@ -131,8 +132,15 @@ CONFIG = {
 
 ### 5.3 — Canvas Scale
 - Old template: internal pixel scale = `4.17x` (canvas is 4.17× larger than the displayed CSS size).
-- 2026 template: uses its own `CONFIG_2026` with distinct coordinate mapping.
+- 2026 template: uses its own `CONFIG_2026` (816 × 1296 px CR80 board) with distinct coordinate mapping.
 - All coordinates in CONFIG are in native canvas pixels, not CSS pixels.
+
+### 5.3a — CR80 HTML Preview (2026)
+The 2026 preview is a live HTML card (`#cr80-front`, `#cr80-back`, CSS in `style.css` §23), filled by `renderCr80Preview()` which `renderCanvases()` calls. The canvases are still rendered and remain the export source, so:
+- Never edit the card in the DOM directly — update `state` first, then `renderCanvases()`.
+- A layout change must be made in **both** places: the CSS/HTML card and `CONFIG_2026` + the blank template PNGs.
+- Use the `[hidden]` attribute on card images only together with `.cr80-face img[hidden] { display: none; }` (the global `img { display: block }` reset overrides it otherwise).
+- The card images/fonts must stay in the Service Worker precache list.
 
 ### 5.4 — Dimension Guard
 Before resizing a canvas, always check if dimensions actually changed:
@@ -164,7 +172,7 @@ function loadImageFromDataUrl(dataUrl) {
 ### 6.1 — Single Source of Truth
 ```js
 const state = {
-  idVersion:           'old' | '2026',
+  idVersion:           'old' | '2026',   // default '2026'
   campusTheme:         'cabagan' | ... (11 options),
   showHologram:        boolean,
   audioEnabled:        boolean,
@@ -312,7 +320,7 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 
 ## 15. What NOT to Change Without Discussion
 
-- The `CONFIG` and `CONFIG_2026` objects — changing coordinates breaks the template alignment.
+- The `CONFIG` and `CONFIG_2026` objects — changing coordinates breaks the template alignment (and the CR80 HTML card in `style.css` §23 must match).
 - The `SESSION_KEY` constant — changing it invalidates all users' saved sessions.
 - The SW cache name `isu-id-vX.Y.Z` convention — must be bumped with every release.
 - The `MAX_STUDENTS = 5` UI tab limit — changing this without updating PDF layout logic breaks exports.

@@ -5990,11 +5990,18 @@ a[aria-label="Email"]:hover {
     background: var(--cr80-white);
     color: var(--cr80-green);
     font-family: 'Poppins', Arial, sans-serif;
+    /* Reset what the page would inherit so the card matches the CR80 design exactly */
+    line-height: normal;
+    letter-spacing: normal;
+    text-rendering: auto;
+    font-feature-settings: normal;
     user-select: none;
 }
 
 .cr80-face > * { position: absolute; }
 .cr80-face span { white-space: pre; }
+/* The global `img { display: block }` reset would override the hidden attribute */
+.cr80-face img[hidden] { display: none; }
 
 .cr80-bar { left: 0; width: 816px; }
 .cr80-bar--top { top: 0; height: 42px; background: var(--cr80-green); }
@@ -6007,10 +6014,9 @@ a[aria-label="Email"]:hover {
     left: 198px; width: 560px; text-align: center; font-size: 24px; font-weight: 600;
 }
 .cr80-republic { top: 88px; }
-.cr80-campus { top: 178px; }
+.cr80-campus { top: 173px; }
 .cr80-university {
-    left: 198px; top: 116px; width: 560px; text-align: center;
-    font-family: Georgia, 'Times New Roman', serif; font-variant: small-caps; font-size: 46px;
+    left: 198px; top: 128px; width: 560px; height: 38px; object-fit: contain;
 }
 
 .cr80-photo-frame {

@@ -1,14 +1,14 @@
 /**
  * ISU ID Generator — Service Worker (PWA Offline & Instant Load Cache)
- * Cache version: isu-id-v3.8.5
+ * Cache version: isu-id-v3.8.6
  */
 
-const CACHE_NAME = 'isu-id-v3.8.5';
+const CACHE_NAME = 'isu-id-v3.8.6';
 
 const PRECACHE_ASSETS = [
   './',
   './index.html',
-  './style.css?v=3.8.5',
+  './style.css?v=3.8.6',
   './app.js',
   './animations.js',
   './manifest.webmanifest',
@@ -18,9 +18,11 @@ const PRECACHE_ASSETS = [
   './images/template_back.id.png',
   './images/2026_id/front_reference.png',
   './images/2026_id/back_reference.png',
-  './images/2026_id/new_template_front.id.png?v=cr80',
+  './images/2026_id/new_template_front.id.png?v=cr80c',
   './images/2026_id/new_template_back.id.png?v=cr80b',
   './images/2026_id/cr80_seal.png',
+  './images/2026_id/cr80_university_wordmark.png',
+  './images/2026_id/cr80_photo_placeholder.png',
   './images/2026_id/cr80_qr.png',
   './images/2026_id/cr80_registrar_signature.png',
   './fonts/poppins-latin-400.woff2',

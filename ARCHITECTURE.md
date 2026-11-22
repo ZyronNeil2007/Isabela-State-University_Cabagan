@@ -36,14 +36,21 @@ web/
 ├── animations.js           # Motion layer (592 lines, 7 modules: A–G)
 ├── sw.js                   # Service Worker (stale-while-revalidate strategy)
 ├── manifest.webmanifest    # PWA manifest (icons, display, theme color)
+├── fonts/                  # Poppins 400/600/700 (Latin subset, OFL) for the CR80 ID
 ├── images/
 │   ├── isu_logo_256.png
 │   ├── isu_logo_512.png
 │   ├── template_front.id.png       # Old ID front template
 │   ├── template_back.id.png        # Old ID back template
 │   ├── 2026_id/
-│   │   ├── new_template_front.id.png   # 2026 ID front template
-│   │   └── new_template_back.id.png    # 2026 ID back template
+│   │   ├── new_template_front.id.png   # 2026 (CR80) front — blank export template
+│   │   ├── new_template_back.id.png    # 2026 (CR80) back  — blank export template
+│   │   ├── cr80_seal.png               # Seal used by the HTML preview card
+│   │   ├── cr80_university_wordmark.png# "Isabela State University" wordmark
+│   │   ├── cr80_photo_placeholder.png  # Silhouette shown until a photo is added
+│   │   ├── cr80_qr.png                 # QR image on the back
+│   │   ├── cr80_registrar_signature.png
+│   │   └── front_reference.png / back_reference.png   # Landing-page hero images (520 px)
 │   └── hero_sreenshot/              # README screenshots
 └── scripts/
     ├── dummy_data_generator.py     # Generates test CSVs
@@ -62,6 +69,7 @@ The `app.js` file is organized into 20 numbered modules, delimited by `═══
 | 4 | SIGNATURE PAD | `sigCanvas`, `sigCtx`, drawing event listeners |
 | 5 | TEMPLATES | `loadTemplates()`, `frontTemplate`, `backTemplate`, `front2026Template`, `back2026Template` |
 | 6 | RENDER ENGINE | `renderCanvases()`, `drawFront()`, `drawBack()`, `renderQrCodeOnCanvas()`, `drawHologramWatermark()` |
+| 7b | CR80 HTML PREVIEW | `renderCr80Preview()`, `fitCr80Text()`, `updateCr80Scale()`, `formatCr80Dob()`, `CR80_PHOTO_PLACEHOLDER` — fills the live HTML card in the preview section |
 | 7 | FORM BINDINGS | `INPUT_KEY_MAP`, per-input `addEventListener` that updates `state.students[activeIndex].formData` and calls `renderCanvases()` |
 | 8 | STEPPER | `TOTAL_STEPS = 10`, `STEP_TITLES`, `goToStep()`, `stepperNext()`, `stepperBack()`, `initStepper()`, `buildStepperDots()`, `buildDesktopProgressBar()` |
 | 9 | TILT EFFECT | `initTilt()` — VanillaTilt initialization |
@@ -259,7 +267,7 @@ runOcrScan()
 
 ```js
 const state = {
-  idVersion:          'old',    // 'old' | '2026'
+  idVersion:          '2026',   // 'old' | '2026'  (2026 CR80 is the default)
   campusTheme:        'cabagan',
   showHologram:       false,
   audioEnabled:       false,
@@ -325,17 +333,25 @@ const INPUT_KEY_MAP = {
 | `#hero-webgl-canvas` | Three.js particles | **Disabled** |
 
 ### 5.2 Template System
-Two sets of PNG template images:
+Two sets of PNG template images (used by the **canvases**, which are the PNG/PDF export source):
 - **Old**: `images/template_front.id.png` + `images/template_back.id.png`
-- **2026**: `images/2026_id/new_template_front.id.png` + `images/2026_id/new_template_back.id.png`
+- **2026 (CR80)**: `images/2026_id/new_template_front.id.png` (`?v=cr80c`) + `images/2026_id/new_template_back.id.png` (`?v=cr80b`) — blank 816 × 1296 px boards. The front export template is rendered from the "ISU Student ID – CR80 Template" HTML with the values removed; the back is rendered from the app's own HTML back card so both match.
 
-Templates are loaded as `HTMLImageElement` objects on boot via `loadTemplates()`. Canvas dimensions are set to match the loaded template's `naturalWidth` × `naturalHeight`.
+Templates are loaded as `HTMLImageElement` objects on boot via `loadTemplates()`, together with `cr80_photo_placeholder.png` (`state.photoPlaceholder2026`) and the Poppins fonts. Canvas dimensions are set to match the loaded template.
+
+### 5.2a CR80 HTML Preview (2026 ID)
+For the **2026** version the preview section shows a live **HTML/CSS card** instead of the canvas:
+- Markup: `#cr80-front` / `#cr80-back` inside `.cr80-stage` (in `web/index.html`, `.flip-card-front` / `.flip-card-back`).
+- Styles: `web/style.css` §23 — positions are plain CSS on an 816 × 1296 px board; JS scales it to the preview width via `--cr80-scale` (`ResizeObserver`).
+- Binding: `renderCanvases()` → `renderCr80Preview()` fills name, ID number, department, photo (silhouette placeholder when empty), signature, contact person, address, contact number and birth date. Text auto-fits (`fitCr80Text`); back values use an aligned two-column layout and wrap to two lines.
+- The `.flip-card` gets the class `is-cr80`, which shows the HTML card and hides the canvases. The canvases are **still rendered on every change** because PNG/PDF export, the mini preview and the inspect modal read them.
+- **Keep both in sync**: any layout change to the HTML card must be mirrored in `CONFIG_2026` / the blank template PNGs (and vice-versa).
 
 ### 5.3 Coordinate Config (`CONFIG` for Old Template)
 All coordinates are in **native canvas pixels** (not CSS pixels). The old template uses a ~4.17× scale factor. The `CONFIG` object defines bounding boxes and text positions for every rendered element on both card faces.
 
 ### 5.4 2026 Template Specifics
-- Uses `CONFIG_2026` with separate coordinate set.
+- Uses `CONFIG_2026` with a separate coordinate set (816 × 1296 px, Poppins text, `autoShrink` / `wrap` options handled in `renderText2026()`).
 - `DEPT_MAP` lookup converts department abbreviations (e.g., `"CICT"`) to full college names.
 - Photo is drawn *before* the template overlay (so the green template border appears over the photo).
 - Photo clipping uses `ctx.roundRect()` or a manual arc-path for rounded corners.
@@ -374,7 +390,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 ### 7.1 Service Worker (`sw.js`)
 
-- **Cache version**: `isu-id-v3.8.2` (must be bumped on every release that changes cached assets).
+- **Cache version**: `isu-id-v3.8.6` (must be bumped on every release that changes cached assets).
 - **Install**: Opens cache, `addAll()` the precache list. Calls `skipWaiting()` to immediately activate.
 - **Activate**: Deletes all caches not matching the current `CACHE_NAME`. Calls `clients.claim()`.
 - **Fetch**: Stale-While-Revalidate strategy — serves cached response immediately, fetches network in background, updates cache on success.
@@ -383,7 +399,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ```
 ./
 ./index.html
-./style.css?v=3.8.2
+./style.css?v=3.8.6
 ./app.js
 ./animations.js
 ./manifest.webmanifest
@@ -391,8 +407,18 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ./images/isu_logo_512.png
 ./images/template_front.id.png
 ./images/template_back.id.png
-./images/2026_id/new_template_front.id.png
-./images/2026_id/new_template_back.id.png
+./images/2026_id/front_reference.png
+./images/2026_id/back_reference.png
+./images/2026_id/new_template_front.id.png?v=cr80c
+./images/2026_id/new_template_back.id.png?v=cr80b
+./images/2026_id/cr80_seal.png
+./images/2026_id/cr80_university_wordmark.png
+./images/2026_id/cr80_photo_placeholder.png
+./images/2026_id/cr80_qr.png
+./images/2026_id/cr80_registrar_signature.png
+./fonts/poppins-latin-400.woff2
+./fonts/poppins-latin-600.woff2
+./fonts/poppins-latin-700.woff2
 ```
 
 ### 7.2 Web App Manifest (`manifest.webmanifest`)
