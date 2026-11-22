@@ -390,7 +390,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 ### 7.1 Service Worker (`sw.js`)
 
-- **Cache version**: `isu-id-v3.8.6` (must be bumped on every release that changes cached assets).
+- **Cache version**: `isu-id-v3.8.7` (must be bumped on every release that changes cached assets).
 - **Install**: Opens cache, `addAll()` the precache list. Calls `skipWaiting()` to immediately activate.
 - **Activate**: Deletes all caches not matching the current `CACHE_NAME`. Calls `clients.claim()`.
 - **Fetch**: Stale-While-Revalidate strategy — serves cached response immediately, fetches network in background, updates cache on success.
