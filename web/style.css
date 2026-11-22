@@ -5,6 +5,7 @@
 
    SECTIONS:
    1.  Design Tokens (CSS Variables)
+   1a. Local Fonts (Poppins for the CR80 ID)
    2.  Reset & Base
    3.  Body & Background
    4.  Floating Orbs
@@ -151,6 +152,27 @@
     /* ── Layout ── */
     --navbar-height: 80px;
     --container-max: 1400px;
+}
+
+
+/* ───────────────────────────────────────────────────────────────────────────
+   1a. LOCAL FONTS — Poppins (used by the CR80 ID canvas text)
+   Latin subset, SIL Open Font License 1.1 (see fonts/Poppins-OFL.txt).
+─────────────────────────────────────────────────────────────────────────── */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('fonts/poppins-latin-600.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/poppins-latin-700.woff2') format('woff2');
 }
 
 
