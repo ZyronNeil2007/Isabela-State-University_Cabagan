@@ -16,6 +16,8 @@ const PRECACHE_ASSETS = [
   './images/isu_logo_512.png',
   './images/template_front.id.png',
   './images/template_back.id.png',
+  './images/2026_id/front_reference.png',
+  './images/2026_id/back_reference.png',
   './images/2026_id/new_template_front.id.png?v=cr80',
   './images/2026_id/new_template_back.id.png?v=cr80',
   './fonts/poppins-latin-600.woff2',
