@@ -237,14 +237,14 @@
 
                     <!-- ID card front -->
                     <div class="hero-id-card hero-id-front" aria-hidden="true">
-                        <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
+                        <img src="images/2026_id/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
 
                     <!-- ID card back -->
                     <div class="hero-id-card hero-id-back" aria-hidden="true">
-                        <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
+                        <img src="images/2026_id/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
@@ -636,7 +636,7 @@
                     <p class="step-hint" style="margin-bottom:16px;"><i class="ph ph-info"></i> Select which ID design
                         you want to generate.</p>
                     <div class="version-toggle-group" id="version-toggle-group">
-                        <button class="version-toggle-btn active" id="btn-old-id" onclick="setIdVersion('old')">
+                        <button class="version-toggle-btn" id="btn-old-id" onclick="setIdVersion('old')">
                             <div class="version-btn-icon"><i class="ph ph-identification-card"></i></div>
                             <div class="version-btn-label">
                                 <span class="version-btn-title">Old ID</span>
@@ -644,7 +644,7 @@
                             </div>
                             <i class="ph ph-check-circle version-check"></i>
                         </button>
-                        <button class="version-toggle-btn" id="btn-2026-id" onclick="setIdVersion('2026')">
+                        <button class="version-toggle-btn active" id="btn-2026-id" onclick="setIdVersion('2026')">
                             <div class="version-btn-icon version-btn-icon--new"><i class="ph ph-sparkle"></i></div>
                             <div class="version-btn-label">
                                 <span class="version-btn-title">2026 New ID</span>
@@ -698,14 +698,14 @@
                 <!-- Step 5: Course / Department -->
                 <div class="form-group" data-step="5" data-step-title="Course / Department">
                     <!-- OLD ID: Course text input -->
-                    <div id="course-field-wrapper">
+                    <div id="course-field-wrapper" style="display:none;">
                         <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
                         <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
                         <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear
                             on the ID.</p>
                     </div>
                     <!-- 2026 ID: Department select -->
-                    <div id="department-field-wrapper" style="display:none;">
+                    <div id="department-field-wrapper">
                         <label for="department"><i class="ph ph-buildings"></i> College / Department</label>
                         <select id="department" class="select-field">
                             <option value="">— Select your college —</option>

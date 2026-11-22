@@ -275,7 +275,7 @@ const state = {
     front2026Template: null,
     back2026Template:  null,
     activeStudentIndex: 0,
-    idVersion: 'old',   // 'old' | '2026'
+    idVersion: '2026',  // 'old' | '2026'  (CR80 2026 design is the default)
     campusTheme: 'cabagan', // 'cabagan' | 'echague' | 'cauayan' | 'ilagan' | 'roxas'
     showHologram: true,
     audioEnabled: true,
@@ -618,7 +618,8 @@ async function loadTemplates() {
         miniCanvasBack.height = backCanvas.height;
     }
 
-    renderCanvases();
+    // Sync toggle buttons / course-vs-department field with the default version, then draw
+    setIdVersion(state.idVersion);
 }
 
 
