@@ -168,7 +168,7 @@ Automatically populate the student form from a photo of any printed ID or regist
 - `fix` — The card resets inherited `line-height` / `text-rendering` so text is pixel-matched to the template; canvas text lines snap to whole pixels.
 - `chore` — Poppins (400 / 600 / 700, Latin subset, SIL OFL) is bundled in `web/fonts/` so the card looks identical offline.
 - `perf` — Landing-page hero reference images are now 520 px wide (≈ 400 KB total instead of ≈ 940 KB).
-- `chore` — Service Worker cache bumped to `isu-id-v3.8.6`.
+- `chore` — Service Worker cache bumped to `isu-id-v3.8.7`.
 
 ### v3.8.2 *(2026-09-27)*
 - `docs` — **Source of Truth Architecture**: Established a complete, professional documentation suite (`PRD.md`, `AGENTS.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`) serving as the project's single source of truth.
