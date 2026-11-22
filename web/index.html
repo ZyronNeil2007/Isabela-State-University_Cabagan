@@ -54,7 +54,7 @@
 
 
 
-    <link rel="stylesheet" href="style.css?v=3.8.3">
+    <link rel="stylesheet" href="style.css?v=3.8.4">
 </head>
 
 
@@ -927,9 +927,60 @@
                     <div class="flip-card" id="idCard">
                         <div class="flip-card-front id-card-preview">
                             <canvas id="front-canvas"></canvas>
+                            <!-- CR80 2026 ID — live HTML front (ISU Student ID – CR80 Template). Filled by renderCr80Preview() -->
+                            <div class="cr80-stage" id="cr80-front-stage">
+                                <div class="cr80-face" id="cr80-front">
+                                    <div class="cr80-bar cr80-bar--top"></div>
+                                    <div class="cr80-bar cr80-bar--top-gold"></div>
+                                    <img class="cr80-seal" src="images/2026_id/cr80_seal.png" alt="Isabela State University seal">
+                                    <div class="cr80-republic">Republic of the Philippines</div>
+                                    <div class="cr80-university">Isabela State University</div>
+                                    <div class="cr80-campus">Cabagan, Isabela</div>
+                                    <div class="cr80-photo-frame">
+                                        <img class="cr80-photo" id="cr80-photo" alt="Student photo" hidden>
+                                    </div>
+                                    <img class="cr80-signature" id="cr80-signature" alt="Student signature" hidden>
+                                    <div class="cr80-center cr80-name"><span id="cr80-name"></span></div>
+                                    <div class="cr80-center cr80-label cr80-name-label">NAME</div>
+                                    <div class="cr80-center cr80-idnum"><span id="cr80-idnumber"></span></div>
+                                    <div class="cr80-center cr80-label cr80-idnum-label">STUDENT NUMBER</div>
+                                    <div class="cr80-center cr80-dept"><span id="cr80-department"></span></div>
+                                    <div class="cr80-bar cr80-bar--bottom-gold"></div>
+                                    <div class="cr80-bar cr80-bar--bottom"></div>
+                                    <canvas class="cr80-holo" id="cr80-holo" width="816" height="1296" aria-hidden="true"></canvas>
+                                </div>
+                            </div>
                         </div>
                         <div class="flip-card-back id-card-preview">
                             <canvas id="back-canvas"></canvas>
+                            <!-- CR80 2026 ID — live HTML back. Filled by renderCr80Preview() -->
+                            <div class="cr80-stage" id="cr80-back-stage">
+                                <div class="cr80-face" id="cr80-back">
+                                    <div class="cr80-back-header">PERSON TO NOTIFY IN CASE OF EMERGENCY</div>
+                                    <div class="cr80-bar cr80-bar--header-gold"></div>
+                                    <div class="cr80-row cr80-row--1">CONTACT PERSON: <span class="cr80-val" id="cr80-parent"></span></div>
+                                    <div class="cr80-row cr80-row--2">ADDRESS: <span class="cr80-val" id="cr80-address"></span></div>
+                                    <div class="cr80-row cr80-row--3">CONTACT NO.: <span class="cr80-val" id="cr80-telephone"></span></div>
+                                    <div class="cr80-row cr80-row--4">BIRTH DATE: <span class="cr80-val" id="cr80-dob"></span></div>
+                                    <img class="cr80-qr" src="images/2026_id/cr80_qr.png" alt="Student QR code">
+                                    <div class="cr80-sticker-band"></div>
+                                    <div class="cr80-bar cr80-bar--band-top"></div>
+                                    <div class="cr80-bar cr80-bar--band-bottom"></div>
+                                    <div class="cr80-sticker cr80-sticker--1"></div>
+                                    <div class="cr80-sticker cr80-sticker--2"></div>
+                                    <div class="cr80-sticker cr80-sticker--3"></div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--1">1ST SEMESTER</div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--2">2ND SEMESTER</div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--3">SUMMER</div>
+                                    <img class="cr80-registrar-sig" src="images/2026_id/cr80_registrar_signature.png" alt="Signature of Mercy C. Albano">
+                                    <div class="cr80-center cr80-registrar">MERCY C. ALBANO</div>
+                                    <div class="cr80-center cr80-registrar-title">University Registrar</div>
+                                    <div class="cr80-certify">THIS IS TO CERTIFY THAT THE PERSON WHOSE PICTURE AND SIGNATURE APPEAR HEREON IS A STUDENT OF THE ISABELA STATE UNIVERSITY, CABAGAN CAMPUS.</div>
+                                    <div class="cr80-notice">THIS CARD IS NON-TRANSFERABLE AND VALID ONLY FOR THE SEMESTER INDICATED IN THE STICKER. REPORT LOSS IMMEDIATELY TO THE REGISTRAR.</div>
+                                    <div class="cr80-footer-gold"></div>
+                                    <div class="cr80-footer-green"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

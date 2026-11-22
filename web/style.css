@@ -27,6 +27,7 @@
    20. Footer
    21. Animations & Keyframes
    22. Responsive Breakpoints
+   23. CR80 ID — live HTML preview
 ═══════════════════════════════════════════════════════════════════════════ */
 
 
@@ -159,6 +160,14 @@
    1a. LOCAL FONTS — Poppins (used by the CR80 ID canvas text)
    Latin subset, SIL Open Font License 1.1 (see fonts/Poppins-OFL.txt).
 ─────────────────────────────────────────────────────────────────────────── */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/poppins-latin-400.woff2') format('woff2');
+}
+
 @font-face {
     font-family: 'Poppins';
     font-style: normal;
@@ -5945,3 +5954,114 @@ a[aria-label="Email"]:hover {
     }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   23. CR80 ID — live HTML preview (ISU Student ID – CR80 Template)
+   The card is designed on an 816 × 1296 px board (CR80 = 54 × 85.6 mm) and
+   scaled down to the preview width by JS (--cr80-scale). Edit positions here.
+─────────────────────────────────────────────────────────────────────────── */
+.cr80-stage {
+    --cr80-green: #0a6a35;
+    --cr80-gold: #f2c500;
+    --cr80-ink: #14442a;
+    --cr80-white: #ffffff;
+    --cr80-scale: 0.39;
+    display: none;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 816 / 1296;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--cr80-white);
+}
+
+/* 2026 version shows the HTML card; the canvases stay as the export source */
+.flip-card.is-cr80 .cr80-stage { display: block; }
+.flip-card.is-cr80 .id-card-preview canvas { display: none; }
+
+.cr80-face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 816px;
+    height: 1296px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    transform: scale(var(--cr80-scale));
+    background: var(--cr80-white);
+    color: var(--cr80-green);
+    font-family: 'Poppins', Arial, sans-serif;
+    user-select: none;
+}
+
+.cr80-face > * { position: absolute; }
+.cr80-face span { white-space: pre; }
+
+.cr80-bar { left: 0; width: 816px; }
+.cr80-bar--top { top: 0; height: 42px; background: var(--cr80-green); }
+.cr80-bar--top-gold { top: 42px; height: 7px; background: var(--cr80-gold); }
+.cr80-bar--bottom-gold { top: 1248px; height: 8px; background: var(--cr80-gold); }
+.cr80-bar--bottom { top: 1256px; height: 40px; background: var(--cr80-green); }
+
+.cr80-seal { left: 34px; top: 78px; width: 137px; height: 137px; object-fit: contain; }
+.cr80-republic, .cr80-campus {
+    left: 198px; width: 560px; text-align: center; font-size: 24px; font-weight: 600;
+}
+.cr80-republic { top: 88px; }
+.cr80-campus { top: 178px; }
+.cr80-university {
+    left: 198px; top: 116px; width: 560px; text-align: center;
+    font-family: Georgia, 'Times New Roman', serif; font-variant: small-caps; font-size: 46px;
+}
+
+.cr80-photo-frame {
+    left: 181px; top: 300px; width: 453px; height: 453px;
+    box-sizing: border-box; border: 6px solid var(--cr80-green); border-radius: 28px;
+    background: var(--cr80-white); overflow: hidden;
+}
+.cr80-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cr80-signature { left: 258px; top: 758px; width: 300px; height: 114px; object-fit: contain; }
+
+.cr80-center { left: 0; width: 816px; text-align: center; }
+.cr80-name, .cr80-idnum { font-size: 41px; font-weight: 700; line-height: 1.1; }
+.cr80-name { top: 880px; }
+.cr80-idnum { top: 984px; }
+.cr80-label { font-size: 18px; color: var(--cr80-ink); }
+.cr80-name-label { top: 936px; }
+.cr80-idnum-label { top: 1040px; }
+.cr80-dept {
+    left: 68px; top: 1112px; width: 680px; min-height: 125px; font-size: 32px; font-weight: 600;
+    line-height: 1.3; text-align: center; display: flex; align-items: center; justify-content: center;
+}
+
+.cr80-holo { left: 0; top: 0; width: 816px; height: 1296px; pointer-events: none; }
+
+/* Back */
+.cr80-back-header {
+    left: 0; top: 0; width: 816px; height: 94px; box-sizing: border-box; padding-left: 22px;
+    display: flex; align-items: center; background: var(--cr80-green); color: var(--cr80-white);
+    font-size: 28px; font-weight: 700;
+}
+.cr80-bar--header-gold { top: 94px; height: 7px; background: var(--cr80-gold); }
+.cr80-row { left: 22px; width: 470px; font-size: 21px; color: var(--cr80-ink); white-space: nowrap; }
+.cr80-row--1 { top: 148px; }
+.cr80-row--2 { top: 224px; }
+.cr80-row--3 { top: 300px; }
+.cr80-row--4 { top: 376px; }
+.cr80-val { font-size: 32px; font-weight: 700; color: var(--cr80-green); }
+.cr80-qr { left: 510px; top: 148px; width: 262px; height: 262px; object-fit: contain; }
+.cr80-sticker-band { left: 0; top: 467px; width: 816px; height: 295px; background: var(--cr80-green); }
+.cr80-bar--band-top { top: 467px; height: 7px; background: var(--cr80-gold); }
+.cr80-bar--band-bottom { top: 755px; height: 7px; background: var(--cr80-gold); }
+.cr80-sticker { top: 514px; width: 175px; height: 177px; background: var(--cr80-white); }
+.cr80-sticker--1, .cr80-sticker-label--1 { left: 58px; }
+.cr80-sticker--2, .cr80-sticker-label--2 { left: 321px; }
+.cr80-sticker--3, .cr80-sticker-label--3 { left: 587px; }
+.cr80-sticker-label { top: 706px; width: 175px; text-align: center; font-size: 21px; color: var(--cr80-white); }
+.cr80-registrar-sig { left: 330px; top: 772px; width: 156px; height: 118px; object-fit: contain; }
+.cr80-registrar { top: 872px; font-size: 41px; font-weight: 700; line-height: 1.1; }
+.cr80-registrar-title { top: 928px; font-size: 18px; color: var(--cr80-ink); }
+.cr80-certify, .cr80-notice { left: 56px; width: 704px; font-size: 26.7px; line-height: 1.25; }
+.cr80-certify { top: 976px; }
+.cr80-notice { top: 1112px; font-weight: 700; }
+.cr80-footer-gold { left: 141px; top: 1250px; width: 535px; height: 7px; background: var(--cr80-gold); }
+.cr80-footer-green { left: 141px; top: 1257px; width: 535px; height: 39px; background: var(--cr80-green); }
