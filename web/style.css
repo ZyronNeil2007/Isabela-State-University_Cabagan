@@ -6042,12 +6042,21 @@ a[aria-label="Email"]:hover {
     font-size: 28px; font-weight: 700;
 }
 .cr80-bar--header-gold { top: 94px; height: 7px; background: var(--cr80-gold); }
-.cr80-row { left: 22px; width: 470px; font-size: 21px; color: var(--cr80-ink); white-space: nowrap; }
-.cr80-row--1 { top: 148px; }
-.cr80-row--2 { top: 224px; }
-.cr80-row--3 { top: 300px; }
-.cr80-row--4 { top: 376px; }
-.cr80-val { font-size: 32px; font-weight: 700; color: var(--cr80-green); }
+/* Two-column rows: fixed label column + aligned value column (x = 232 → 492) */
+.cr80-row {
+    left: 22px; width: 470px; height: 64px; display: flex; align-items: center;
+    font-size: 21px; color: var(--cr80-ink);
+}
+.cr80-row--1 { top: 139px; }
+.cr80-row--2 { top: 215px; }
+.cr80-row--3 { top: 291px; }
+.cr80-row--4 { top: 367px; }
+.cr80-key { flex: 0 0 210px; white-space: nowrap; }
+.cr80-face .cr80-val {
+    flex: 1 1 auto; min-width: 0; font-size: 32px; font-weight: 700; line-height: 1.15;
+    color: var(--cr80-green); white-space: nowrap; overflow-wrap: anywhere;
+}
+.cr80-face .cr80-val.is-wrapped { white-space: normal; }
 .cr80-qr { left: 510px; top: 148px; width: 262px; height: 262px; object-fit: contain; }
 .cr80-sticker-band { left: 0; top: 467px; width: 816px; height: 295px; background: var(--cr80-green); }
 .cr80-bar--band-top { top: 467px; height: 7px; background: var(--cr80-gold); }

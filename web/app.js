@@ -200,54 +200,58 @@ const CONFIG_2026 = {
 
         /** CONTACT PERSON value — row 1 */
         parentName: {
-            x: 218, y: 175,
+            x: 232, y: 175,
             align: 'left',
             font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
             fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 274,
-            autoShrink: 17
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         },
 
         /** ADDRESS value — row 2 */
         address: {
-            x: 124, y: 251,
+            x: 232, y: 251,
             align: 'left',
             font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
             fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 368,
-            autoShrink: 17
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         },
 
         /** CONTACT NO. value — row 3 */
         telephone: {
-            x: 174, y: 327,
+            x: 232, y: 327,
             align: 'left',
             font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
             fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 318,
-            autoShrink: 17
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         },
 
         /** BIRTH DATE value — row 4 */
         dob: {
-            x: 146, y: 403,
+            x: 232, y: 403,
             align: 'left',
             font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
             fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 346,
-            autoShrink: 17
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         }
     }
 };
@@ -593,7 +597,7 @@ async function loadTemplates() {
         loadImage('images/template_front.id.png'),
         loadImage('images/template_back.id.png'),
         loadImage('images/2026_id/new_template_front.id.png?v=cr80'),
-        loadImage('images/2026_id/new_template_back.id.png?v=cr80'),
+        loadImage('images/2026_id/new_template_back.id.png?v=cr80b'),
         // CR80 design uses Poppins on the canvas — make sure it is loaded before first draw
         loadPoppinsFonts()
     ]);
@@ -946,6 +950,33 @@ function renderText2026(ctx, textConfig, textValue) {
         if (fontSize !== baseSize) lineHeight = lineHeight * (fontSize / baseSize);
     }
 
+    // wrap (optional): if the text still does not fit at the minimum size, word-wrap
+    // it into several lines (matches the CR80 HTML preview's two-line values).
+    if (textConfig.wrap && textConfig.maxWidth && lines.length === 1 && ctx.measureText(lines[0]).width > textConfig.maxWidth) {
+        const source = lines[0];
+        const baseFont = ctx.font;
+        const wrapAt = () => {
+            const wrapped = [];
+            let cur = '';
+            source.split(' ').forEach(w => {
+                const test = cur ? cur + ' ' + w : w;
+                if (cur && ctx.measureText(test).width > textConfig.maxWidth) { wrapped.push(cur); cur = w; }
+                else cur = test;
+            });
+            if (cur) wrapped.push(cur);
+            return wrapped;
+        };
+        let wrapped = wrapAt();
+        // keep shrinking until the wrapped block fits a 64px row (same rule as the HTML preview)
+        while (fontSize > 15 && wrapped.length * fontSize * 1.15 > 64) {
+            fontSize -= 1;
+            ctx.font = baseFont.replace(/(\d+(\.\d+)?)px/, `${fontSize}px`);
+            wrapped = wrapAt();
+        }
+        lines.splice(0, lines.length, ...wrapped);
+        lineHeight = fontSize * 1.15;
+    }
+
     // Center the whole block on textConfig.y
     const totalHeight = (lines.length - 1) * lineHeight;
     const startY      = textConfig.y - totalHeight / 2;
@@ -1075,11 +1106,25 @@ function renderCr80Preview() {
         drawHologramWatermark(hctx, holo.width, holo.height);
     }
 
-    // ── Back ──  (values may extend to x=492, just before the QR code)
+    // ── Back ──  aligned value column (x 232 → 492): shrink to 22px, then wrap to 2 lines
     const fill = (id, text) => {
         const el = $(id);
+        el.classList.remove('is-wrapped');
         el.textContent = text;
-        fitCr80Text(el, 32, 17, 470 - el.offsetLeft);
+        let size = 32;
+        el.style.fontSize = size + 'px';
+        while (size > 22 && el.scrollWidth > el.clientWidth) {
+            size -= 1;
+            el.style.fontSize = size + 'px';
+        }
+        if (el.scrollWidth > el.clientWidth) {
+            el.classList.add('is-wrapped');
+            // keep shrinking until the wrapped text fits the 64px row height
+            while (size > 15 && el.offsetHeight > 64) {
+                size -= 1;
+                el.style.fontSize = size + 'px';
+            }
+        }
     };
     fill('cr80-parent',    fd.parentName || 'JANE DELA CRUZ');
     fill('cr80-address',   fd.address    || 'BARUCBOC, QUEZON, ISABELA');
