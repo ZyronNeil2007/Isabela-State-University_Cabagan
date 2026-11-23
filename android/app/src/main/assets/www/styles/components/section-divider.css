@@ -1,0 +1,42 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   SECTION SEPARATOR — Premium Wavy Divider
+────────────────────────────────────────────────────────────────────────── */
+.section-wave-sep {
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    margin-bottom: -2px;
+    position: relative;
+    z-index: 1;
+}
+
+.section-wave-sep svg {
+    display: block;
+    width: 100%;
+    height: clamp(40px, 5vw, 80px);
+}
+
+/* Upgrade existing section-divider for more impact */
+.section-divider {
+    height: 2px;
+    background: radial-gradient(ellipse 70% 100% at 50% 50%,
+        rgba(29, 219, 29, 0.40) 0%,
+        rgba(201, 168, 76, 0.20) 40%,
+        transparent 100%);
+    margin: 0;
+    position: relative;
+}
+
+.section-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(29, 219, 29, 0.15), transparent 70%);
+    border-radius: 50%;
+    filter: blur(16px);
+}
+

@@ -1,0 +1,101 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   RESPONSIVE — Bento Grid & HIW
+────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .bento-grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-auto-rows: 220px;
+    }
+
+    /* Reset wide spans so they fit 2-col */
+    .bento-card--wide { grid-column: span 2; }
+    .bento-card--tall { grid-row: span 1; }
+}
+
+@media (max-width: 768px) {
+    .bento-grid {
+        grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+    }
+
+    .bento-card,
+    .bento-card--wide,
+    .bento-card--tall {
+        grid-column: span 1 !important;
+        grid-row: span 1 !important;
+    }
+
+    .hiw-steps {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+
+    .hiw-connector {
+        flex-direction: row;
+        transform: rotate(90deg);
+        padding: 0;
+        height: 40px;
+    }
+
+    .hiw-step {
+        max-width: 100%;
+    }
+
+    .hero-feature-pills {
+        justify-content: center;
+    }
+}
+
+/* ─── HERO: mobile overrides (< 960px) ────────────────────────────────────
+   These ONLY apply below 960px and restore centered, stacked layout.        */
+@media (max-width: 959px) {
+    .hero-left-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: clamp(0.85rem, 2vw, 1.2rem);
+        width: 100%;
+    }
+
+    .hero-left-col .hero-title {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .hero-left-col .hero-subtitle {
+        text-align: center;
+    }
+
+    .hero-left-col .hero-badge {
+        align-self: center;
+    }
+
+    .hero-left-col .hero-feature-pills {
+        justify-content: center;
+    }
+
+    .hero-left-col .hero-actions {
+        justify-content: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.65rem;
+    }
+
+    /* Buttons stay auto-width on mobile — no stretching */
+    .hero-left-col .hero-actions .btn-primary,
+    .hero-left-col .hero-actions .btn-ghost {
+        width: auto;
+        flex-shrink: 0;
+    }
+
+    .hero-left-col .hero-stats {
+        align-self: center;
+    }
+}
+
+/* Scroll progress bar JS hook — added via inline style */
+
+

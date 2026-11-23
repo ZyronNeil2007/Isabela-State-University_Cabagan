@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
 });
 const results = []; const errors = [];
-const ok = (name, cond, extra = '') => { results.push([name, !!cond, extra]); };
+const ok = (name, cond, extra = '') => { results.push([name, !!cond, extra]); if (process.env.VERBOSE) console.log((cond ? 'PASS ' : 'FAIL ') + name); };
 
 (async () => {
   await new Promise(r => server.listen(0, r));
@@ -126,8 +126,8 @@ const ok = (name, cond, extra = '') => { results.push([name, !!cond, extra]); };
 
   // 15 PWA offline
   const swOk = await ev(async () => { try { const r = await navigator.serviceWorker.ready; return !!r.active; } catch { return false; } });
-  ok('service worker active', swOk);
-  if (swOk) {
+  if (!process.argv.includes('--no-sw')) ok('service worker active', swOk);
+  if (swOk && !process.argv.includes('--no-sw')) {
     await page.waitForTimeout(1500);
     const expected = fs.readFileSync(path.join(WEB, 'sw.js'), 'utf8').match(/PRECACHE_ASSETS\s*=\s*\[([\s\S]*?)\]/)[1].match(/'\.\/[^']+'/g).length;
     const cached = await ev(async () => { const ks = await caches.keys(); let n = 0; for (const k of ks) n += (await (await caches.open(k)).keys()).length; return n; });
@@ -141,7 +141,7 @@ const ok = (name, cond, extra = '') => { results.push([name, !!cond, extra]); };
   await browser.close(); server.close();
   let bad = 0;
   for (const [n, c, x] of results) { console.log(`${c ? 'PASS' : 'FAIL'}  ${n}${x ? ' — ' + x : ''}`); if (!c) bad++; }
-  const real = errors.filter(e => !/ST_HERO/.test(e));
+  const real = errors.filter(e => !/ST_HERO/.test(e) && !(process.argv.includes('--no-sw') && /bad HTTP response code \(404\)/.test(e)));
   if (real.length) { console.log('ERRORS:\n' + real.join('\n')); bad++; }
   if (errors.length !== real.length) console.log('(ignored known issue: animations.js ST_HERO)');
   console.log(bad ? `\n${bad} problem(s)` : '\nall feature checks passed'); process.exit(bad ? 1 : 0);

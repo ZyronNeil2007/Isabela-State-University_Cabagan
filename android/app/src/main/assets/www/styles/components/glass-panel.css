@@ -1,0 +1,48 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   8. GLASS PANEL BASE
+─────────────────────────────────────────────────────────────────────────── */
+.glass-panel {
+    background: var(--glass-t1-bg);
+    backdrop-filter: blur(var(--glass-t1-blur)) saturate(160%) brightness(108%);
+    -webkit-backdrop-filter: blur(var(--glass-t1-blur)) saturate(160%) brightness(108%);
+    border: 1px solid var(--glass-t1-border);
+    border-radius: var(--radius-2xl);
+    box-shadow: var(--glass-t1-shadow);
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Top-edge shimmer highlight */
+.glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.5) 30%,
+            rgba(255, 255, 255, 0.7) 50%,
+            rgba(255, 255, 255, 0.5) 70%,
+            transparent 100%);
+    pointer-events: none;
+}
+
+/* Inner top-gradient gleam */
+.glass-panel::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0) 100%);
+    border-radius: inherit;
+    pointer-events: none;
+}
+
+

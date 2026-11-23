@@ -1,0 +1,77 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   16. PREVIEW SECTION
+─────────────────────────────────────────────────────────────────────────── */
+.preview-section {
+    flex: 1.15 1 420px;
+    min-width: 0;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+/* Sticky preview on desktop — so it stays visible while scrolling form */
+@media (min-width: 768px) {
+    .preview-section {
+        position: sticky;
+        top: calc(var(--navbar-height) + 1rem);
+        align-self: flex-start;
+    }
+}
+
+/* Header row: LIVE badge + title + hint */
+.preview-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.25rem;
+}
+
+.live-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: var(--radius-full);
+    background: rgba(29, 219, 29, 0.12);
+    border: 1px solid rgba(29, 219, 29, 0.38);
+    color: var(--green-400);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    flex-shrink: 0;
+    box-shadow: 0 0 10px rgba(29, 219, 29, 0.15);
+}
+
+.live-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green-vivid);
+    animation: liveDotPulse 1.2s ease-in-out infinite;
+    box-shadow: 0 0 6px rgba(29, 219, 29, 0.80);
+}
+
+@keyframes liveDotPulse {
+    0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 6px rgba(29, 219, 29, 0.80); }
+    50%       { opacity: 0.7; transform: scale(0.7); box-shadow: 0 0 2px rgba(29, 219, 29, 0.40); }
+}
+
+.preview-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    flex: 1;
+}
+
+.preview-side-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+

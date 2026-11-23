@@ -19,6 +19,7 @@ const argWeb = process.argv.indexOf('--web');
 const WEB = argWeb > 0 ? path.resolve(process.argv[argWeb + 1]) : path.join(ROOT, 'web');
 const GOLDEN = path.join(__dirname, 'golden.json');
 const UPDATE = process.argv.includes('--update');
+const NO_PIXELS = process.argv.includes('--no-pixels');   // CI on other OS/font stacks: skip raster hashes
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.svg': 'image/svg+xml' };
 
 const server = http.createServer((req, res) => {
@@ -98,7 +99,7 @@ const sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 16
   if (UPDATE) { fs.writeFileSync(GOLDEN, JSON.stringify(result, null, 2) + '\n'); console.log('golden.json updated'); process.exit(0); }
   const golden = JSON.parse(fs.readFileSync(GOLDEN, 'utf8'));
   const bad = [];
-  for (const k of Object.keys(golden)) if (JSON.stringify(golden[k]) !== JSON.stringify(result[k])) bad.push(k);
+  for (const k of Object.keys(golden)) if (!(NO_PIXELS && k.startsWith('canvas_')) && JSON.stringify(golden[k]) !== JSON.stringify(result[k])) bad.push(k);
   if (result.missingHandlers.length) bad.push('missingHandlers');
   if (result.errors.length) bad.push('errors');
   console.log(`handlers=${result.handlerCount} ids=${result.idCount} errors=${result.errors.length}`);

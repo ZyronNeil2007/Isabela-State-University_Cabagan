@@ -1497,7 +1497,8 @@
         if (yearEl) yearEl.textContent = new Date().getFullYear();
 
         // ── Service Worker Registration (PWA & Offline Instant Load) ──
-        if ('serviceWorker' in navigator) {
+        // The Android app bundles its assets (no sw.js, nothing to cache offline) — skip registration there
+        if ('serviceWorker' in navigator && !window.AndroidBridge) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js').catch(err => console.log('SW registration skipped:', err));
             });
