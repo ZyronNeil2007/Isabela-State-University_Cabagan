@@ -17,7 +17,7 @@ Both platforms implement the same core product but use different technology stac
 
 ### Architecture Principles
 - **Zero Backend** — All computation happens on the client. No server, no API, no database.
-- **No Build Step (Web)** — Plain HTML/CSS/JS; openable directly via `file://` or a static HTTP server.
+- **No Build Step (Web)** — Plain HTML/CSS and native ES modules, served by any static HTTP server (GitHub Pages, `localhost`, the Android asset loader). `file://` is **not** supported (browsers block module scripts there).
 - **Privacy-First** — Student data never leaves the device.
 - **Offline-First (Web)** — Service Worker provides stale-while-revalidate caching for full offline use after first load.
 - **Performance Budget** — GPU-expensive operations (blur, backdrop-filter) removed or disabled on mobile. Background is in a fixed compositor layer. QR is memoized.
@@ -30,61 +30,94 @@ Both platforms implement the same core product but use different technology stac
 
 ```
 web/
-├── index.html              # SPA entry point; DOM structure, ARIA, CDN imports
-├── style.css               # Complete design system (22 documented sections, 5926 lines)
-├── app.js                  # Application brain (3095 lines, 20 numbered modules)
-├── animations.js           # Motion layer (592 lines, 7 modules: A–G)
-├── sw.js                   # Service Worker (stale-while-revalidate strategy)
-├── manifest.webmanifest    # PWA manifest (icons, display, theme color)
-├── fonts/                  # Poppins 400/600/700 (Latin subset, OFL) for the CR80 ID
-├── images/
-│   ├── isu_logo_256.png
-│   ├── isu_logo_512.png
-│   ├── template_front.id.png       # Old ID front template
-│   ├── template_back.id.png        # Old ID back template
-│   ├── 2026_id/
-│   │   ├── new_template_front.id.png   # 2026 (CR80) front — blank export template
-│   │   ├── new_template_back.id.png    # 2026 (CR80) back  — blank export template
-│   │   ├── cr80_seal.png               # Seal used by the HTML preview card
-│   │   ├── cr80_university_wordmark.png# "Isabela State University" wordmark
-│   │   ├── cr80_photo_placeholder.png  # Silhouette shown until a photo is added
-│   │   ├── cr80_qr.png                 # QR image on the back
-│   │   ├── cr80_registrar_signature.png
-│   │   └── front_reference.png / back_reference.png   # Landing-page hero images (520 px)
-│   └── hero_sreenshot/              # README screenshots
-└── scripts/
-    ├── dummy_data_generator.py     # Generates test CSVs
-    └── photo_resizer.py            # Batch-resizes photos to 315×355px
+├── index.html                 # SPA entry: DOM, ARIA, CDN scripts, <link> stylesheets (cascade order), <script type="module">
+├── sw.js                      # Service Worker (precaches every module/stylesheet/asset — keep in sync!)
+├── manifest.webmanifest       # PWA manifest
+├── src/                       # ES modules (no build step) — see §2.2
+│   ├── app.js                 #   entry: imports every module in the original single-file order
+│   ├── core/
+│   │   ├── config/            #   CONFIG / CONFIG_2026 / DEPARTMENT_LABELS (canvas coordinates)
+│   │   ├── state/             #   `state` store, canvas/DOM refs
+│   │   └── initialization/    #   boot (window load), navbar, expose-globals (inline-handler bridge)
+│   ├── features/
+│   │   ├── id-generator/      #   form bindings, templates, render engine, stepper
+│   │   ├── card-preview/      #   CR80 HTML preview, tilt, card inspect, hologram/audio FX
+│   │   ├── student-management/#   student tabs (add/switch/remove)
+│   │   ├── photo-editor/      #   interactive cropper (pointer events, pinch zoom)
+│   │   ├── signature/         #   signature pad, AI signature enhancement
+│   │   ├── csv-import/  ocr/  batch-manager/  qr-verification/  campus-theme/
+│   ├── services/
+│   │   ├── storage/           #   session auto-save / restore (SESSION_KEY)
+│   │   ├── export/            #   PDF (jsPDF) and PNG export
+│   │   └── image-processing/  #   image loading, signature pixel algorithms
+│   ├── animations/            #   GSAP/Anime/holographic motion layer
+│   └── utils/                 #   toast, throttle
+├── styles/                    # CSS, split along the original numbered sections (see styles/main.css)
+│   ├── main.css               #   header + documented <link> load order
+│   ├── base/  layout/  components/  features/  responsive/
+├── assets/
+│   ├── images/{logos,templates/{legacy,2026},placeholders,screenshots}
+│   └── fonts/                 #   Poppins 400/600/700 (OFL)
+└── tools/                     # dev-only: dummy_data_generator.py, photo_resizer.py, optimize_logo.ps1 (not shipped to Android)
 ```
 
-### 2.2 Module Map (`app.js`)
+Repository-level folders: `android/` (Kotlin + WebView shell, bundled copy of `web/` in `assets/www/`), `docs/`,
+`scripts/` (`validation/`, `sync-android-assets/`), `.github/` (workflows, templates), `wiki/`.
 
-The `app.js` file is organized into 20 numbered modules, delimited by `═══` banner comments:
+### 2.2 JavaScript module map (`web/src/`)
 
-| Module | Name | Key Exports / Functions |
+`web/src/app.js` is the only `<script type="module">` entry. It imports every module in the **same order as the former
+single file**, so top-level side effects (listener registration, first renders) happen in the same sequence. Imports are
+explicit; only symbols used by other modules are exported.
+
+**Inline-handler bridge.** `index.html` and a few template strings still use inline `onclick="…"` attributes, which can
+only call globals. `core/initialization/expose-globals.js` is the single place that publishes those functions on
+`window` (29 today). To migrate a handler to `addEventListener`, remove it from that list. `scripts/validation/regression.js`
+fails if an inline handler in `index.html` does not resolve on `window`.
+
+**Rules for modules**
+- Shared mutable state lives in `core/state/state.js`; a module may mutate `state` but must not reassign another
+  module's `let` variables (ES imports are read-only).
+- Modules never draw to the canvases directly: update `state`, then call `renderCanvases()` (`id-generator/render-engine.js`).
+- `render-engine` is the hub: it triggers the CR80 preview, mini preview and session auto-save.
+- Third-party libraries (jsPDF, Tesseract, QRCode, VanillaTilt, GSAP…) stay CDN globals and are read from `window`.
+- Add a feature = new folder under `features/`, import it from `src/app.js`, add the file to `sw.js` `PRECACHE_ASSETS`
+  (`scripts/validation/check-references.js` verifies this and that every named import resolves).
+
+| Module | Lines | Exports |
 |---|---|---|
-| 1 | CONFIGURATION | `CONFIG`, `CONFIG_2026`, `DEPT_MAP` |
-| 2 | STATE | `state` object, `setIdVersion()`, `throttle()` |
-| 3 | CANVAS SETUP | `frontCanvas`, `backCanvas`, `frontCtx`, `backCtx`, `miniCanvas*` |
-| 4 | SIGNATURE PAD | `sigCanvas`, `sigCtx`, drawing event listeners |
-| 5 | TEMPLATES | `loadTemplates()`, `frontTemplate`, `backTemplate`, `front2026Template`, `back2026Template` |
-| 6 | RENDER ENGINE | `renderCanvases()`, `drawFront()`, `drawBack()`, `renderQrCodeOnCanvas()`, `drawHologramWatermark()` |
-| 7b | CR80 HTML PREVIEW | `renderCr80Preview()`, `fitCr80Text()`, `updateCr80Scale()`, `formatCr80Dob()`, `CR80_PHOTO_PLACEHOLDER` — fills the live HTML card in the preview section |
-| 7 | FORM BINDINGS | `INPUT_KEY_MAP`, per-input `addEventListener` that updates `state.students[activeIndex].formData` and calls `renderCanvases()` |
-| 8 | STEPPER | `TOTAL_STEPS = 10`, `STEP_TITLES`, `goToStep()`, `stepperNext()`, `stepperBack()`, `initStepper()`, `buildStepperDots()`, `buildDesktopProgressBar()` |
-| 9 | TILT EFFECT | `initTilt()` — VanillaTilt initialization |
-| 10 | NAVBAR | `initNavbar()` — IntersectionObserver scroll-shrink |
-| 11 | TOAST | `showToast(message, type)` — glassmorphic toast |
-| 12 | EXPORT (PDF) | `download-btn` click handler — jsPDF A4 landscape batch |
-| 12 (Boot) | BOOT | `window.addEventListener('load')` — `loadTemplates()`, `initStepper()`, `initNavbar()`, `initTilt()`, session check |
-| 13 | STUDENT TABS | `MAX_STUDENTS = 5`, `renderStudentTabs()`, `switchStudent()`, `addStudent()`, `removeStudent()` |
-| 14 | PHOTO CROPPER | `openCropper()`, `closeCropper()`, `startCropDrag()`, `doCropDrag()`, `endCropDrag()`, `updateCropperTransform()` |
-| 15 | EXPORT DROPDOWNS | `save-image-btn`, `showMobileExportMenu()`, `saveAsImage(side)` |
-| 16 | CSV IMPORT | `csv-upload` change handler, `parseCSVLine()`, fuzzy header mapping |
-| 17 | AI SIGNATURE | `switchSigMode()`, `enhanceSignatureWithAI()`, `removeWhiteBackground()`, `getOtsuThreshold()`, `getContentBoundingBox()` |
-| 17 (Session) | SESSION SAVE | `SESSION_KEY`, `saveSessionToStorage()`, `restoreSessionFromStorage()`, `showRestoreBanner()` |
-| 18 | OCR | `openOcrModal()`, `ensureTesseractLoaded()`, `runOcrScan()`, `ocrExtract()`, `applyOcrResults()` |
-| 20 | ENHANCEMENT SUITE | `CAMPUS_CONFIG`, `setCampusTheme()`, `toggleHologramOverlay()`, `playAudioFx()`, `toggleAudioFx()`, `renderQrCodeOnCanvas()`, `openBatchModal()`, `renderBatchTable()` |
+| `src/animations/animations.js` | 592 | — (side effects only) |
+| `src/app.js` | 60 | — (side effects only) |
+| `src/core/config/card-config.js` | 243 | `CONFIG`, `CONFIG_2026`, `DEPARTMENT_LABELS` |
+| `src/core/initialization/boot.js` | 59 | — (side effects only) |
+| `src/core/initialization/expose-globals.js` | 50 | — (side effects only) |
+| `src/core/initialization/navbar.js` | 22 | `initNavbar` |
+| `src/core/state/canvas-refs.js` | 13 | `frontCanvas`, `frontCtx`, `backCanvas`, `backCtx`, `miniCanvasFront`, `miniCtxFront`, `miniCanvasBack`, `miniCtxBack` |
+| `src/core/state/state.js` | 36 | `state` |
+| `src/features/batch-manager/batch-manager.js` | 125 | `openBatchModal`, `closeBatchModal`, `selectBatchStudent`, `deleteBatchStudent`, `filterBatchTable`, `exportBatchCsv` |
+| `src/features/campus-theme/campus-theme.js` | 116 | `CAMPUS_CONFIG`, `setCampusTheme` |
+| `src/features/card-preview/card-inspect.js` | 44 | `openCardInspectModal`, `closeCardInspectModal`, `switchInspectFace` |
+| `src/features/card-preview/cr80-preview.js` | 159 | `renderCr80Preview`, `updateMiniCanvas` |
+| `src/features/card-preview/security-fx.js` | 115 | `toggleHologramOverlay`, `playAudioFx`, `toggleAudioFx`, `drawHologramWatermark` |
+| `src/features/card-preview/tilt.js` | 20 | `initTilt` |
+| `src/features/csv-import/csv-import.js` | 114 | — (side effects only) |
+| `src/features/id-generator/form-bindings.js` | 130 | `INPUT_KEY_MAP`, `setIdVersion` |
+| `src/features/id-generator/render-engine.js` | 378 | `renderCanvases` |
+| `src/features/id-generator/stepper.js` | 209 | `goToStep`, `stepperNext`, `stepperBack`, `flipCard`, `initStepper` |
+| `src/features/id-generator/templates.js` | 58 | `loadTemplates` |
+| `src/features/ocr/ocr.js` | 274 | `openOcrModal`, `closeOcrModal`, `runOcrScan`, `applyOcrResults` |
+| `src/features/photo-editor/cropper.js` | 183 | `openCropper` |
+| `src/features/qr-verification/qr-code.js` | 84 | — (side effects only) |
+| `src/features/signature/ai-signature.js` | 253 | `switchSigMode`, `clearUploadedSig`, `enhanceSignatureWithAI` |
+| `src/features/signature/signature-pad.js` | 118 | `sigCanvas`, `sigCtx` |
+| `src/features/student-management/student-tabs.js` | 128 | `renderStudentTabs`, `switchStudent`, `removeStudent` |
+| `src/services/export/image-export.js` | 53 | `showMobileExportMenu`, `hideMobileExportMenu`, `saveAsImage` |
+| `src/services/export/pdf-export.js` | 103 | — (side effects only) |
+| `src/services/image-processing/image-loader.js` | 22 | `loadImage`, `loadImageFromDataUrl` |
+| `src/services/image-processing/signature-processing.js` | 155 | `removeWhiteBackground`, `getOtsuThreshold`, `getContentBoundingBox` |
+| `src/services/storage/session.js` | 146 | `SESSION_KEY`, `saveSessionToStorage`, `showRestoreBanner`, `onRestoreSession`, `onDiscardSession` |
+| `src/utils/throttle.js` | 25 | `throttle` |
+| `src/utils/toast.js` | 59 | `showToast` |
 
 ### 2.3 Module Map (`animations.js`)
 
@@ -296,7 +329,7 @@ const state = {
 ```
 
 ### 4.2 State Mutation Rules
-- **Single-page, global** — `state` is a module-level `const` object in `app.js`.
+- **Single-page, global** — `state` is an exported `const` object in `web/src/core/state/state.js`.
 - All form inputs mutate `state.students[state.activeStudentIndex].formData[key]` via `INPUT_KEY_MAP` bindings.
 - After any mutation: call `renderCanvases()`.
 - Do **not** directly mutate canvas pixels. Always go through `renderCanvases()`.
@@ -342,7 +375,7 @@ Templates are loaded as `HTMLImageElement` objects on boot via `loadTemplates()`
 ### 5.2a CR80 HTML Preview (2026 ID)
 For the **2026** version the preview section shows a live **HTML/CSS card** instead of the canvas:
 - Markup: `#cr80-front` / `#cr80-back` inside `.cr80-stage` (in `web/index.html`, `.flip-card-front` / `.flip-card-back`).
-- Styles: `web/style.css` §23 — positions are plain CSS on an 816 × 1296 px board; JS scales it to the preview width via `--cr80-scale` (`ResizeObserver`).
+- Styles: `web/styles/features/cr80-card.css` (§23) — positions are plain CSS on an 816 × 1296 px board; JS scales it to the preview width via `--cr80-scale` (`ResizeObserver`).
 - Binding: `renderCanvases()` → `renderCr80Preview()` fills name, ID number, department, photo (silhouette placeholder when empty), signature, contact person, address, contact number and birth date. Text auto-fits (`fitCr80Text`); back values use an aligned two-column layout and wrap to two lines.
 - The `.flip-card` gets the class `is-cr80`, which shows the HTML card and hides the canvases. The canvases are **still rendered on every change** because PNG/PDF export, the mini preview and the inspect modal read them.
 - **Keep both in sync**: any layout change to the HTML card must be mirrored in `CONFIG_2026` / the blank template PNGs (and vice-versa).
@@ -390,7 +423,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 ### 7.1 Service Worker (`sw.js`)
 
-- **Cache version**: `isu-id-v3.9.0` (must be bumped on every release that changes cached assets).
+- **Cache version**: `isu-id-v3.9.2` (must be bumped on every release that changes cached assets).
 - **Install**: Opens cache, `addAll()` the precache list. Calls `skipWaiting()` to immediately activate.
 - **Activate**: Deletes all caches not matching the current `CACHE_NAME`. Calls `clients.claim()`.
 - **Fetch**: Stale-While-Revalidate strategy — serves cached response immediately, fetches network in background, updates cache on success.
@@ -399,9 +432,8 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ```
 ./
 ./index.html
-./style.css?v=3.9.0
-./app.js
-./animations.js
+./styles/**/*.css?v=3.9.2     (43 stylesheets, in <link> order)
+./src/**/*.js                 (every ES module)
 ./manifest.webmanifest
 ./assets/images/logos/isu_logo_256.png
 ./assets/images/logos/isu_logo_512.png
@@ -502,7 +534,7 @@ versionName      = "3.9.0"
 | WebView Bridge | N/A | WebViewAssetLoader for hybrid view |
 
 ### 9.4 Asset Sync
-`android/app/src/main/assets/www/style.css` mirrors `web/style.css`. When updating the web stylesheet, the Android asset must be updated in the same commit.
+`android/app/src/main/assets/www/` is a generated mirror of `web/` — never edit it by hand. Run `node scripts/sync-android-assets/sync.js` after every web change (`--check` fails on drift; CI runs it). The sync excludes `sw.js`/manifest (a service worker would cache stale assets across app updates), `tools/`, screenshots, source/brand logos and unused legacy reference overlays. `index.html` skips service-worker registration inside the WebView (`window.AndroidBridge`).
 
 ---
 
@@ -543,70 +575,70 @@ versionName      = "3.9.0"
 | Vercel | https://isabela-state-university-cabagan.vercel.app | ⚠️ NEEDS VERIFICATION |
 | Netlify | https://idgenratorisuc.netlify.app | ⚠️ NEEDS VERIFICATION |
 
-**Local development** (no build step required):
+**Local development** (static server required — ES modules do not load from `file://`):
 ```bash
-# Option 1: npx serve
-cd web && npx serve .
-
-# Option 2: Python
-cd web && python -m http.server 8000
+cd web
+python3 -m http.server 8000    # or: npx serve .
+# open http://localhost:8000
 ```
-
-> **Note**: `file://` protocol works for most features. A local HTTP server is required for `Tesseract.js` WASM (CORS restriction on `file://` in some browsers).
 
 ---
 
 ## 12. Directory Index (Full Repository)
 
 ```
-isu_id/
+Isabela-State-University_Cabagan/
 ├── web/
-│   ├── index.html
-│   ├── style.css                   # 5926 lines, 22 sections
-│   ├── app.js                      # 3095 lines, 20 modules
-│   ├── animations.js               # 592 lines, 7 modules (A–G)
-│   ├── sw.js                       # Service Worker
-│   ├── manifest.webmanifest        # PWA Manifest
-│   ├── images/
-│   │   ├── isu_logo_256.png
-│   │   ├── isu_logo_512.png
-│   │   ├── template_front.id.png
-│   │   ├── template_back.id.png
-│   │   ├── 2026_id/
-│   │   │   ├── new_template_front.id.png
-│   │   │   └── new_template_back.id.png
-│   │   └── hero_sreenshot/
-│   └── scripts/
-│       ├── dummy_data_generator.py
-│       └── photo_resizer.py
+│   ├── index.html                 # SPA entry: DOM, ARIA, CDN scripts, <link> stylesheets (cascade order), <script type="module">
+│   ├── sw.js                      # Service Worker (precaches every module/stylesheet/asset — keep in sync!)
+│   ├── manifest.webmanifest       # PWA manifest
+│   ├── src/                       # ES modules (no build step) — see §2.2
+│   │   ├── app.js                 #   entry: imports every module in the original single-file order
+│   │   ├── core/
+│   │   │   ├── config/            #   CONFIG / CONFIG_2026 / DEPARTMENT_LABELS (canvas coordinates)
+│   │   │   ├── state/             #   `state` store, canvas/DOM refs
+│   │   │   └── initialization/    #   boot (window load), navbar, expose-globals (inline-handler bridge)
+│   │   ├── features/
+│   │   │   ├── id-generator/      #   form bindings, templates, render engine, stepper
+│   │   │   ├── card-preview/      #   CR80 HTML preview, tilt, card inspect, hologram/audio FX
+│   │   │   ├── student-management/#   student tabs (add/switch/remove)
+│   │   │   ├── photo-editor/      #   interactive cropper (pointer events, pinch zoom)
+│   │   │   ├── signature/         #   signature pad, AI signature enhancement
+│   │   │   ├── csv-import/  ocr/  batch-manager/  qr-verification/  campus-theme/
+│   │   ├── services/
+│   │   │   ├── storage/           #   session auto-save / restore (SESSION_KEY)
+│   │   │   ├── export/            #   PDF (jsPDF) and PNG export
+│   │   │   └── image-processing/  #   image loading, signature pixel algorithms
+│   │   ├── animations/            #   GSAP/Anime/holographic motion layer
+│   │   └── utils/                 #   toast, throttle
+│   ├── styles/                    # CSS, split along the original numbered sections (see styles/main.css)
+│   │   ├── main.css               #   header + documented <link> load order
+│   │   ├── base/  layout/  components/  features/  responsive/
+│   ├── assets/
+│   │   ├── images/{logos,templates/{legacy,2026},placeholders,screenshots}
+│   │   └── fonts/                 #   Poppins 400/600/700 (OFL)
+│   └── tools/                     # dev-only: dummy_data_generator.py, photo_resizer.py, optimize_logo.ps1 (not shipped to Android)
 │
-├── android/
-│   ├── app/
-│   │   ├── build.gradle.kts        # minSdk 24, versionCode 5, versionName 3.9.0
-│   │   ├── proguard-rules.pro
-│   │   └── src/main/
-│   │       ├── AndroidManifest.xml
-│   │       ├── assets/www/         # Mirrored web assets (style.css, etc.)
-│   │       ├── java/com/isu/id/    # Kotlin source (Compose screens, Room, ML Kit)
-│   │       └── res/                # Android resources
-│   ├── gradle/
-│   ├── build.gradle.kts
-│   ├── settings.gradle.kts
-│   ├── gradlew / gradlew.bat
-│   └── gradle.properties
+├── android/                    # Kotlin + Jetpack Compose + WebView shell
+│   └── app/src/main/assets/www/  # generated mirror of web/ (scripts/sync-android-assets)
 │
-├── wiki/
-│   ├── Architecture.md             # Legacy architecture stub
-│   └── Setup_and_Usage.md
-│
-├── docs/design/PRD.md              # Product Requirements Document
-├── AGENTS.md                       # Agent & contributor ruleset
-├── docs/design/DESIGN_SYSTEM.md    # Visual design system reference
-├── docs/architecture/ARCHITECTURE.md  # This file
-├── README.md
-├── docs/development/release_notes.md
-└── .gitignore
+├── docs/
+│   ├── architecture/           # ARCHITECTURE.md, REFACTORING_AUDIT.md
+│   ├── design/                 # DESIGN_SYSTEM.md, PRD.md
+│   ├── development/            # MIGRATION_GUIDE.md, KNOWN_ISSUES.md, QA reports, release notes
+│   ├── deployment/             # DEPLOYMENT.md
+│   ├── security/               # THIRD_PARTY.md
+│   └── decisions/              # ADRs
+├── scripts/
+│   ├── validation/             # check-references, regression, features, responsive_qa, eslint config
+│   └── sync-android-assets/    # web -> android www mirror (+ --check)
+├── .github/                    # workflows (deploy-pages, validate), issue/PR templates
+├── wiki/                       # GitHub wiki sources (kept in place)
+├── index.html  404.html        # redirect to ./web/ for project-site URLs
+├── README.md  CHANGELOG.md  CONTRIBUTING.md  SECURITY.md  AGENTS.md  LICENSE
 ```
 
+---
+
 ## Responsive layer
-`style.css` §24 ADAPTIVE LAYER owns cross-cutting responsive rules. Breakpoints: ≤380 / ≤767 phone / 768–1024 tablet / ≥1025 desktop. Never use `overflow:hidden` on html/body/ancestors of sticky elements (use `clip`). Modals are bottom sheets ≤767px; fixed sheets must be children of `<body>`.
+`web/styles/responsive/adaptive.css` (§24 ADAPTIVE LAYER) ADAPTIVE LAYER owns cross-cutting responsive rules. Breakpoints: ≤380 / ≤767 phone / 768–1024 tablet / ≥1025 desktop. Never use `overflow:hidden` on html/body/ancestors of sticky elements (use `clip`). Modals are bottom sheets ≤767px; fixed sheets must be children of `<body>`.

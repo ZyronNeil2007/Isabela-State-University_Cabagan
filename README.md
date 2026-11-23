@@ -61,7 +61,7 @@ A premium, fully responsive **client-side** web application for generating high-
 |---|---|
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
 | Styling | Vanilla CSS3 (custom properties, GPU transforms, glassmorphism) |
-| Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
+| Logic | Vanilla ES6+ JavaScript as native ES modules (Canvas API, jsPDF, FileReader) |
 | 3D / Graphics | [Three.js r134](https://threejs.org/), [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
 | Animations | [GSAP 3](https://greensock.com/gsap/) + ScrollTrigger, [Anime.js v4](https://animejs.com/) |
 | OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline WASM) |
@@ -72,34 +72,32 @@ A premium, fully responsive **client-side** web application for generating high-
 ## 📂 Project Structure
 
 ```text
-isu_id/
-├── web/                    # Client-side Web Application
-│   ├── index.html          # Main HTML entry point
-│   ├── style.css           # Glassmorphism design system & styles
-│   ├── app.js              # Application core logic & Canvas rendering engine
-│   ├── animations.js       # GSAP, Anime.js & Three.js animations
-│   ├── images/             # Blank ID templates, logos & static assets
-│   └── scripts/            # Python utility scripts:
-│                           #   • dummy_data_generator.py — generates realistic
-│                           #     fake student CSV datasets for batch import testing
-│                           #   • photo_resizer.py — batch-resizes and crops student
-│                           #     photos to the correct 315×355px canvas ratio
+Isabela-State-University_Cabagan/
+├── web/                         # Client-side web app (this folder is what GitHub Pages serves)
+│   ├── index.html               # Entry point (stylesheet <link>s in cascade order, module scripts)
+│   ├── sw.js · manifest.webmanifest   # PWA
+│   ├── src/                     # ES modules, one folder per feature
+│   │   ├── app.js               #   entry — imports every module
+│   │   ├── core/                #   config (card coordinates), state, boot, inline-handler bridge
+│   │   ├── features/            #   id-generator · card-preview · student-management · photo-editor
+│   │   │                        #   signature · csv-import · ocr · batch-manager · qr-verification · campus-theme
+│   │   ├── services/            #   storage (session) · export (PDF/PNG) · image-processing
+│   │   ├── animations/          #   GSAP / Anime.js / holographic effects
+│   │   └── utils/               #   toast, throttle
+│   ├── styles/                  # CSS split by layer: base · layout · components · features · responsive
+│   ├── assets/                  # images/{logos,templates/{legacy,2026},placeholders,screenshots} · fonts/
+│   └── tools/                   # dev-only Python scripts: dummy_data_generator.py · photo_resizer.py
 │
-├── android/                # Android Application (Native Jetpack Compose / WebView Shell)
-│   ├── app/                # Android app module (Kotlin source, assets, resources)
-│   ├── gradle/             # Gradle wrapper
-│   ├── build.gradle.kts    # Top-level build configuration
-│   ├── settings.gradle.kts # Gradle project settings
-│   ├── gradlew / gradlew.bat
-│   └── gradle.properties
-│
-├── wiki/                   # Technical documentation and guides
-├── docs/                   # Architecture, design, development, deployment, security docs
-├── scripts/                # Repo-level tooling (validation, Android asset sync)
-├── README.md               # Project documentation
-├── CHANGELOG.md            # Release history
-└── .gitignore
+├── android/                     # Kotlin + Jetpack Compose + WebView shell
+│   └── app/src/main/assets/www/ #   generated copy of web/ — run scripts/sync-android-assets
+├── docs/                        # architecture · design · development · deployment · security · decisions
+├── scripts/                     # validation/ (tests, linters) · sync-android-assets/
+├── .github/                     # CI workflows, issue & PR templates
+├── wiki/                        # GitHub wiki sources
+└── README · CHANGELOG · CONTRIBUTING · SECURITY · AGENTS · LICENSE
 ```
+
+Details: [`docs/architecture/ARCHITECTURE.md`](docs/architecture/ARCHITECTURE.md) · migration notes: [`docs/development/MIGRATION_GUIDE.md`](docs/development/MIGRATION_GUIDE.md).
 
 ---
 
@@ -107,28 +105,33 @@ isu_id/
 
 ### ✅ Prerequisites
 
-Before running the project locally, ensure you have the following:
+- **Modern web browser** — Chrome 90+, Firefox 88+, Edge 90+ or Safari 15+.
+- **A static HTTP server** — **required**: the app uses native ES modules, which browsers will not load from `file://` (double-clicking `index.html` shows a blank page). Use either:
+  - `python3 -m http.server` (Python 3.x), or
+  - `npx serve` (Node.js 16+).
+- **Android Studio** *(Android only)* — Arctic Fox or later, SDK targeting API 24+.
+- **Python 3.x** *(optional)* — for `web/tools/` (dummy data generator, photo resizer).
+- **Node.js + Playwright / ESLint** *(optional, contributors only)* — for `scripts/validation/`. The app itself has no build step.
 
-- **Modern Web Browser** — Chrome 90+, Firefox 88+, Edge 90+, or Safari 15+ (required for `OffscreenCanvas`, `CSS backdrop-filter`, and Web Audio API support).
-- **Local HTTP Server** *(Optional but recommended)* — Required to avoid `file://` protocol CORS restrictions when Tesseract.js loads its WASM worker. Use one of:
-  - `npx serve` (requires [Node.js](https://nodejs.org/) v16+)
-  - `python -m http.server` (requires Python 3.x)
-- **Android Studio** *(Android only)* — Arctic Fox (2020.3.1) or later, with the Android SDK targeting API 24+ (Android 7.0 Nougat).
-- **Python 3.x** *(Optional, for `scripts/`)* — Only needed if you intend to run the dummy data generator or photo resizer utility scripts.
-
-### 🌐 Web Application
-1. Open [`web/index.html`](web/index.html) directly in any modern web browser.
-2. *Optional (Local Server):*
-   ```bash
-   cd web
-   npx serve .
-   # or
-   python -m http.server 8000
-   ```
+### 🌐 Web Application (local development)
+```bash
+git clone https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan.git
+cd Isabela-State-University_Cabagan/web
+python3 -m http.server 8000      # or: npx serve .
+```
+Open <http://localhost:8000>. Edit files and refresh — there is no build step. Deployed copies (GitHub Pages) work out of the box.
 
 ### 📱 Android Application
-1. Open the `android/` directory in Android Studio.
-2. Sync Gradle and run the app on an Android device or emulator (Android 7.0+ / API 24+).
+1. Run `node scripts/sync-android-assets/sync.js` to refresh the bundled web assets (only needed after changing `web/`).
+2. Open the `android/` directory in Android Studio, sync Gradle and run on a device/emulator (Android 7.0+ / API 24+).
+
+### ✅ Checks before a PR
+```bash
+node scripts/validation/check-references.js
+NODE_PATH=$(npm root -g) node scripts/validation/regression.js     # npm i -g playwright
+NODE_PATH=$(npm root -g) node scripts/validation/features.js
+node scripts/sync-android-assets/sync.js --check
+```
 
 ---
 
@@ -179,7 +182,7 @@ Contributions, bug reports, and feature suggestions are warmly welcome from fell
 6. **Report Bugs** — Use the [GitHub Issues](https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan/issues) tracker. Include your browser version, OS, and steps to reproduce the issue.
 
 > [!NOTE]
-> This project has no external build step — all source files are plain HTML, CSS, and JavaScript. You can open `web/index.html` directly to test any changes instantly.
+> This project has no build step — all source files are plain HTML, CSS and JavaScript (ES modules). Serve `web/` with any static server (see *Getting Started*) and refresh to test changes. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 

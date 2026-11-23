@@ -1,7 +1,7 @@
 # DESIGN_SYSTEM.md — Design System Reference
 # ISU Premium ID Generator · v3.9.0
 
-> This document describes the complete visual design system as implemented in `web/style.css`. All values are sourced directly from the codebase.
+> This document describes the complete visual design system as implemented in `web/styles/` (43 files; the cascade order is the `<link>` order in `index.html`, documented in `styles/main.css`). All values are sourced directly from the codebase.
 
 ---
 
@@ -117,7 +117,7 @@ Campus theme switching overwrites these two variables at runtime via `document.d
 --font-card: 'Roboto Condensed', 'Arial Narrow', sans-serif;
 ```
 - `--font-base`: Used for all UI elements (body, labels, buttons, nav, forms).
-- `--font-card`: Used inside the ID card canvas rendering (`ctx.font` calls in `app.js`).
+- `--font-card`: Used inside the ID card canvas rendering (`ctx.font` calls in `web/src/features/id-generator/render-engine.js`).
 - **Poppins** (400 / 600 / 700): used by the 2026 CR80 ID card (HTML preview and canvas). Bundled locally in `web/fonts/` and declared in `style.css` §1a, so it works offline.
 
 ### 3.2 Font Loading
@@ -395,7 +395,7 @@ mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 1
 
 ## 12. Animation System
 
-### 12.1 CSS Keyframes (defined in `style.css`)
+### 12.1 CSS Keyframes (defined in `web/styles/base/animations.css` and feature files)
 
 | Name | Trigger | Effect |
 |---|---|---|
@@ -407,7 +407,7 @@ mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 1
 | `spin` | Loading states | 360° rotation, 1s linear infinite |
 | `slideUp` | Toast, restore banner | `translateY(30px→0)`, opacity 0→1 |
 
-### 12.2 JavaScript Animations (`animations.js`)
+### 12.2 JavaScript Animations (`web/src/animations/animations.js`)
 
 | Module | Library | Description |
 |---|---|---|
@@ -510,3 +510,11 @@ Similar structure to old template but with different coordinate mapping, photo c
 
 ## Breakpoints & touch
 Scale: ≤380, ≤767, 768–1024, ≥1025. Minimum tap target `--tap-min` (45px); use invisible `::after` hit areas for tiny controls. Safe-area tokens `--safe-*`.
+
+
+## CSS file layout
+`web/styles/` keeps the original section order, grouped by folder: `base/` (tokens, fonts, reset, animations, accessibility,
+reduced motion), `layout/` (body, orbs, container, preview section), `components/` (navbar, buttons, glass panel, form,
+chips, footers, mobile nav…), `features/` (hero, signature, stepper, OCR, CR80 card, bento…), `responsive/` (breakpoints,
+sections, performance, adaptive layer). New styles: put them in the matching folder, add a `<link>` in `index.html` at
+the right cascade position **and** the path to `sw.js` `PRECACHE_ASSETS`. Keep the section-banner comment style.
