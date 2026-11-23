@@ -24,6 +24,9 @@ export const SESSION_KEY = 'isu_id_session_v1';
  * base64 photo dataUrls on every keystroke.
  */
 export const saveSessionToStorage = throttle(function _saveSession() {
+    // While the "Restore previous session?" banner is pending, a blank page must not overwrite the
+    // stored session (the first render on load would otherwise wipe it before the user can click Restore).
+    if (state._restorePending && !state.students.some(s => (s.formData && s.formData.name) || s.photoDataUrl)) return;
     try {
         const snapshot = state.students.map(s => ({
             photoDataUrl:     s.photoDataUrl     || null,
@@ -124,9 +127,11 @@ function clearSavedSession() {
 export function showRestoreBanner() {
     const banner = document.getElementById('session-restore-banner');
     if (banner) banner.classList.add('show');
+    state._restorePending = true;
 }
 
 function hideRestoreBanner() {
+    state._restorePending = false;
     const banner = document.getElementById('session-restore-banner');
     if (banner) banner.classList.remove('show');
 }
