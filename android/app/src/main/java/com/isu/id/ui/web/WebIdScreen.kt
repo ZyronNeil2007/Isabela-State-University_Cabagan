@@ -108,7 +108,7 @@ fun WebIdScreen() {
                     javaScriptEnabled           = true
                     domStorageEnabled           = true
                     allowFileAccess             = true
-                    loadWithOverviewMode        = true
+                    loadWithOverviewMode        = false
                     useWideViewPort             = true
                     builtInZoomControls         = false
                     displayZoomControls         = false

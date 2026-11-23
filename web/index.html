@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description"
         content="Generate a premium digital and print-ready Isabela State University Student ID in seconds. Fill in your details and get a real-time live preview — complete with digital signature and OCR autofill.">
     <meta name="theme-color" content="#021a02">
@@ -54,7 +54,7 @@
 
 
 
-    <link rel="stylesheet" href="style.css?v=3.8.6">
+    <link rel="stylesheet" href="style.css?v=3.8.8">
 </head>
 
 
@@ -116,7 +116,7 @@
     <div class="mobile-drawer" id="mobile-drawer" role="dialog" aria-modal="true" aria-label="Navigation menu">
         <div class="mobile-drawer-header">
             <div class="mobile-drawer-brand">
-                <img src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="36" height="36"
+                <img loading="lazy" decoding="async" src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="36" height="36"
                     decoding="async">
                 <span class="logo-text">ISU ID Generator</span>
             </div>
@@ -237,14 +237,14 @@
 
                     <!-- ID card front -->
                     <div class="hero-id-card hero-id-front" aria-hidden="true">
-                        <img src="images/2026_id/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
+                        <img decoding="async" src="images/2026_id/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
 
                     <!-- ID card back -->
                     <div class="hero-id-card hero-id-back" aria-hidden="true">
-                        <img src="images/2026_id/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
+                        <img decoding="async" src="images/2026_id/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
@@ -669,7 +669,7 @@
                             <small>JPG, PNG supported · Passport size recommended</small>
                         </div>
                         <div class="photo-preview-wrapper" id="photo-preview-wrapper" style="display:none;">
-                            <img id="photo-preview-thumb" class="photo-preview-thumb" alt="Profile photo preview">
+                            <img decoding="async" id="photo-preview-thumb" class="photo-preview-thumb" alt="Profile photo preview">
                             <button id="recrop-btn" class="recrop-btn" type="button"><i class="ph ph-crop"></i>
                                 Re-crop</button>
                         </div>
@@ -789,7 +789,7 @@
                                 <span>Take a photo or upload your signature on white paper</span>
                                 <small>JPG · PNG · WEBP supported</small>
                             </div>
-                            <img id="sig-upload-preview" class="sig-upload-preview" style="display:none;"
+                            <img decoding="async" id="sig-upload-preview" class="sig-upload-preview" style="display:none;"
                                 alt="Signature photo preview">
                             <input type="file" id="sig-photo-input" accept="image/*"
                                 aria-label="Upload signature photo">
@@ -932,14 +932,14 @@
                                 <div class="cr80-face" id="cr80-front">
                                     <div class="cr80-bar cr80-bar--top"></div>
                                     <div class="cr80-bar cr80-bar--top-gold"></div>
-                                    <img class="cr80-seal" src="images/2026_id/cr80_seal.png" alt="Isabela State University seal">
+                                    <img decoding="async" class="cr80-seal" src="images/2026_id/cr80_seal.png" alt="Isabela State University seal">
                                     <div class="cr80-republic">Republic of the Philippines</div>
-                                    <img class="cr80-university" src="images/2026_id/cr80_university_wordmark.png" alt="Isabela State University">
+                                    <img decoding="async" class="cr80-university" src="images/2026_id/cr80_university_wordmark.png" alt="Isabela State University">
                                     <div class="cr80-campus">Cabagan, Isabela</div>
                                     <div class="cr80-photo-frame">
-                                        <img class="cr80-photo" id="cr80-photo" alt="Student photo" hidden>
+                                        <img decoding="async" class="cr80-photo" id="cr80-photo" alt="Student photo" hidden>
                                     </div>
-                                    <img class="cr80-signature" id="cr80-signature" alt="Student signature" hidden>
+                                    <img decoding="async" class="cr80-signature" id="cr80-signature" alt="Student signature" hidden>
                                     <div class="cr80-center cr80-name"><span id="cr80-name"></span></div>
                                     <div class="cr80-center cr80-label cr80-name-label">NAME</div>
                                     <div class="cr80-center cr80-idnum"><span id="cr80-idnumber"></span></div>
@@ -962,7 +962,7 @@
                                     <div class="cr80-row cr80-row--2"><span class="cr80-key">ADDRESS:</span><span class="cr80-val" id="cr80-address"></span></div>
                                     <div class="cr80-row cr80-row--3"><span class="cr80-key">CONTACT NO.:</span><span class="cr80-val" id="cr80-telephone"></span></div>
                                     <div class="cr80-row cr80-row--4"><span class="cr80-key">BIRTH DATE:</span><span class="cr80-val" id="cr80-dob"></span></div>
-                                    <img class="cr80-qr" src="images/2026_id/cr80_qr.png" alt="Student QR code">
+                                    <img decoding="async" class="cr80-qr" src="images/2026_id/cr80_qr.png" alt="Student QR code">
                                     <div class="cr80-sticker-band"></div>
                                     <div class="cr80-bar cr80-bar--band-top"></div>
                                     <div class="cr80-bar cr80-bar--band-bottom"></div>
@@ -972,7 +972,7 @@
                                     <div class="cr80-sticker-label cr80-sticker-label--1">1ST SEMESTER</div>
                                     <div class="cr80-sticker-label cr80-sticker-label--2">2ND SEMESTER</div>
                                     <div class="cr80-sticker-label cr80-sticker-label--3">SUMMER</div>
-                                    <img class="cr80-registrar-sig" src="images/2026_id/cr80_registrar_signature.png" alt="Signature of Mercy C. Albano">
+                                    <img decoding="async" class="cr80-registrar-sig" src="images/2026_id/cr80_registrar_signature.png" alt="Signature of Mercy C. Albano">
                                     <div class="cr80-center cr80-registrar">MERCY C. ALBANO</div>
                                     <div class="cr80-center cr80-registrar-title">University Registrar</div>
                                     <div class="cr80-certify">THIS IS TO CERTIFY THAT THE PERSON WHOSE PICTURE AND SIGNATURE APPEAR HEREON IS A STUDENT OF THE ISABELA STATE UNIVERSITY, CABAGAN CAMPUS.</div>
@@ -1009,7 +1009,7 @@
     <footer>
         <div class="footer-container liquid-glass">
             <div class="footer-logo">
-                <img src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="32" height="32"
+                <img loading="lazy" decoding="async" src="images/isu_logo_256.png" alt="ISU Logo" class="logo-img" width="32" height="32"
                     decoding="async">
                 <div class="footer-logo-text">
                     <span class="footer-uni-name">Isabela State University</span>
@@ -1074,7 +1074,7 @@
                         <span>Click or tap to upload / snap a photo</span>
                         <small>Photo of existing printed ID or registration form</small>
                     </div>
-                    <img id="ocr-preview-img" class="ocr-preview-img" style="display:none;"
+                    <img decoding="async" id="ocr-preview-img" class="ocr-preview-img" style="display:none;"
                         alt="Uploaded photo for OCR">
                     <input type="file" id="ocr-file-input" accept="image/*" capture="environment" style="display:none;">
                 </div>
@@ -1239,7 +1239,7 @@
             </div>
             <div class="cropper-body">
                 <div class="cropper-viewport" id="cropper-viewport">
-                    <img id="cropper-img" src="" alt="Source image to crop">
+                    <img decoding="async" id="cropper-img" src="" alt="Source image to crop">
                     <div class="cropper-frame">
                         <div class="cropper-handle top-left"></div>
                         <div class="cropper-handle top-right"></div>
@@ -1275,7 +1275,7 @@
                 <!-- Brand -->
                 <div class="footer-brand">
                     <div class="footer-logo">
-                        <img src="images/isu_logo_256.png" alt="Isabela State University Logo" class="logo-img"
+                        <img loading="lazy" decoding="async" src="images/isu_logo_256.png" alt="Isabela State University Logo" class="logo-img"
                             width="44" height="44" loading="lazy" decoding="async">
                         <div class="footer-logo-text">
                             <span class="footer-logo-name">ISU ID Generator</span>

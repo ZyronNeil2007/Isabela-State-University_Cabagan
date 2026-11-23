@@ -326,3 +326,7 @@ Created, designed, and developed by **Zyron Neil**.
 
 ---
 © 2026 Zyron Neil. All rights reserved.
+
+### Unreleased — Responsive & adaptive UI overhaul (v3.8.8)
+- Unified breakpoints (≤767 phone, 768–1024 tablet two-column, ≥1025 desktop), bottom-sheet dialogs, sticky stepper bar and preview, 45px touch targets, safe-area support.
+- Signature pad and cropper moved to Pointer Events (pinch zoom); hidden-tab animation pause; Android assets synced. See RESPONSIVE_QA_REPORT.md.

@@ -198,6 +198,7 @@
 
 html {
     overflow-x: hidden;
+    overflow-x: clip;   /* no scroll container → position:sticky works inside */
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     background-color: var(--forest-950);
@@ -214,6 +215,7 @@ body {
     text-rendering: optimizeLegibility;
     font-feature-settings: 'kern' 1, 'liga' 1;
     overflow-x: hidden;
+    overflow-x: clip;   /* hidden makes <body> a scroll container and kills sticky */
 }
 
 a {
@@ -251,6 +253,16 @@ body {
     justify-content: flex-start;
     gap: clamp(2rem, 4vw, 3rem);
     position: relative;
+}
+
+/* Flex-column body centres children by content size; without this a wide
+   min-content (e.g. 200px step cards) stretched sections past the viewport
+   on 320px phones. Sections must be viewport-wide and allowed to shrink. */
+body > section,
+body > main,
+body > footer {
+    width: 100%;
+    min-width: 0;
 }
 
 /*
@@ -1642,6 +1654,8 @@ textarea:focus {
     height: 140px;
     cursor: crosshair;
     touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .signature-watermark {
@@ -2240,7 +2254,7 @@ textarea:focus {
 }
 
 /* Sticky preview on desktop — so it stays visible while scrolling form */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
     .preview-section {
         position: sticky;
         top: calc(var(--navbar-height) + 1rem);
@@ -2930,8 +2944,8 @@ footer {
 }
 
 
-/* ═══ TABLET (768px – 899px) ══════════════════════════════════ */
-@media (max-width: 899px) {
+/* ═══ PHONE stack (≤ 767px) — tablets (768–1024) use the two-column layer in §24 ═══ */
+@media (max-width: 767px) {
     .container {
         flex-direction: column;
         align-items: center;
@@ -3523,6 +3537,7 @@ footer {
     align-items: center;
     justify-content: center;
     cursor: grab;
+    touch-action: none;
 }
 
 .cropper-viewport:active {
@@ -5644,9 +5659,9 @@ a[aria-label="Email"]:hover {
 }
 
 /* ── 3. Batch Data Table Manager Modal ── */
-.batch-modal-panel {
-    max-width: 920px !important;
-    width: 95vw !important;
+.cropper-modal.batch-modal-panel {
+    max-width: 920px;
+    width: 95vw;
 }
 
 .batch-modal-header-info h3 {
@@ -6080,3 +6095,156 @@ a[aria-label="Email"]:hover {
 .cr80-notice { top: 1112px; font-weight: 700; }
 .cr80-footer-gold { left: 141px; top: 1250px; width: 535px; height: 7px; background: var(--cr80-gold); }
 .cr80-footer-green { left: 141px; top: 1257px; width: 535px; height: 39px; background: var(--cr80-green); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   24. ADAPTIVE LAYER — unified breakpoints, touch, sheets, safe areas
+   Breakpoint scale (mobile-first intent):
+     ≤380px  compact phone      768–1024px tablet
+     ≤767px  phone              ≥1025px   desktop
+   This section is the single place for cross-cutting responsive behaviour
+   (modal sheets, tap targets, sticky stepper bar, tablet two-column).
+═══════════════════════════════════════════════════════════════════════════ */
+:root {
+    --tap-min: 45px;  /* ≥44px WCAG/Apple minimum, +1px for sub-pixel rounding */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* ── Modals: never taller than the visible viewport ── */
+.cropper-modal-overlay {
+    padding: max(0.5rem, var(--safe-top)) max(0.5rem, var(--safe-right))
+             max(0.5rem, var(--safe-bottom)) max(0.5rem, var(--safe-left));
+}
+
+.cropper-modal {
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tablet 768–1024: two-column generator, preview stays in view ── */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container { flex-wrap: nowrap; gap: 1.25rem; }
+    .form-section    { flex: 1 1 0; max-width: none; }
+    .preview-section { flex: 1 1 0; max-width: none; }
+    .hiw-steps       { gap: 0.5rem; }
+}
+
+/* Tablet portrait: preview card slightly smaller so the form keeps room */
+@media (min-width: 768px) and (max-width: 900px) and (orientation: portrait) {
+    .preview-section { gap: 0.85rem; }
+}
+
+/* ── Phone ≤767: bottom-sheet dialogs + sticky stepper bar ── */
+@media (max-width: 767px) {
+    .cropper-modal-overlay { align-items: flex-end; padding: 0; }
+
+    .cropper-modal,
+    .cropper-modal.batch-modal-panel,
+    .cropper-modal.ocr-modal-panel {
+        width: 100%;
+        max-width: none;
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.1rem 1rem calc(1rem + var(--safe-bottom));
+        max-height: 92vh;
+        max-height: 92dvh;
+        transform: translateY(40px);
+    }
+
+    .cropper-modal-overlay.active .cropper-modal { transform: translateY(0); }
+
+    /* overflow:clip keeps the rounded-corner clipping but, unlike hidden,
+       doesn't turn the panel into a scroll container (which breaks sticky) */
+    .form-section.glass-panel { overflow: clip; }
+
+    /* Form progression stays reachable while scrolling a long step */
+    .stepper-nav {
+        position: sticky;
+        bottom: 0;
+        z-index: 40;
+        margin-inline: -0.25rem;
+        padding: 0.75rem 0.25rem calc(0.75rem + var(--safe-bottom));
+        background: linear-gradient(180deg, transparent 0, var(--forest-900) 38%);
+    }
+}
+
+/* Short landscape phones: sheets become full-height panels */
+@media (max-height: 500px) and (orientation: landscape) {
+    .cropper-modal-overlay { align-items: stretch; justify-content: center; }
+    .cropper-modal,
+    .cropper-modal.batch-modal-panel,
+    .cropper-modal.ocr-modal-panel {
+        max-height: 100dvh;
+        height: 100%;
+        border-radius: 0;
+        width: min(100%, 720px);
+    }
+}
+
+/* ── Compact phones ── */
+@media (max-width: 380px) {
+    .stepper-btn { padding-inline: 0.75rem; }
+}
+
+/* ── Touch targets (coarse pointers and all phone widths) ── */
+@media (pointer: coarse), (max-width: 767px) {
+    .btn-nav, .btn-sm, .btn-ghost, .campus-pill, .add-student-btn,
+    .preview-tool-btn, .inspect-toggle-btn, .nav-hamburger,
+    .mobile-drawer-link, .footer-link, .footer-copy-link, .stepper-btn {
+        min-height: var(--tap-min);
+    }
+    .btn-nav, .add-student-btn, .nav-hamburger { min-width: var(--tap-min); }
+    .campus-pill, .btn-sm, .preview-tool-btn, .inspect-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-link { width: var(--tap-min); height: var(--tap-min); }
+    .footer-link, .footer-copy-link { display: inline-flex; align-items: center; }
+    #batch-search-input { min-height: var(--tap-min); }
+
+    /* Tiny controls get an invisible 44px hit area instead of a bigger look */
+    .stepper-dot, .flip-hint { position: relative; }
+    .stepper-dot::after, .flip-hint::after {
+        content: '';
+        position: absolute;
+        inset: -19px -8px;
+    }
+    #cropper-zoom { height: var(--tap-min); }
+}
+
+/* ── Hidden-tab pause (reduced motion is handled in the a11y section) ── */
+html.tab-hidden *,
+html.tab-hidden *::before,
+html.tab-hidden *::after {
+    animation-play-state: paused !important;
+}
+
+/* Export sheet: respect the home indicator, never exceed the viewport */
+.mobile-export-sheet {
+    z-index: 2100;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding-bottom: calc(1.5rem + var(--safe-bottom));
+}
+
+/* Short viewports (landscape phones): a sticky preview would fill the whole
+   screen and hide the form, so let it scroll with the page. */
+@media (max-height: 600px) {
+    .preview-section { position: static; }
+}
+
+/* Preview toolbar: wrap instead of clipping when the column is narrow (tablet) */
+.preview-header { flex-wrap: wrap; row-gap: 0.5rem; }
+.preview-tools  { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+
+/* Compact phones: shorter brand so the navbar stays on two lines max */
+@media (max-width: 767px) {
+    .logo-text { font-size: 0.85rem; line-height: 1.2; }
+}

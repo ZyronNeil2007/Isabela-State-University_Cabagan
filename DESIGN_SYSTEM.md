@@ -507,3 +507,6 @@ Text is rendered at 4.17× canvas scale. Key fields:
 
 ### 2026 Template (CONFIG_2026)
 Similar structure to old template but with different coordinate mapping, photo clip path (rounded rectangle with `ctx.clip()`), and department abbreviation lookup table.
+
+## Breakpoints & touch
+Scale: ≤380, ≤767, 768–1024, ≥1025. Minimum tap target `--tap-min` (45px); use invisible `::after` hit areas for tiny controls. Safe-area tokens `--safe-*`.
