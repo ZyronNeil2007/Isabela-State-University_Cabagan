@@ -3,7 +3,7 @@
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
 🔗 **Live Demo Git Page**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)<br>
-🔗 **Live Demo (Vercel)**: [isabela-state-university-cabagan.vercel.app](https://isabela-state-university-cabagan.vercel.app)<br>
+🔗 **Live Demo (Vercel)**: [https://isuid.vercel.app/web/](https://isuid.vercel.app/web/)<br>
 🔗 **Live Demo (Netlify)**: [idgenratorisuc.netlify.app](https://idgenratorisuc.netlify.app)
 
 ---
@@ -157,6 +157,18 @@ Automatically populate the student form from a photo of any printed ID or regist
 ---
 
 ## 📋 Changelog
+
+### Unreleased — CR80 2026 ID
+- `feat` — **2026 New ID now uses the "ISU Student ID – CR80 Template"** (816 × 1296 px board, exact CR80 54 × 85.6 mm proportions) and is the **default** version.
+- `feat` — **Live HTML preview**: the preview section renders the CR80 front/back as real HTML/CSS (`#cr80-front`, `#cr80-back`, styled in `style.css` §23). Every form input updates the card instantly (name, ID number, department, photo, signature, contact person, address, contact number, birth date).
+- `feat` — Updated layout: the university name is a wordmark image, "Cabagan, Isabela" moved up (y 178 → 173), and the photo frame shows the template's silhouette placeholder until a photo is added (preview **and** export).
+- `feat` — **Back side**: labels and values sit in two aligned columns, vertically centered per row. Long values shrink to 22 px, then wrap and keep shrinking to fit the row.
+- `feat` — Long names / departments auto-shrink (`autoShrink`) and wrap (`wrap`) in the export canvas, matching the preview.
+- `fix` — Empty signature no longer shows a broken-image icon (the global `img { display: block }` was overriding `hidden`).
+- `fix` — The card resets inherited `line-height` / `text-rendering` so text is pixel-matched to the template; canvas text lines snap to whole pixels.
+- `chore` — Poppins (400 / 600 / 700, Latin subset, SIL OFL) is bundled in `web/fonts/` so the card looks identical offline.
+- `perf` — Landing-page hero reference images are now 520 px wide (≈ 400 KB total instead of ≈ 940 KB).
+- `chore` — Service Worker cache bumped to `isu-id-v3.8.7`.
 
 ### v3.8.2 *(2026-09-27)*
 - `docs` — **Source of Truth Architecture**: Established a complete, professional documentation suite (`PRD.md`, `AGENTS.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`) serving as the project's single source of truth.

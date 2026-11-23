@@ -54,7 +54,7 @@
 
 
 
-    <link rel="stylesheet" href="style.css?v=3.8.2">
+    <link rel="stylesheet" href="style.css?v=3.8.6">
 </head>
 
 
@@ -237,14 +237,14 @@
 
                     <!-- ID card front -->
                     <div class="hero-id-card hero-id-front" aria-hidden="true">
-                        <img src="images/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
+                        <img src="images/2026_id/front_reference.png" alt="ISU Student ID Front" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
 
                     <!-- ID card back -->
                     <div class="hero-id-card hero-id-back" aria-hidden="true">
-                        <img src="images/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
+                        <img src="images/2026_id/back_reference.png" alt="ISU Student ID Back" class="hero-id-img"
                             loading="lazy">
                         <div class="hero-card-shine"></div>
                     </div>
@@ -636,7 +636,7 @@
                     <p class="step-hint" style="margin-bottom:16px;"><i class="ph ph-info"></i> Select which ID design
                         you want to generate.</p>
                     <div class="version-toggle-group" id="version-toggle-group">
-                        <button class="version-toggle-btn active" id="btn-old-id" onclick="setIdVersion('old')">
+                        <button class="version-toggle-btn" id="btn-old-id" onclick="setIdVersion('old')">
                             <div class="version-btn-icon"><i class="ph ph-identification-card"></i></div>
                             <div class="version-btn-label">
                                 <span class="version-btn-title">Old ID</span>
@@ -644,7 +644,7 @@
                             </div>
                             <i class="ph ph-check-circle version-check"></i>
                         </button>
-                        <button class="version-toggle-btn" id="btn-2026-id" onclick="setIdVersion('2026')">
+                        <button class="version-toggle-btn active" id="btn-2026-id" onclick="setIdVersion('2026')">
                             <div class="version-btn-icon version-btn-icon--new"><i class="ph ph-sparkle"></i></div>
                             <div class="version-btn-label">
                                 <span class="version-btn-title">2026 New ID</span>
@@ -698,14 +698,14 @@
                 <!-- Step 5: Course / Department -->
                 <div class="form-group" data-step="5" data-step-title="Course / Department">
                     <!-- OLD ID: Course text input -->
-                    <div id="course-field-wrapper">
+                    <div id="course-field-wrapper" style="display:none;">
                         <label for="course"><i class="ph ph-graduation-cap"></i> Degree Program</label>
                         <input type="text" id="course" placeholder="e.g. BS Computer Science" spellcheck="false">
                         <p class="step-hint"><i class="ph ph-info"></i> Your full degree program name as it will appear
                             on the ID.</p>
                     </div>
                     <!-- 2026 ID: Department select -->
-                    <div id="department-field-wrapper" style="display:none;">
+                    <div id="department-field-wrapper">
                         <label for="department"><i class="ph ph-buildings"></i> College / Department</label>
                         <select id="department" class="select-field">
                             <option value="">— Select your college —</option>
@@ -714,7 +714,7 @@
                             <option value="CAST">CAST – College of Agricultural, Science and Technology</option>
                             <option value="CCSICT">CCSICT – College of Computing Studies, Information and Communication
                                 Technology</option>
-                            <option value="COE">COE – College of Education</option>
+                            <option value="COE">COE – College of Engineering</option>
                             <option value="CED">CED – College of Education</option>
                             <option value="CFEM">CFEM – College of Forestry and Environmental Management</option>
                             <option value="CCSS">CCSS – College of Communication and Social Sciences</option>
@@ -927,9 +927,60 @@
                     <div class="flip-card" id="idCard">
                         <div class="flip-card-front id-card-preview">
                             <canvas id="front-canvas"></canvas>
+                            <!-- CR80 2026 ID — live HTML front (ISU Student ID – CR80 Template). Filled by renderCr80Preview() -->
+                            <div class="cr80-stage" id="cr80-front-stage">
+                                <div class="cr80-face" id="cr80-front">
+                                    <div class="cr80-bar cr80-bar--top"></div>
+                                    <div class="cr80-bar cr80-bar--top-gold"></div>
+                                    <img class="cr80-seal" src="images/2026_id/cr80_seal.png" alt="Isabela State University seal">
+                                    <div class="cr80-republic">Republic of the Philippines</div>
+                                    <img class="cr80-university" src="images/2026_id/cr80_university_wordmark.png" alt="Isabela State University">
+                                    <div class="cr80-campus">Cabagan, Isabela</div>
+                                    <div class="cr80-photo-frame">
+                                        <img class="cr80-photo" id="cr80-photo" alt="Student photo" hidden>
+                                    </div>
+                                    <img class="cr80-signature" id="cr80-signature" alt="Student signature" hidden>
+                                    <div class="cr80-center cr80-name"><span id="cr80-name"></span></div>
+                                    <div class="cr80-center cr80-label cr80-name-label">NAME</div>
+                                    <div class="cr80-center cr80-idnum"><span id="cr80-idnumber"></span></div>
+                                    <div class="cr80-center cr80-label cr80-idnum-label">STUDENT NUMBER</div>
+                                    <div class="cr80-center cr80-dept"><span id="cr80-department"></span></div>
+                                    <div class="cr80-bar cr80-bar--bottom-gold"></div>
+                                    <div class="cr80-bar cr80-bar--bottom"></div>
+                                    <canvas class="cr80-holo" id="cr80-holo" width="816" height="1296" aria-hidden="true"></canvas>
+                                </div>
+                            </div>
                         </div>
                         <div class="flip-card-back id-card-preview">
                             <canvas id="back-canvas"></canvas>
+                            <!-- CR80 2026 ID — live HTML back. Filled by renderCr80Preview() -->
+                            <div class="cr80-stage" id="cr80-back-stage">
+                                <div class="cr80-face" id="cr80-back">
+                                    <div class="cr80-back-header">PERSON TO NOTIFY IN CASE OF EMERGENCY</div>
+                                    <div class="cr80-bar cr80-bar--header-gold"></div>
+                                    <div class="cr80-row cr80-row--1"><span class="cr80-key">CONTACT PERSON:</span><span class="cr80-val" id="cr80-parent"></span></div>
+                                    <div class="cr80-row cr80-row--2"><span class="cr80-key">ADDRESS:</span><span class="cr80-val" id="cr80-address"></span></div>
+                                    <div class="cr80-row cr80-row--3"><span class="cr80-key">CONTACT NO.:</span><span class="cr80-val" id="cr80-telephone"></span></div>
+                                    <div class="cr80-row cr80-row--4"><span class="cr80-key">BIRTH DATE:</span><span class="cr80-val" id="cr80-dob"></span></div>
+                                    <img class="cr80-qr" src="images/2026_id/cr80_qr.png" alt="Student QR code">
+                                    <div class="cr80-sticker-band"></div>
+                                    <div class="cr80-bar cr80-bar--band-top"></div>
+                                    <div class="cr80-bar cr80-bar--band-bottom"></div>
+                                    <div class="cr80-sticker cr80-sticker--1"></div>
+                                    <div class="cr80-sticker cr80-sticker--2"></div>
+                                    <div class="cr80-sticker cr80-sticker--3"></div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--1">1ST SEMESTER</div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--2">2ND SEMESTER</div>
+                                    <div class="cr80-sticker-label cr80-sticker-label--3">SUMMER</div>
+                                    <img class="cr80-registrar-sig" src="images/2026_id/cr80_registrar_signature.png" alt="Signature of Mercy C. Albano">
+                                    <div class="cr80-center cr80-registrar">MERCY C. ALBANO</div>
+                                    <div class="cr80-center cr80-registrar-title">University Registrar</div>
+                                    <div class="cr80-certify">THIS IS TO CERTIFY THAT THE PERSON WHOSE PICTURE AND SIGNATURE APPEAR HEREON IS A STUDENT OF THE ISABELA STATE UNIVERSITY, CABAGAN CAMPUS.</div>
+                                    <div class="cr80-notice">THIS CARD IS NON-TRANSFERABLE AND VALID ONLY FOR THE SEMESTER INDICATED IN THE STICKER. REPORT LOSS IMMEDIATELY TO THE REGISTRAR.</div>
+                                    <div class="cr80-footer-gold"></div>
+                                    <div class="cr80-footer-green"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
