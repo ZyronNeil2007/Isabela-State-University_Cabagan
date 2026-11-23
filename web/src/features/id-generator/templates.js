@@ -2,19 +2,11 @@
 import { state } from '../../core/state/state.js';
 import { backCanvas, frontCanvas, miniCanvasBack, miniCanvasFront } from '../../core/state/canvas-refs.js';
 import { setIdVersion } from './form-bindings.js';
+import { loadImage } from '../../services/image-processing/image-loader.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    6. TEMPLATE LOADING — Async load both ID face templates
 ═══════════════════════════════════════════════════════════════════════════ */
-function loadImage(src) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.onload  = () => resolve(img);
-        img.onerror = () => { console.warn(`[ISU ID] Template not found: ${src}`); resolve(null); };
-        img.src = src;
-    });
-}
-
 /**
  * Ask the browser to load the Poppins weights used by the CR80 ID canvas text.
  * Canvas text does not trigger @font-face downloads by itself.

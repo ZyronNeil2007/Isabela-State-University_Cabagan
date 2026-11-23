@@ -58,6 +58,23 @@ for (const f of walk(WEB).filter(f => f.endsWith('.js') && !f.includes('/tools/'
     check(f, m[1] || m[2] || m[3], path.dirname(f));
   }
 }
+
+// ES-module named imports must exist as exports in the target file (ESLint's no-undef can't see this)
+for (const f of walk(WEB).filter(f => f.endsWith('.js') && f.includes(path.sep + 'src' + path.sep))) {
+  const s = read(f);
+  for (const m of s.matchAll(/import\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]/g)) {
+    const target = path.resolve(path.dirname(f), m[2]);
+    if (!fs.existsSync(target)) continue;   // reported above
+    const t = read(target);
+    const exported = new Set();
+    for (const e of t.matchAll(/^export\s+(?:async\s+)?(?:function\*?|const|let|var|class)\s+([A-Za-z_$][\w$]*)/gm)) exported.add(e[1]);
+    for (const e of t.matchAll(/^export\s*\{([^}]+)\}/gm)) for (const n of e[1].split(',')) exported.add(n.trim().split(/\s+as\s+/).pop());
+    for (const n of m[1].split(',').map(x => x.trim().split(/\s+as\s+/)[0]).filter(Boolean)) {
+      checked++;
+      if (!exported.has(n)) { failures++; console.error(`NO EXPORT  ${path.relative(ROOT, f)} imports { ${n} } but ${path.relative(ROOT, target)} does not export it`); }
+    }
+  }
+}
 // Service worker precache
 const sw = path.join(WEB, 'sw.js');
 if (fs.existsSync(sw)) {
@@ -76,6 +93,14 @@ for (const n of ['index.html', '404.html']) {
   const f = path.join(ROOT, n);
   if (!fs.existsSync(f)) continue;
   for (const m of read(f).matchAll(/\b(?:src|href)\s*=\s*"([^"]+)"/g)) check(f, m[1], ROOT);
+}
+
+// Every module under web/src and every stylesheet linked from index.html must be in the SW precache list
+if (fs.existsSync(sw)) {
+  const pre = new Set([...((read(sw).match(/PRECACHE_ASSETS\s*=\s*\[([\s\S]*?)\]/) || [])[1] || '').matchAll(/['"]([^'"?]+)/g)].map(m => path.normalize(m[1])));
+  const need = walk(path.join(WEB, 'src')).filter(f => f.endsWith('.js')).map(f => path.relative(WEB, f));
+  for (const m of read(path.join(WEB, 'index.html')).matchAll(/rel="stylesheet" href="([^"?]+)/g)) if (isLocal(m[1])) need.push(m[1]);
+  for (const n of need) { checked++; if (!pre.has(path.normalize(n))) { failures++; console.error(`NOT PRECACHED  ${n}`); } }
 }
 
 console.log(`${checked} references checked, ${failures} missing`);

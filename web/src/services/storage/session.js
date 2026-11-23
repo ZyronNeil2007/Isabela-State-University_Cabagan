@@ -1,8 +1,10 @@
 /* ── module: services/storage/session.js — extracted verbatim from app.js; see docs/architecture/ARCHITECTURE.md ── */
 import { state } from '../../core/state/state.js';
-import { setIdVersion, throttle } from '../../features/id-generator/form-bindings.js';
+import { setIdVersion } from '../../features/id-generator/form-bindings.js';
+import { throttle } from '../../utils/throttle.js';
 import { showToast } from '../../utils/toast.js';
 import { renderStudentTabs, switchStudent } from '../../features/student-management/student-tabs.js';
+import { loadImageFromDataUrl } from '../image-processing/image-loader.js';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    17. SESSION SAVE — Auto-persist students[] to localStorage after every render
@@ -106,16 +108,6 @@ async function restoreSessionFromStorage() {
 
     state.students = rebuilt;
     return true;
-}
-
-/** Promise-wrapper to create an Image from a data URL */
-function loadImageFromDataUrl(dataUrl) {
-    return new Promise(resolve => {
-        const img = new Image();
-        img.onload  = () => resolve(img);
-        img.onerror = () => resolve(null);
-        img.src = dataUrl;
-    });
 }
 
 /** Wipe saved session */
