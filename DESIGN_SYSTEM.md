@@ -1,5 +1,5 @@
 # DESIGN_SYSTEM.md — Design System Reference
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 > This document describes the complete visual design system as implemented in `web/style.css`. All values are sourced directly from the codebase.
 

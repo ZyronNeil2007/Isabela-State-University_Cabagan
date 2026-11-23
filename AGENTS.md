@@ -1,5 +1,5 @@
 # AGENTS.md — Agent & Contributor Ruleset
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 > This file is the source of truth for all agents, AI assistants, and human contributors working on this codebase. Read it before making any changes.
 
@@ -10,7 +10,7 @@
 | Key | Value |
 |---|---|
 | **Project** | ISU Premium ID Generator |
-| **Version** | 3.8.2 |
+| **Version** | 3.9.0 |
 | **Type** | Client-Side PWA (no build step, no framework, no backend) |
 | **Entry Point** | `web/index.html` |
 | **Primary Logic** | `web/app.js` |

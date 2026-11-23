@@ -1,5 +1,5 @@
 # PRD.md — Product Requirements Document
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 ---
 
@@ -8,7 +8,7 @@
 | Field | Value |
 |---|---|
 | **Product Name** | ISU Premium ID Generator |
-| **Version** | 3.8.2 (as of 2026-09-27) |
+| **Version** | 3.9.0 (as of 2026-11-23) |
 | **Product Type** | Client-Side Progressive Web Application (PWA) |
 | **Description** | A fully client-side, zero-server web application that generates print-ready student identification cards for all 11 campuses of Isabela State University (Philippines). |
 | **Repository** | https://github.com/ZyronNeil2007/Isabela-State-University_Cabagan |
