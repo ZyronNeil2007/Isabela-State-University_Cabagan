@@ -1,4 +1,4 @@
-# 🎓 Isabela State University Premium ID Generator v3.8.2
+# 🎓 Isabela State University Premium ID Generator v3.9.0
 
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
@@ -158,17 +158,19 @@ Automatically populate the student form from a photo of any printed ID or regist
 
 ## 📋 Changelog
 
-### Unreleased — CR80 2026 ID
-- `feat` — **2026 New ID now uses the "ISU Student ID – CR80 Template"** (816 × 1296 px board, exact CR80 54 × 85.6 mm proportions) and is the **default** version.
-- `feat` — **Live HTML preview**: the preview section renders the CR80 front/back as real HTML/CSS (`#cr80-front`, `#cr80-back`, styled in `style.css` §23). Every form input updates the card instantly (name, ID number, department, photo, signature, contact person, address, contact number, birth date).
-- `feat` — Updated layout: the university name is a wordmark image, "Cabagan, Isabela" moved up (y 178 → 173), and the photo frame shows the template's silhouette placeholder until a photo is added (preview **and** export).
-- `feat` — **Back side**: labels and values sit in two aligned columns, vertically centered per row. Long values shrink to 22 px, then wrap and keep shrinking to fit the row.
-- `feat` — Long names / departments auto-shrink (`autoShrink`) and wrap (`wrap`) in the export canvas, matching the preview.
-- `fix` — Empty signature no longer shows a broken-image icon (the global `img { display: block }` was overriding `hidden`).
-- `fix` — The card resets inherited `line-height` / `text-rendering` so text is pixel-matched to the template; canvas text lines snap to whole pixels.
-- `chore` — Poppins (400 / 600 / 700, Latin subset, SIL OFL) is bundled in `web/fonts/` so the card looks identical offline.
-- `perf` — Landing-page hero reference images are now 520 px wide (≈ 400 KB total instead of ≈ 940 KB).
-- `chore` — Service Worker cache bumped to `isu-id-v3.8.7`.
+### v3.9.0 *(2026-11-23)*
+- `feat` — **2026 New ID uses the "ISU Student ID – CR80 Template"**: Rebuilt on an 816 × 1296 px board (exact CR80 54 × 85.6 mm proportions) and set as the **default** ID version.
+- `feat` — **Live HTML Preview**: Embedded front and back CR80 HTML/CSS card (`#cr80-front`, `#cr80-back`, styled in `style.css` §23) in the preview section. Inputs instantly reflect on the card (name, ID number, department, photo, signature, contact person, address, contact number, birth date) scaled via `ResizeObserver`.
+- `feat` — **Refined 2026 Layout**: Integrated university wordmark image, adjusted "Cabagan, Isabela" positioning, and introduced silhouette photo placeholder displayed until a student photo is uploaded (both in preview and export canvases).
+- `feat` — **Two-Column Back-Side Layout**: Formatted back labels and values in aligned columns with dynamic font shrinking and wrapping for long text entries.
+- `feat` — **Dynamic Auto-Shrink & Text Wrap**: Canvas renderer synchronizes with HTML preview behavior using `autoShrink` and `wrap` options in `renderText2026()`.
+- `fix` — Corrected COE designation to "College of Engineering" across department dropdowns and card rendering.
+- `fix` — Eliminated broken image icon on empty signatures by resolving `[hidden]` CSS specificity override.
+- `fix` — Reset inherited typography inside the CR80 card for exact template pixel alignment; snapped canvas text lines to whole pixel grids.
+- `chore` — Bundled Poppins fonts (400, 600, 700 Latin woff2, SIL OFL) under `web/fonts/` for offline-first fidelity.
+- `perf` — Optimized hero reference images to 520 px width (reducing asset size by >55%).
+- `pwa` — Bumped Service Worker cache to `isu-id-v3.9.0` and stylesheet cache buster to `v3.9.0`.
+- `android` — Synchronized `style.css` to Android assets, bumped `versionCode` to `5` and `versionName` to `3.9.0`.
 
 ### v3.8.2 *(2026-09-27)*
 - `docs` — **Source of Truth Architecture**: Established a complete, professional documentation suite (`PRD.md`, `AGENTS.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`) serving as the project's single source of truth.

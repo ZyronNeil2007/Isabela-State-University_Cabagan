@@ -1,5 +1,5 @@
 # ARCHITECTURE.md — Technical Architecture
-# ISU Premium ID Generator · v3.8.2
+# ISU Premium ID Generator · v3.9.0
 
 ---
 
@@ -390,7 +390,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 
 ### 7.1 Service Worker (`sw.js`)
 
-- **Cache version**: `isu-id-v3.8.7` (must be bumped on every release that changes cached assets).
+- **Cache version**: `isu-id-v3.9.0` (must be bumped on every release that changes cached assets).
 - **Install**: Opens cache, `addAll()` the precache list. Calls `skipWaiting()` to immediately activate.
 - **Activate**: Deletes all caches not matching the current `CACHE_NAME`. Calls `clients.claim()`.
 - **Fetch**: Stale-While-Revalidate strategy — serves cached response immediately, fetches network in background, updates cache on success.
@@ -399,7 +399,7 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ```
 ./
 ./index.html
-./style.css?v=3.8.6
+./style.css?v=3.9.0
 ./app.js
 ./animations.js
 ./manifest.webmanifest
@@ -485,8 +485,8 @@ applicationId    = "com.isu.id"
 minSdk           = 24    // Android 7.0 Nougat
 targetSdk        = 34    // Android 14
 compileSdk       = 34
-versionCode      = 4
-versionName      = "3.8.2"
+versionCode      = 5
+versionName      = "3.9.0"
 ```
 
 ### 9.3 Android vs. Web Feature Parity
@@ -582,7 +582,7 @@ isu_id/
 │
 ├── android/
 │   ├── app/
-│   │   ├── build.gradle.kts        # minSdk 24, versionCode 4, versionName 3.8.2
+│   │   ├── build.gradle.kts        # minSdk 24, versionCode 5, versionName 3.9.0
 │   │   ├── proguard-rules.pro
 │   │   └── src/main/
 │   │       ├── AndroidManifest.xml
