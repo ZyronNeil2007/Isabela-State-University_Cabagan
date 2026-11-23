@@ -64,7 +64,7 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
 | `web/style.css` | Styling | All CSS; design tokens in `:root`; 22 documented sections | Use `!important` excessively; add Tailwind; use inline styles in JS unless dynamically computed |
 | `web/app.js` | Logic | State management, canvas rendering, all feature modules | Move logic to HTML; use `document.write`; use synchronous XHR |
 | `web/animations.js` | Motion | GSAP, Anime.js, Three.js animations only | Add business logic; modify state object; call `renderCanvases()` |
-| `web/fonts/` | Assets | Local Poppins woff2 files (SIL OFL, see `Poppins-OFL.txt`) used by the CR80 ID | Add fonts without a license file |
+| `web/assets/fonts/` | Assets | Local Poppins woff2 files (SIL OFL, see `Poppins-OFL.txt`) used by the CR80 ID | Add fonts without a license file |
 | `web/sw.js` | PWA | Service Worker; cache versioning | Add fetch interception for POST requests |
 | `web/manifest.webmanifest` | PWA | App identity, icons, display mode | Change `start_url` without updating SW cache name |
 
@@ -294,7 +294,7 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 - [ ] Test PDF export (single + batch of 2 students).
 - [ ] Test PNG export (front, back, both).
 - [ ] Test session restore: fill form, reload page, click "Restore".
-- [ ] Test CSV import with the sample CSV from `web/scripts/dummy_data_generator.py`.
+- [ ] Test CSV import with the sample CSV from `web/tools/dummy_data_generator.py`.
 - [ ] Test OCR modal (if applicable — requires local HTTP server for Tesseract WASM).
 - [ ] Test all 11 campus themes — verify UI colors update.
 - [ ] Test on mobile viewport (Chrome DevTools): stepper, export sheet, camera input.

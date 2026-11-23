@@ -334,8 +334,8 @@ const INPUT_KEY_MAP = {
 
 ### 5.2 Template System
 Two sets of PNG template images (used by the **canvases**, which are the PNG/PDF export source):
-- **Old**: `images/template_front.id.png` + `images/template_back.id.png`
-- **2026 (CR80)**: `images/2026_id/new_template_front.id.png` (`?v=cr80c`) + `images/2026_id/new_template_back.id.png` (`?v=cr80b`) — blank 816 × 1296 px boards. The front export template is rendered from the "ISU Student ID – CR80 Template" HTML with the values removed; the back is rendered from the app's own HTML back card so both match.
+- **Old**: `assets/images/templates/legacy/template_front.id.png` + `assets/images/templates/legacy/template_back.id.png`
+- **2026 (CR80)**: `assets/images/templates/2026/new_template_front.id.png` (`?v=cr80c`) + `assets/images/templates/2026/new_template_back.id.png` (`?v=cr80b`) — blank 816 × 1296 px boards. The front export template is rendered from the "ISU Student ID – CR80 Template" HTML with the values removed; the back is rendered from the app's own HTML back card so both match.
 
 Templates are loaded as `HTMLImageElement` objects on boot via `loadTemplates()`, together with `cr80_photo_placeholder.png` (`state.photoPlaceholder2026`) and the Poppins fonts. Canvas dimensions are set to match the loaded template.
 
@@ -403,22 +403,22 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
 ./app.js
 ./animations.js
 ./manifest.webmanifest
-./images/isu_logo_256.png
-./images/isu_logo_512.png
-./images/template_front.id.png
-./images/template_back.id.png
-./images/2026_id/front_reference.png
-./images/2026_id/back_reference.png
-./images/2026_id/new_template_front.id.png?v=cr80c
-./images/2026_id/new_template_back.id.png?v=cr80b
-./images/2026_id/cr80_seal.png
-./images/2026_id/cr80_university_wordmark.png
-./images/2026_id/cr80_photo_placeholder.png
-./images/2026_id/cr80_qr.png
-./images/2026_id/cr80_registrar_signature.png
-./fonts/poppins-latin-400.woff2
-./fonts/poppins-latin-600.woff2
-./fonts/poppins-latin-700.woff2
+./assets/images/logos/isu_logo_256.png
+./assets/images/logos/isu_logo_512.png
+./assets/images/templates/legacy/template_front.id.png
+./assets/images/templates/legacy/template_back.id.png
+./assets/images/templates/2026/front_reference.png
+./assets/images/templates/2026/back_reference.png
+./assets/images/templates/2026/new_template_front.id.png?v=cr80c
+./assets/images/templates/2026/new_template_back.id.png?v=cr80b
+./assets/images/templates/2026/cr80_seal.png
+./assets/images/templates/2026/cr80_university_wordmark.png
+./assets/images/placeholders/cr80_photo_placeholder.png
+./assets/images/templates/2026/cr80_qr.png
+./assets/images/templates/2026/cr80_registrar_signature.png
+./assets/fonts/poppins-latin-400.woff2
+./assets/fonts/poppins-latin-600.woff2
+./assets/fonts/poppins-latin-700.woff2
 ```
 
 ### 7.2 Web App Manifest (`manifest.webmanifest`)
@@ -432,8 +432,8 @@ All CDN-loaded scripts carry SHA-384 `integrity` attributes:
   "background_color": "#010d01",
   "theme_color": "#15B915",
   "icons": [
-    { "src": "./images/isu_logo_256.png", "sizes": "256x256", "type": "image/png" },
-    { "src": "./images/isu_logo_512.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "./assets/images/logos/isu_logo_256.png", "sizes": "256x256", "type": "image/png" },
+    { "src": "./assets/images/logos/isu_logo_512.png", "sizes": "512x512", "type": "image/png" }
   ]
 }
 ```

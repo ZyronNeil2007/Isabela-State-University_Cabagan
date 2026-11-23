@@ -9,6 +9,6 @@
 | GSAP 3.12.5 + ScrollTrigger | cdnjs | scroll animation | deferred | see `web/index.html` |
 | Anime.js | jsDelivr | micro-animation | deferred | see `web/index.html` |
 | Tesseract.js 5.1.1 | unpkg (lazy, on first OCR open) | web OCR | dynamic `<script>` | **none** (tracked as issue #14 in `docs/development/KNOWN_ISSUES.md`) |
-| Poppins (SIL OFL) | bundled `web/fonts/` | CR80 card typography | local woff2 | n/a |
+| Poppins (SIL OFL) | bundled `web/assets/fonts/` | CR80 card typography | local woff2 | n/a |
 
 New CDN dependencies need justification, `defer`, SRI and `crossorigin="anonymous"` (see `AGENTS.md` §2.4).

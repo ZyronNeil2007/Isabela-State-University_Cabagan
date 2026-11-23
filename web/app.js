@@ -610,11 +610,11 @@ function loadPoppinsFonts() {
 
 async function loadTemplates() {
     const [front, back, front2026, back2026, photoPlaceholder2026] = await Promise.all([
-        loadImage('images/template_front.id.png'),
-        loadImage('images/template_back.id.png'),
-        loadImage('images/2026_id/new_template_front.id.png?v=cr80c'),
-        loadImage('images/2026_id/new_template_back.id.png?v=cr80b'),
-        loadImage('images/2026_id/cr80_photo_placeholder.png'),
+        loadImage('assets/images/templates/legacy/template_front.id.png'),
+        loadImage('assets/images/templates/legacy/template_back.id.png'),
+        loadImage('assets/images/templates/2026/new_template_front.id.png?v=cr80c'),
+        loadImage('assets/images/templates/2026/new_template_back.id.png?v=cr80b'),
+        loadImage('assets/images/placeholders/cr80_photo_placeholder.png'),
         // CR80 design uses Poppins on the canvas — make sure it is loaded before first draw
         loadPoppinsFonts()
     ]);
@@ -1027,7 +1027,7 @@ function renderText2026(ctx, textConfig, textValue) {
 const CR80_BOARD_W = 816;
 
 /** Silhouette shown in the photo frame until the student's photo is added */
-const CR80_PHOTO_PLACEHOLDER = 'images/2026_id/cr80_photo_placeholder.png';
+const CR80_PHOTO_PLACEHOLDER = 'assets/images/placeholders/cr80_photo_placeholder.png';
 
 /**
  * Shrink an element's font-size until it fits maxWidth (never below minPx).

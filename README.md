@@ -14,7 +14,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 | Desktop Hero | Mobile Hero |
 |---|---|
-| ![Desktop Hero](web/images/hero_sreenshot/desktop_hero.png) | ![Mobile Hero](web/images/hero_sreenshot/mobile_hero.jpg) |
+| ![Desktop Hero](web/assets/images/screenshots/desktop_hero.png) | ![Mobile Hero](web/assets/images/screenshots/mobile_hero.jpg) |
 
 | Feature | Preview |
 |---|---|

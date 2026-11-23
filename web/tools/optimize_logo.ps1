@@ -17,10 +17,10 @@ function Resize-Png($srcPath, $destPath, $size) {
 }
 
 $root = (Get-Location).Path
-$srcPath = Join-Path $root "web/images/isu_logo.png"
-Resize-Png $srcPath (Join-Path $root "web/images/isu_logo_256.png") 256
-Resize-Png $srcPath (Join-Path $root "web/images/isu_logo_512.png") 512
+$srcPath = Join-Path $root "web/assets/images/logos/isu_logo.png"
+Resize-Png $srcPath (Join-Path $root "web/assets/images/logos/isu_logo_256.png") 256
+Resize-Png $srcPath (Join-Path $root "web/assets/images/logos/isu_logo_512.png") 512
 
 Write-Output "Original: $((Get-Item $srcPath).Length / 1024) KB"
-Write-Output "256px:    $((Get-Item (Join-Path $root 'web/images/isu_logo_256.png')).Length / 1024) KB"
-Write-Output "512px:    $((Get-Item (Join-Path $root 'web/images/isu_logo_512.png')).Length / 1024) KB"
+Write-Output "256px:    $((Get-Item (Join-Path $root 'web/assets/images/logos/isu_logo_256.png')).Length / 1024) KB"
+Write-Output "512px:    $((Get-Item (Join-Path $root 'web/assets/images/logos/isu_logo_512.png')).Length / 1024) KB"

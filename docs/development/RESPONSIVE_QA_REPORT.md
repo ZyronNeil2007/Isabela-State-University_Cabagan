@@ -1,8 +1,8 @@
 # Responsive QA Report — Adaptive UI Overhaul (v3.8.8)
 
-Harness: `web/scripts/responsive_qa.js` (Playwright; dev-only, not shipped in the APK).
+Harness: `scripts/validation/responsive_qa.js` (Playwright; dev-only, not shipped in the APK).
 Run: `cd web && python3 -m http.server 8000 &` then
-`NODE_PATH=$(npm root -g) node scripts/responsive_qa.js --base http://localhost:8000 --out <dir> --label <name>`
+`NODE_PATH=$(npm root -g) node scripts/validation/responsive_qa.js --base http://localhost:8000 --out <dir> --label <name>`
 
 ## Breakpoint scale
 ≤380 compact phone · ≤767 phone · 768–1024 tablet · ≥1025 desktop. Cross-cutting rules live in `style.css` §24 (ADAPTIVE LAYER).
