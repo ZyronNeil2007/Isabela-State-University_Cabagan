@@ -22,6 +22,7 @@ being filed as GitHub Issues.
 | 14 | Tesseract.js loaded from unpkg without SRI | **Open** — `app.js` `ensureTesseractLoaded()` |
 | 15 | PDF export `finally` referenced `originalIndex` declared inside `try` (ReferenceError → button stuck on "Generating PDF…") | **Resolved** in the refactor branch (found by ESLint `no-undef`) |
 | 16 | `animations.js` `initParallax()` uses undefined `ST_HERO` (ReferenceError on load when motion is allowed; `ScrollTrigger.refresh()` is skipped) | **Open** — the constant was removed in an earlier perf pass; intended scroll-trigger config unknown, needs owner decision |
+| 17 | *Restore previous session* restored a blank student (first render overwrote the stored session on load; present on main v3.9.0) | **Resolved** in the refactor branch (`state._restorePending` guard in `services/storage/session.js`) |
 
 ---
 
