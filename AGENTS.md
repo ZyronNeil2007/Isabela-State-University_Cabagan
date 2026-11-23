@@ -36,7 +36,7 @@ All CDN libraries must:
 1. Be loaded with `defer` attribute.
 2. Include a SHA-384 SRI hash (`integrity` attribute).
 3. Include `crossorigin="anonymous"`.
-4. Be documented in `ARCHITECTURE.md` under the Integrations section.
+4. Be documented in `docs/architecture/ARCHITECTURE.md` under the Integrations section.
 
 ### 2.5 — Privacy Preservation
 Never introduce code that:

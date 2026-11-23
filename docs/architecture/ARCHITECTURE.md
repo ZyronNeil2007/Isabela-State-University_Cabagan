@@ -599,12 +599,12 @@ isu_id/
 │   ├── Architecture.md             # Legacy architecture stub
 │   └── Setup_and_Usage.md
 │
-├── PRD.md                          # Product Requirements Document
+├── docs/design/PRD.md              # Product Requirements Document
 ├── AGENTS.md                       # Agent & contributor ruleset
-├── DESIGN_SYSTEM.md                # Visual design system reference
-├── ARCHITECTURE.md                 # This file
+├── docs/design/DESIGN_SYSTEM.md    # Visual design system reference
+├── docs/architecture/ARCHITECTURE.md  # This file
 ├── README.md
-├── release_notes.md
+├── docs/development/release_notes.md
 └── .gitignore
 ```
 

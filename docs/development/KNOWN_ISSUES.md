@@ -1,3 +1,30 @@
+# Known Issues & Backlog
+
+Preserved from the former root `issues.txt` (a v3.6-era audit of 14 items). Status below was checked against the
+current code (v3.9.1) by static inspection — items marked *not re-tested* still need a manual confirmation before
+being filed as GitHub Issues.
+
+| # | Item | Status (v3.9.1) |
+|---|---|---|
+| 01 | PDF export doesn't restore `activeStudentIndex` on error | **Resolved** — restored in `finally` |
+| 02 | DOB shown wrongly if the browser returns a non-ISO date (iOS) | **Open** — `split('-').reverse()` still used (`app.js` section 7) |
+| 03 | Signature pad cleared on window resize | **Resolved** (v3.9.1) — width-change-only re-fit, never mid-stroke |
+| 04 | CSV header fuzzy match (`id` matches `address`) | **Open / not re-tested** — `getIndex(['id','student','number'])` still substring-based |
+| 05 | OCR `applyOcrResults` jumps to step 1 when everything is filled | **Open / not re-tested** (`goToStep(1)` present) |
+| 06 | Hero "Max Batch 5" badge stale after CSV import | **Open** — chip still hardcoded |
+| 07 | No confirmation before removing a student with data | **Resolved** — `confirm()` guards present |
+| 08 | `capture="environment"` blocks the gallery/file picker | **Partially open** — still on `#ocr-file-input` |
+| 09 | `alert()` popups in CSV import | **Resolved** — no `alert(` left in `app.js` |
+| 10 | Auto-flip vs manual `flipCard()` conflict | **Open / not re-tested** |
+| 11 | Duplicate section number "17" in `app.js` comments | **Open** — becomes moot after the module refactor |
+| 12 | Cropper `baseScale` computed before modal visible | **Not re-tested** |
+| 13 | Session quota after big CSV import | **Mitigated** — 4.5 MB guard + one-time warning |
+| 14 | Tesseract.js loaded from unpkg without SRI | **Open** — `app.js` `ensureTesseractLoaded()` |
+
+---
+
+## Original report (verbatim)
+
 🔴 High Priority — Bugs
 #01
 PDF export mutates activeStudentIndex without restoring on error
