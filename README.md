@@ -26,7 +26,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ---
 
-## ✨ Features
+## The Features
 
 ### 🆕 v3.6 — University Multi-Campus & Security Studio Edition
 - **🏛️ All 11 ISU Campus Themes**: Instant theme switching across all 11 ISU campuses (Cabagan, Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City). Propagates accent colors to UI buttons, live canvas graphics, and WebGL Three.js hero particles.
@@ -38,7 +38,7 @@ A premium, fully responsive **client-side** web application for generating high-
 
 ### 🆕 v3.5 — Bento Grid & Spatial Motion Overhaul
 - **🎨 Immersive Spatial Redesign**: Split-screen hero layout, animated 6-card Bento Grid for features, and a guided 3-step process.
-- **🚀 Advanced GSAP & Three.js Animations**: Particle constellation background in the hero section and holographic shimmer effects on the live card stage.
+- **✨ Quiet, CSS-only motion**: 3D card flip and a pointer-driven holographic sheen; respects reduced-motion.
 
 ### 🆕 v3.4 — Session Auto-Save & OCR Autofill
 - **💾 Auto-Save Session**: Auto-saves your entire session (all students, form data, photos, signatures) to `localStorage` after every change.
@@ -62,8 +62,8 @@ A premium, fully responsive **client-side** web application for generating high-
 | Structure | Semantic HTML5 (ARIA roles, keyboard navigation) |
 | Styling | Vanilla CSS3 (custom properties, GPU transforms, glassmorphism) |
 | Logic | Vanilla ES6+ JavaScript (Canvas API, jsPDF, FileReader) |
-| 3D / Graphics | [Three.js r134](https://threejs.org/), [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
-| Animations | [GSAP 3](https://greensock.com/gsap/) + ScrollTrigger, [Anime.js v4](https://animejs.com/) |
+| 3D / Graphics | CSS 3D transforms, [VanillaTilt.js](https://micku7zu.github.io/vanilla-tilt.js/) |
+| Animations | CSS transitions only |
 | OCR | [Tesseract.js v5](https://tesseract.projectnaptha.com/) (offline WASM) |
 | Icons & Fonts | [Phosphor Icons](https://phosphoricons.com/), Google Fonts (Plus Jakarta Sans, Roboto Condensed) |
 
@@ -77,7 +77,7 @@ isu_id/
 │   ├── index.html          # Main HTML entry point
 │   ├── style.css           # Glassmorphism design system & styles
 │   ├── app.js              # Application core logic & Canvas rendering engine
-│   ├── animations.js       # GSAP, Anime.js & Three.js animations
+│   ├── fonts/              # Roboto Condensed (self-hosted)
 │   ├── images/             # Blank ID templates, logos & static assets
 │   └── scripts/            # Python utility scripts:
 │                           #   • dummy_data_generator.py — generates realistic
@@ -158,19 +158,12 @@ Automatically populate the student form from a photo of any printed ID or regist
 
 ## 📋 Changelog
 
-### v3.9.0 *(2026-11-23)*
-- `feat` — **2026 New ID uses the "ISU Student ID – CR80 Template"**: Rebuilt on an 816 × 1296 px board (exact CR80 54 × 85.6 mm proportions) and set as the **default** ID version.
-- `feat` — **Live HTML Preview**: Embedded front and back CR80 HTML/CSS card (`#cr80-front`, `#cr80-back`, styled in `style.css` §23) in the preview section. Inputs instantly reflect on the card (name, ID number, department, photo, signature, contact person, address, contact number, birth date) scaled via `ResizeObserver`.
-- `feat` — **Refined 2026 Layout**: Integrated university wordmark image, adjusted "Cabagan, Isabela" positioning, and introduced silhouette photo placeholder displayed until a student photo is uploaded (both in preview and export canvases).
-- `feat` — **Two-Column Back-Side Layout**: Formatted back labels and values in aligned columns with dynamic font shrinking and wrapping for long text entries.
-- `feat` — **Dynamic Auto-Shrink & Text Wrap**: Canvas renderer synchronizes with HTML preview behavior using `autoShrink` and `wrap` options in `renderText2026()`.
-- `fix` — Corrected COE designation to "College of Engineering" across department dropdowns and card rendering.
-- `fix` — Eliminated broken image icon on empty signatures by resolving `[hidden]` CSS specificity override.
-- `fix` — Reset inherited typography inside the CR80 card for exact template pixel alignment; snapped canvas text lines to whole pixel grids.
-- `chore` — Bundled Poppins fonts (400, 600, 700 Latin woff2, SIL OFL) under `web/fonts/` for offline-first fidelity.
-- `perf` — Optimized hero reference images to 520 px width (reducing asset size by >55%).
-- `pwa` — Bumped Service Worker cache to `isu-id-v3.9.0` and stylesheet cache buster to `v3.9.0`.
-- `android` — Synchronized `style.css` to Android assets, bumped `versionCode` to `5` and `versionName` to `3.9.0`.
+### v3.9.0 *(2026-11-13)*
+- `ui` — **Redesign**: Apple-style grouped surfaces, light and dark following the system, flat panels, one accent taken from the chosen campus colour. Hero is now one message, one action and the card. Mobile keeps the sticky mini-preview and a bottom Back/Next bar.
+- `a11y` — Dialogs: Escape, focus moves in/out, Tab trap, `aria-modal`; `aria-pressed` on toggles; visible focus rings; 16 px inputs; `prefers-reduced-motion`, `-transparency`, `-contrast` and `forced-colors` handled; button text ≥ 4.5:1 on all 11 campus colours.
+- `fix` — Birth dates no longer shift a day (UTC+8); CSV import is RFC 4180-aware (quotes, BOM, `idNumber`/`student_id` headers, M/D/Y dates) and exported CSVs are Blob downloads with formula-injection guarding; CSV values are HTML-escaped in the batch table; PDF export recovers if jsPDF fails to load; deleting a batch student keeps the active tab correct; signature pad maps pointer positions correctly when CSS-scaled.
+- `perf` — Removed GSAP, ScrollTrigger, Anime.js, Three.js and `animations.js`; Roboto Condensed self-hosted (no Google Fonts request); Phosphor pinned to 2.1.2 with a verified SRI hash; service worker also caches CORS CDN assets so icons and PDF export work offline.
+- `docs` — AGENTS.md / ARCHITECTURE.md updated for the above. **Android: not changed; its bundled `www/` copy is still v3.5.0.**
 
 ### v3.8.2 *(2026-09-27)*
 - `docs` — **Source of Truth Architecture**: Established a complete, professional documentation suite (`PRD.md`, `AGENTS.md`, `DESIGN_SYSTEM.md`, `ARCHITECTURE.md`) serving as the project's single source of truth.
