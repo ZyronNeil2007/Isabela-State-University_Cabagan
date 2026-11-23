@@ -15,7 +15,8 @@ const http = require('http'), fs = require('fs'), path = require('path'), crypto
 const { chromium } = require('playwright');
 
 const ROOT = path.resolve(__dirname, '..', '..');
-const WEB = path.join(ROOT, 'web');
+const argWeb = process.argv.indexOf('--web');
+const WEB = argWeb > 0 ? path.resolve(process.argv[argWeb + 1]) : path.join(ROOT, 'web');
 const GOLDEN = path.join(__dirname, 'golden.json');
 const UPDATE = process.argv.includes('--update');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.webmanifest': 'application/manifest+json', '.json': 'application/json', '.svg': 'image/svg+xml' };
@@ -73,6 +74,7 @@ const sha = s => crypto.createHash('sha256').update(s).digest('hex').slice(0, 16
   result.sessionShape = session ? (() => { const j = JSON.parse(session); const s = Array.isArray(j) ? j : (j.students || j); return { top: Array.isArray(j) ? 'array' : Object.keys(j).sort(), studentKeys: Object.keys(s[0] || {}).sort(), formKeys: Object.keys((s[0] || {}).formData || {}).sort(), count: s.length, names: s.map(x => x.formData.name), depts: s.map(x => x.formData.department) }; })() : null;
   await page.reload(); await page.waitForTimeout(1500);
   result.restorePrompt = await page.evaluate(() => !!document.querySelector('[onclick*="onRestoreSession"]'));
+  await page.waitForTimeout(3000);   // user reads the banner: the blank page must not overwrite the stored session
   await page.evaluate(() => onRestoreSession()); await page.waitForTimeout(800);
   result.restoredName = await page.evaluate(() => document.getElementById('full-name').value);
   result.restoredDept = await page.evaluate(() => document.getElementById('department').value);
