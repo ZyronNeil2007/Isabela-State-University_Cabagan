@@ -1,0 +1,102 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   20. FOOTER
+─────────────────────────────────────────────────────────────────────────── */
+footer {
+    width: 100%;
+    padding: 2rem clamp(1rem, 4vw, 2.5rem) clamp(1.5rem, 3vw, 2.5rem);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    position: relative;
+    z-index: 1;
+    margin-top: 2rem;
+    /* overflow: hidden removed - was clipping glass content */
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    border-radius: var(--radius-xl) !important;
+    padding: 1.75rem clamp(1.25rem, 3vw, 2.25rem);
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.footer-logo .logo-img {
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid var(--white-20);
+}
+
+.footer-logo-text {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.footer-uni-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.footer-tagline {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.footer-text {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.footer-text span {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.social-links {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.icon-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 50% !important;
+    color: var(--text-secondary);
+    transition: all var(--dur-base) var(--ease-spring);
+    text-decoration: none;
+}
+
+.icon-link i {
+    font-size: 1.05rem;
+}
+
+.icon-link:hover {
+    background: var(--white-12) !important;
+    color: var(--text-primary);
+    border-color: var(--white-20) !important;
+    transform: scale(1.12) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.30) !important;
+}
+
+

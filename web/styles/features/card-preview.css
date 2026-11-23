@@ -1,0 +1,138 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   17. CARD STAGE & FLIP CARD (3D)
+─────────────────────────────────────────────────────────────────────────── */
+.card-stage {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 0.5rem;
+}
+
+/* Ambient glow ring behind the card */
+.card-ambient-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    height: 75%;
+    background: radial-gradient(ellipse,
+            rgba(21, 185, 21, 0.22) 0%,
+            rgba(21, 185, 21, 0.08) 50%,
+            transparent 75%);
+    filter: blur(28px);
+    pointer-events: none;
+    animation: glowPulse 4s ease-in-out infinite;
+}
+
+/* Secondary gold glow ring */
+.card-stage::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 55%;
+    background: radial-gradient(ellipse,
+            rgba(201, 168, 76, 0.10) 0%,
+            transparent 70%);
+    filter: blur(20px);
+    pointer-events: none;
+    animation: glowPulse 6s 2s ease-in-out infinite alternate;
+    border-radius: 50%;
+}
+
+.flip-card-container {
+    position: relative;
+    perspective: 1100px;
+    width: 100%;
+    max-width: 320px;
+    cursor: pointer;
+    border-radius: var(--radius-lg);
+}
+
+/* VanillaTilt wrapper transform handled by JS */
+.flip-card {
+    position: relative;
+    width: 100%;
+    transition: transform 0.85s var(--ease-spring);
+    transform-style: preserve-3d;
+    border-radius: var(--radius-lg);
+}
+
+.flip-card.is-flipped {
+    transform: rotateY(180deg);
+}
+
+.flip-card-front,
+.flip-card-back {
+    width: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.45),
+        0 12px 24px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.flip-card-front {
+    position: relative;
+    z-index: 2;
+}
+
+.flip-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotateY(180deg);
+}
+
+.id-card-preview canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+}
+
+/* Hover shimmer on card */
+.flip-card-container:hover .flip-card-front,
+.flip-card-container:hover .flip-card-back {
+    box-shadow:
+        0 40px 80px rgba(0, 0, 0, 0.55),
+        0 16px 32px rgba(0, 0, 0, 0.30),
+        0 0 0 1px rgba(255, 255, 255, 0.12),
+        0 0 40px rgba(21, 185, 21, 0.08);
+}
+
+/* Flip hint */
+.flip-hint {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+    transition: color var(--dur-fast) ease;
+    user-select: none;
+}
+
+.flip-hint i {
+    font-size: 0.95rem;
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.flip-hint:hover {
+    color: var(--text-secondary);
+}
+
+.flip-hint:hover i {
+    transform: rotate(180deg);
+}
+
+

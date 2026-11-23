@@ -1,0 +1,74 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   12. SIGNATURE PAD
+─────────────────────────────────────────────────────────────────────────── */
+.signature-container {
+    position: relative;
+    background: rgba(255, 255, 255, 0.88);
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.30);
+    overflow: hidden;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#signature-pad {
+    display: block;
+    width: 100%;
+    height: 140px;
+    cursor: crosshair;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.signature-watermark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    color: rgba(0, 0, 0, 0.20);
+    pointer-events: none;
+    font-style: italic;
+    white-space: nowrap;
+    transition: opacity var(--dur-base) ease;
+}
+
+.signature-container:has(#signature-pad:active) .signature-watermark {
+    opacity: 0;
+}
+
+.signature-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.6rem;
+}
+
+.btn-clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 59, 48, 0.12);
+    color: rgba(255, 59, 48, 0.85);
+    border: 1px solid rgba(255, 59, 48, 0.20);
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius-md);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all var(--dur-fast) ease;
+}
+
+.btn-clear:hover {
+    background: rgba(255, 59, 48, 0.20);
+    border-color: rgba(255, 59, 48, 0.40);
+    color: #ff3b30;
+    transform: scale(1.02);
+}
+
+.clearfix::after {
+    content: '';
+    display: table;
+    clear: both;
+}
+

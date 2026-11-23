@@ -1,0 +1,94 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   11. PHOTO UPLOAD AREA
+─────────────────────────────────────────────────────────────────────────── */
+.photo-upload-area {
+    position: relative;
+    border-radius: var(--radius-lg);
+    border: 2px dashed rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+    cursor: pointer;
+    min-height: 175px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    transition:
+        border-color var(--dur-base) var(--ease-smooth),
+        background var(--dur-base) var(--ease-smooth),
+        box-shadow var(--dur-base) var(--ease-smooth);
+    animation: uploadPulseBorder 3s ease-in-out infinite;
+}
+
+@keyframes uploadPulseBorder {
+    0%, 100% { border-color: rgba(255, 255, 255, 0.22); }
+    50%       { border-color: rgba(29, 219, 29, 0.35); box-shadow: 0 0 12px rgba(29, 219, 29, 0.08); }
+}
+
+.photo-upload-area:hover {
+    border-color: rgba(21, 185, 21, 0.50);
+    background: rgba(21, 185, 21, 0.05);
+    box-shadow: 0 0 20px rgba(21, 185, 21, 0.08);
+}
+
+.photo-upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    pointer-events: none;
+}
+
+.photo-upload-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(21, 185, 21, 0.12);
+    border: 1px solid rgba(21, 185, 21, 0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.photo-upload-area:hover .photo-upload-icon {
+    transform: scale(1.08);
+}
+
+.photo-upload-icon i {
+    font-size: 1.5rem;
+    color: var(--green-400);
+}
+
+.photo-upload-placeholder span {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.photo-upload-placeholder small {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.photo-preview-thumb {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: calc(var(--radius-lg) - 2px);
+}
+
+/* Hidden file input — entire area is clickable */
+.photo-upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+}
+
+

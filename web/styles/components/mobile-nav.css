@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   26. v3.6.0 POLISH — Footer, Mobile Nav, Scrollspy, Bento Fix, Accessibility
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Active Nav Link ── */
+.nav-link--active {
+    color: var(--green-400) !important;
+    background: rgba(29, 219, 29, 0.10);
+    border-radius: var(--radius-sm);
+}
+
+.nav-link--active::after {
+    width: 100% !important;
+    opacity: 1 !important;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MOBILE HAMBURGER BUTTON
+────────────────────────────────────────────────────────────────────────── */
+.nav-hamburger {
+    display: none; /* hidden on desktop */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    transition: background var(--dur-base) ease, border-color var(--dur-base) ease;
+    flex-shrink: 0;
+}
+
+.nav-hamburger:hover {
+    background: rgba(29, 219, 29, 0.12);
+    border-color: rgba(29, 219, 29, 0.30);
+}
+
+.hamburger-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+/* Animated state when open */
+.nav-hamburger[aria-expanded="true"] .hamburger-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+.nav-hamburger[aria-expanded="true"] .hamburger-bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+.nav-hamburger[aria-expanded="true"] .hamburger-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   MOBILE DRAWER
+────────────────────────────────────────────────────────────────────────── */
+.mobile-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1098;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.30s ease, visibility 0.30s ease;
+}
+
+.mobile-drawer-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.mobile-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100dvh;
+    width: min(320px, 85vw);
+    z-index: 1099;
+    background: var(--forest-950, #020f02);
+    border-left: 1px solid var(--glass-t2-border);
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: -16px 0 48px rgba(0, 0, 0, 0.50);
+}
+
+.mobile-drawer.is-open {
+    transform: translateX(0);
+}
+
+.mobile-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.25rem;
+    border-bottom: 1px solid var(--glass-t2-border);
+    flex-shrink: 0;
+}
+
+.mobile-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.mobile-drawer-nav {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 0.75rem;
+    gap: 0.25rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.mobile-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.mobile-nav-link i {
+    font-size: 1.2rem;
+    color: var(--green-400);
+    width: 1.4rem;
+    flex-shrink: 0;
+}
+
+.mobile-nav-link:hover {
+    background: rgba(29, 219, 29, 0.10);
+    color: var(--text-primary);
+}
+
+.mobile-drawer-cta {
+    padding: 1.25rem;
+    border-top: 1px solid var(--glass-t2-border);
+    flex-shrink: 0;
+}
+
+/* Show hamburger on mobile, hide desktop menu */
+@media (max-width: 860px) {
+    .nav-hamburger { display: flex; }
+    .desktop-menu  { display: none; }
+    /* Also hide desktop "Get Your ID" text on very small screens */
+    #nav-cta-btn span { display: none; }
+}
+
