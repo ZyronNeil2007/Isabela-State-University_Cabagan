@@ -1492,6 +1492,9 @@ document.getElementById('download-btn').addEventListener('click', async () => {
     // Yield to browser to paint the loading state before heavy work
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 50)));
 
+    // Declared before `try` so the `finally` block below can restore it
+    const originalIndex = state.activeStudentIndex;
+
     try {
         const { jsPDF } = window.jspdf;
         // Create an A4 landscape PDF (297mm x 210mm)
@@ -1509,7 +1512,6 @@ document.getElementById('download-btn').addEventListener('click', async () => {
         const startX = (297 - (cardW * 5 + gapX * 4)) / 2; // Centered horizontally
         const startY = 20;
 
-        const originalIndex = state.activeStudentIndex;
 
         for (let i = 0; i < studentCount; i++) {
             if (i > 0 && i % 5 === 0) {

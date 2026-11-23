@@ -20,6 +20,8 @@ being filed as GitHub Issues.
 | 12 | Cropper `baseScale` computed before modal visible | **Not re-tested** |
 | 13 | Session quota after big CSV import | **Mitigated** — 4.5 MB guard + one-time warning |
 | 14 | Tesseract.js loaded from unpkg without SRI | **Open** — `app.js` `ensureTesseractLoaded()` |
+| 15 | PDF export `finally` referenced `originalIndex` declared inside `try` (ReferenceError → button stuck on "Generating PDF…") | **Resolved** in the refactor branch (found by ESLint `no-undef`) |
+| 16 | `animations.js` `initParallax()` uses undefined `ST_HERO` (ReferenceError on load when motion is allowed; `ScrollTrigger.refresh()` is skipped) | **Open** — the constant was removed in an earlier perf pass; intended scroll-trigger config unknown, needs owner decision |
 
 ---
 
