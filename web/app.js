@@ -329,10 +329,15 @@ let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
 
-/** Resize the canvas to match its CSS-rendered width */
-function initSignaturePad() {
+/** Resize the canvas to match its CSS-rendered width.
+ *  Skipped while a stroke is in progress, and when the width is unchanged
+ *  (unless forced) so mobile URL-bar / keyboard resizes don't wipe the pad. */
+function initSignaturePad(force = true) {
+    if (isDrawing) return;
     const rect = sigCanvas.parentElement.getBoundingClientRect();
-    sigCanvas.width  = rect.width  || 300;
+    const w = Math.round(rect.width) || 300;
+    if (!force && w === sigCanvas.width) return;
+    sigCanvas.width  = w;
     sigCanvas.height = 140;
     sigCtx.lineWidth   = 2.5;
     sigCtx.lineCap     = 'round';
@@ -347,18 +352,21 @@ function initSignaturePad() {
     }
 }
 
-/** Normalise pointer position for both mouse and touch events */
+/** Pointer position in canvas pixels (compensates CSS scaling) */
 function getPointerPos(e) {
     const rect = sigCanvas.getBoundingClientRect();
-    const source = e.touches && e.touches.length > 0 ? e.touches[0] : e;
+    const sx = rect.width  ? sigCanvas.width  / rect.width  : 1;
+    const sy = rect.height ? sigCanvas.height / rect.height : 1;
     return {
-        x: source.clientX - rect.left,
-        y: source.clientY - rect.top
+        x: (e.clientX - rect.left) * sx,
+        y: (e.clientY - rect.top)  * sy
     };
 }
 
 function startDrawing(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     isDrawing = true;
+    try { sigCanvas.setPointerCapture(e.pointerId); } catch (_) { /* synthetic event */ }
     const p = getPointerPos(e);
     lastX = p.x;
     lastY = p.y;
@@ -371,13 +379,17 @@ function startDrawing(e) {
 function draw(e) {
     if (!isDrawing) return;
     e.preventDefault();
-    const p = getPointerPos(e);
-    sigCtx.beginPath();
-    sigCtx.moveTo(lastX, lastY);
-    sigCtx.lineTo(p.x, p.y);
-    sigCtx.stroke();
-    lastX = p.x;
-    lastY = p.y;
+    // Coalesced events give smooth curves on fast finger / pen strokes
+    const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of (events.length ? events : [e])) {
+        const p = getPointerPos(ev);
+        sigCtx.beginPath();
+        sigCtx.moveTo(lastX, lastY);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+        lastX = p.x;
+        lastY = p.y;
+    }
 }
 
 function stopDrawing() {
@@ -397,14 +409,12 @@ function updateSignatureImage() {
     img.src = dataUrl;
 }
 
-// Signature event listeners
-sigCanvas.addEventListener('mousedown',  startDrawing);
-sigCanvas.addEventListener('mousemove',  draw);
-sigCanvas.addEventListener('mouseup',    stopDrawing);
-sigCanvas.addEventListener('mouseout',   stopDrawing);
-sigCanvas.addEventListener('touchstart', startDrawing, { passive: false });
-sigCanvas.addEventListener('touchmove',  draw,         { passive: false });
-sigCanvas.addEventListener('touchend',   stopDrawing);
+// Signature event listeners — Pointer Events unify mouse, touch and pen
+// (touch-action:none in CSS stops the page scrolling while signing)
+sigCanvas.addEventListener('pointerdown',   startDrawing);
+sigCanvas.addEventListener('pointermove',   draw);
+sigCanvas.addEventListener('pointerup',     stopDrawing);
+sigCanvas.addEventListener('pointercancel', stopDrawing);
 
 document.getElementById('clear-signature').addEventListener('click', () => {
     sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
@@ -416,8 +426,12 @@ document.getElementById('clear-signature').addEventListener('click', () => {
     renderCanvases();
 });
 
-// Re-init on resize
-window.addEventListener('resize', initSignaturePad);
+// Re-fit when the container's width changes (rotation, split-view, layout switch)
+if ('ResizeObserver' in window) {
+    new ResizeObserver(() => initSignaturePad(false)).observe(sigCanvas.parentElement);
+} else {
+    window.addEventListener('resize', () => initSignaturePad(false));
+}
 initSignaturePad();
 
 
@@ -1174,6 +1188,14 @@ const STEP_TITLES = [
 
 let currentStep = 1;
 
+/** Touch devices: skip auto-focus so the on-screen keyboard doesn't cover the preview */
+const COARSE_POINTER = window.matchMedia('(pointer: coarse)');
+
+/** Pause CSS animations while the tab is hidden (saves battery on mobile) */
+document.addEventListener('visibilitychange', () => {
+    document.documentElement.classList.toggle('tab-hidden', document.hidden);
+});
+
 /** Returns true — stepper mode is always active */
 function isStepperMode() { return true; }
 
@@ -1237,7 +1259,7 @@ function updateDesktopHeader(step) {
  *  • Back / Next / Done button visibility
  *  • Card flip for back-face steps
  */
-function goToStep(n) {
+function goToStep(n, opts = {}) {
     if (n < 1 || n > TOTAL_STEPS) return;
     currentStep = n;
 
@@ -1248,7 +1270,7 @@ function goToStep(n) {
             el.classList.add('active-step');
             // Auto-focus the first interactive field (not file inputs)
             const firstInput = el.querySelector('input:not([type="file"]), textarea');
-            if (firstInput) setTimeout(() => firstInput.focus({ preventScroll: true }), 380);
+            if (firstInput && !opts.silent && !COARSE_POINTER.matches) setTimeout(() => firstInput.focus({ preventScroll: true }), 380);
         } else {
             el.classList.remove('active-step');
         }
@@ -1337,11 +1359,16 @@ function flipCard() {
 }
 
 /* ── Resize: re-apply stepper at current step ────────────── */
+let resizeRaf = 0;
 function handleResize() {
-    if (isStepperMode()) goToStep(currentStep);
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        if (isStepperMode()) goToStep(currentStep, { silent: true });
+    });
 }
 
-window.addEventListener('resize', handleResize);
+window.addEventListener('resize', handleResize, { passive: true });
 
 /* ── Boot stepper ───────────────────────────────────────── */
 function initStepper() {
@@ -1773,38 +1800,74 @@ document.getElementById('cropper-zoom')?.addEventListener('input', e => {
 });
 
 const viewport = document.getElementById('cropper-viewport');
-if (viewport) {
-    viewport.addEventListener('mousedown', startCropDrag);
-    viewport.addEventListener('mousemove', doCropDrag);
-    window.addEventListener('mouseup', endCropDrag);
-    viewport.addEventListener('touchstart', startCropDrag, {passive:false});
-    viewport.addEventListener('touchmove', doCropDrag, {passive:false});
-    window.addEventListener('touchend', endCropDrag);
+// Pointer Events: one pointer drags, two pointers pinch-zoom (touch-action:none in CSS)
+const cropPointers = new Map();
+let pinchStartDist = 0, pinchStartZoom = 1;
+
+function setCropZoom(z) {
+    const zoomEl = document.getElementById('cropper-zoom');
+    const min = parseFloat(zoomEl?.min) || 1;
+    const max = parseFloat(zoomEl?.max) || 3;
+    cropZoom = Math.min(max, Math.max(min, z));
+    if (zoomEl) zoomEl.value = cropZoom;
+    updateCropperTransform();
 }
 
-function getEventPos(e) {
-    return e.touches && e.touches.length > 0 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+function pinchDistance() {
+    const [a, b] = [...cropPointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+if (viewport) {
+    viewport.addEventListener('pointerdown', startCropDrag);
+    viewport.addEventListener('pointermove', doCropDrag);
+    viewport.addEventListener('pointerup', endCropDrag);
+    viewport.addEventListener('pointercancel', endCropDrag);
+    viewport.addEventListener('wheel', e => {
+        e.preventDefault();
+        setCropZoom(cropZoom * (e.deltaY < 0 ? 1.08 : 0.92));
+    }, { passive: false });
 }
 
 function startCropDrag(e) {
-    isDraggingCrop = true;
-    const p = getEventPos(e);
-    startDragX = p.x - imgOffsetX;
-    startDragY = p.y - imgOffsetY;
-    if(e.cancelable) e.preventDefault();
+    cropPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { viewport.setPointerCapture(e.pointerId); } catch (_) { /* synthetic */ }
+    if (cropPointers.size === 2) {
+        pinchStartDist = pinchDistance();
+        pinchStartZoom = cropZoom;
+        isDraggingCrop = false;
+    } else {
+        isDraggingCrop = true;
+        startDragX = e.clientX - imgOffsetX;
+        startDragY = e.clientY - imgOffsetY;
+    }
+    if (e.cancelable) e.preventDefault();
 }
 
 function doCropDrag(e) {
-    if (!isDraggingCrop) return;
-    const p = getEventPos(e);
-    imgOffsetX = p.x - startDragX;
-    imgOffsetY = p.y - startDragY;
-    updateCropperTransform();
-    if(e.cancelable) e.preventDefault();
+    if (!cropPointers.has(e.pointerId)) return;
+    cropPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (cropPointers.size === 2 && pinchStartDist) {
+        setCropZoom(pinchStartZoom * pinchDistance() / pinchStartDist);
+    } else if (isDraggingCrop) {
+        imgOffsetX = e.clientX - startDragX;
+        imgOffsetY = e.clientY - startDragY;
+        updateCropperTransform();
+    }
+    if (e.cancelable) e.preventDefault();
 }
 
-function endCropDrag() {
+function endCropDrag(e) {
+    if (e && e.pointerId !== undefined) cropPointers.delete(e.pointerId);
+    else cropPointers.clear();
     isDraggingCrop = false;
+    // Lifting one finger of a pinch: resume dragging with the remaining one
+    if (cropPointers.size === 1) {
+        const [p] = [...cropPointers.values()];
+        isDraggingCrop = true;
+        startDragX = p.x - imgOffsetX;
+        startDragY = p.y - imgOffsetY;
+    }
 }
 
 document.getElementById('cropper-cancel-btn')?.addEventListener('click', closeCropper);
@@ -1879,7 +1942,13 @@ document.addEventListener('click', () => {
 });
 
 function showMobileExportMenu() {
-    document.getElementById('mobile-export-sheet')?.classList.add('show');
+    const sheet = document.getElementById('mobile-export-sheet');
+    if (!sheet) return;
+    // A fixed element inside a backdrop-filter ancestor is positioned against
+    // that ancestor, not the viewport (breaks landscape phones >860px wide).
+    // Re-parent to <body> so it is always viewport-fixed.
+    if (sheet.parentElement !== document.body) document.body.appendChild(sheet);
+    sheet.classList.add('show');
 }
 function hideMobileExportMenu() {
     document.getElementById('mobile-export-sheet')?.classList.remove('show');

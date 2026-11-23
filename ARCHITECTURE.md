@@ -607,3 +607,6 @@ isu_id/
 ├── release_notes.md
 └── .gitignore
 ```
+
+## Responsive layer
+`style.css` §24 ADAPTIVE LAYER owns cross-cutting responsive rules. Breakpoints: ≤380 / ≤767 phone / 768–1024 tablet / ≥1025 desktop. Never use `overflow:hidden` on html/body/ancestors of sticky elements (use `clip`). Modals are bottom sheets ≤767px; fixed sheets must be children of `<body>`.
