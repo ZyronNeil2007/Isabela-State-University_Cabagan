@@ -5,6 +5,7 @@
 
    SECTIONS:
    1.  Design Tokens (CSS Variables)
+   1a. Local Fonts (Poppins for the CR80 ID)
    2.  Reset & Base
    3.  Body & Background
    4.  Floating Orbs
@@ -26,6 +27,7 @@
    20. Footer
    21. Animations & Keyframes
    22. Responsive Breakpoints
+   23. CR80 ID — live HTML preview
 ═══════════════════════════════════════════════════════════════════════════ */
 
 
@@ -155,6 +157,35 @@
 
 
 /* ───────────────────────────────────────────────────────────────────────────
+   1a. LOCAL FONTS — Poppins (used by the CR80 ID canvas text)
+   Latin subset, SIL Open Font License 1.1 (see fonts/Poppins-OFL.txt).
+─────────────────────────────────────────────────────────────────────────── */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('fonts/poppins-latin-400.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('fonts/poppins-latin-600.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('fonts/poppins-latin-700.woff2') format('woff2');
+}
+
+
+/* ───────────────────────────────────────────────────────────────────────────
    2. RESET & BASE
 ─────────────────────────────────────────────────────────────────────────── */
 *,
@@ -167,6 +198,7 @@
 
 html {
     overflow-x: hidden;
+    overflow-x: clip;   /* no scroll container → position:sticky works inside */
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
     background-color: var(--forest-950);
@@ -183,6 +215,7 @@ body {
     text-rendering: optimizeLegibility;
     font-feature-settings: 'kern' 1, 'liga' 1;
     overflow-x: hidden;
+    overflow-x: clip;   /* hidden makes <body> a scroll container and kills sticky */
 }
 
 a {
@@ -220,6 +253,16 @@ body {
     justify-content: flex-start;
     gap: clamp(2rem, 4vw, 3rem);
     position: relative;
+}
+
+/* Flex-column body centres children by content size; without this a wide
+   min-content (e.g. 200px step cards) stretched sections past the viewport
+   on 320px phones. Sections must be viewport-wide and allowed to shrink. */
+body > section,
+body > main,
+body > footer {
+    width: 100%;
+    min-width: 0;
 }
 
 /*
@@ -1611,6 +1654,8 @@ textarea:focus {
     height: 140px;
     cursor: crosshair;
     touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .signature-watermark {
@@ -2209,7 +2254,7 @@ textarea:focus {
 }
 
 /* Sticky preview on desktop — so it stays visible while scrolling form */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
     .preview-section {
         position: sticky;
         top: calc(var(--navbar-height) + 1rem);
@@ -2899,8 +2944,8 @@ footer {
 }
 
 
-/* ═══ TABLET (768px – 899px) ══════════════════════════════════ */
-@media (max-width: 899px) {
+/* ═══ PHONE stack (≤ 767px) — tablets (768–1024) use the two-column layer in §24 ═══ */
+@media (max-width: 767px) {
     .container {
         flex-direction: column;
         align-items: center;
@@ -3492,6 +3537,7 @@ footer {
     align-items: center;
     justify-content: center;
     cursor: grab;
+    touch-action: none;
 }
 
 .cropper-viewport:active {
@@ -5613,9 +5659,9 @@ a[aria-label="Email"]:hover {
 }
 
 /* ── 3. Batch Data Table Manager Modal ── */
-.batch-modal-panel {
-    max-width: 920px !important;
-    width: 95vw !important;
+.cropper-modal.batch-modal-panel {
+    max-width: 920px;
+    width: 95vw;
 }
 
 .batch-modal-header-info h3 {
@@ -5848,10 +5894,17 @@ a[aria-label="Email"]:hover {
         background: rgba(3, 20, 3, 0.88) !important;
     }
 
-    /* Navbar scrolled state */
+    /* Exception: restore blur on the top nav bar only */
+    #navbar.liquid-glass {
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        background: var(--glass-t3-bg) !important;
+    }
+
+    /* Navbar scrolled state — also keep blur */
     #navbar.scrolled {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
         background: rgba(2, 15, 2, 0.92) !important;
     }
 
@@ -5916,3 +5969,282 @@ a[aria-label="Email"]:hover {
     }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   23. CR80 ID — live HTML preview (ISU Student ID – CR80 Template)
+   The card is designed on an 816 × 1296 px board (CR80 = 54 × 85.6 mm) and
+   scaled down to the preview width by JS (--cr80-scale). Edit positions here.
+─────────────────────────────────────────────────────────────────────────── */
+.cr80-stage {
+    --cr80-green: #0a6a35;
+    --cr80-gold: #f2c500;
+    --cr80-ink: #14442a;
+    --cr80-white: #ffffff;
+    --cr80-scale: 0.39;
+    display: none;
+    position: relative;
+    width: 100%;
+    aspect-ratio: 816 / 1296;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    background: var(--cr80-white);
+}
+
+/* 2026 version shows the HTML card; the canvases stay as the export source */
+.flip-card.is-cr80 .cr80-stage { display: block; }
+.flip-card.is-cr80 .id-card-preview canvas { display: none; }
+
+.cr80-face {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 816px;
+    height: 1296px;
+    overflow: hidden;
+    transform-origin: 0 0;
+    transform: scale(var(--cr80-scale));
+    background: var(--cr80-white);
+    color: var(--cr80-green);
+    font-family: 'Poppins', Arial, sans-serif;
+    /* Reset what the page would inherit so the card matches the CR80 design exactly */
+    line-height: normal;
+    letter-spacing: normal;
+    text-rendering: auto;
+    font-feature-settings: normal;
+    user-select: none;
+}
+
+.cr80-face > * { position: absolute; }
+.cr80-face span { white-space: pre; }
+/* The global `img { display: block }` reset would override the hidden attribute */
+.cr80-face img[hidden] { display: none; }
+
+.cr80-bar { left: 0; width: 816px; }
+.cr80-bar--top { top: 0; height: 42px; background: var(--cr80-green); }
+.cr80-bar--top-gold { top: 42px; height: 7px; background: var(--cr80-gold); }
+.cr80-bar--bottom-gold { top: 1248px; height: 8px; background: var(--cr80-gold); }
+.cr80-bar--bottom { top: 1256px; height: 40px; background: var(--cr80-green); }
+
+.cr80-seal { left: 34px; top: 78px; width: 137px; height: 137px; object-fit: contain; }
+.cr80-republic, .cr80-campus {
+    left: 198px; width: 560px; text-align: center; font-size: 24px; font-weight: 600;
+}
+.cr80-republic { top: 88px; }
+.cr80-campus { top: 173px; }
+.cr80-university {
+    left: 198px; top: 128px; width: 560px; height: 38px; object-fit: contain;
+}
+
+.cr80-photo-frame {
+    left: 181px; top: 300px; width: 453px; height: 453px;
+    box-sizing: border-box; border: 6px solid var(--cr80-green); border-radius: 28px;
+    background: var(--cr80-white); overflow: hidden;
+}
+.cr80-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cr80-signature { left: 258px; top: 758px; width: 300px; height: 114px; object-fit: contain; }
+
+.cr80-center { left: 0; width: 816px; text-align: center; }
+.cr80-name, .cr80-idnum { font-size: 41px; font-weight: 700; line-height: 1.1; }
+.cr80-name { top: 880px; }
+.cr80-idnum { top: 984px; }
+.cr80-label { font-size: 18px; color: var(--cr80-ink); }
+.cr80-name-label { top: 936px; }
+.cr80-idnum-label { top: 1040px; }
+.cr80-dept {
+    left: 68px; top: 1112px; width: 680px; min-height: 125px; font-size: 32px; font-weight: 600;
+    line-height: 1.3; text-align: center; display: flex; align-items: center; justify-content: center;
+}
+
+.cr80-holo { left: 0; top: 0; width: 816px; height: 1296px; pointer-events: none; }
+
+/* Back */
+.cr80-back-header {
+    left: 0; top: 0; width: 816px; height: 94px; box-sizing: border-box; padding-left: 22px;
+    display: flex; align-items: center; background: var(--cr80-green); color: var(--cr80-white);
+    font-size: 28px; font-weight: 700;
+}
+.cr80-bar--header-gold { top: 94px; height: 7px; background: var(--cr80-gold); }
+/* Two-column rows: fixed label column + aligned value column (x = 232 → 492) */
+.cr80-row {
+    left: 22px; width: 470px; height: 64px; display: flex; align-items: center;
+    font-size: 21px; color: var(--cr80-ink);
+}
+.cr80-row--1 { top: 139px; }
+.cr80-row--2 { top: 215px; }
+.cr80-row--3 { top: 291px; }
+.cr80-row--4 { top: 367px; }
+.cr80-key { flex: 0 0 210px; white-space: nowrap; }
+.cr80-face .cr80-val {
+    flex: 1 1 auto; min-width: 0; font-size: 32px; font-weight: 700; line-height: 1.15;
+    color: var(--cr80-green); white-space: nowrap; overflow-wrap: anywhere;
+}
+.cr80-face .cr80-val.is-wrapped { white-space: normal; }
+.cr80-qr { left: 510px; top: 148px; width: 262px; height: 262px; object-fit: contain; }
+.cr80-sticker-band { left: 0; top: 467px; width: 816px; height: 295px; background: var(--cr80-green); }
+.cr80-bar--band-top { top: 467px; height: 7px; background: var(--cr80-gold); }
+.cr80-bar--band-bottom { top: 755px; height: 7px; background: var(--cr80-gold); }
+.cr80-sticker { top: 514px; width: 175px; height: 177px; background: var(--cr80-white); }
+.cr80-sticker--1, .cr80-sticker-label--1 { left: 58px; }
+.cr80-sticker--2, .cr80-sticker-label--2 { left: 321px; }
+.cr80-sticker--3, .cr80-sticker-label--3 { left: 587px; }
+.cr80-sticker-label { top: 706px; width: 175px; text-align: center; font-size: 21px; color: var(--cr80-white); }
+.cr80-registrar-sig { left: 330px; top: 772px; width: 156px; height: 118px; object-fit: contain; }
+.cr80-registrar { top: 872px; font-size: 41px; font-weight: 700; line-height: 1.1; }
+.cr80-registrar-title { top: 928px; font-size: 18px; color: var(--cr80-ink); }
+.cr80-certify, .cr80-notice { left: 56px; width: 704px; font-size: 26.7px; line-height: 1.25; }
+.cr80-certify { top: 976px; }
+.cr80-notice { top: 1112px; font-weight: 700; }
+.cr80-footer-gold { left: 141px; top: 1250px; width: 535px; height: 7px; background: var(--cr80-gold); }
+.cr80-footer-green { left: 141px; top: 1257px; width: 535px; height: 39px; background: var(--cr80-green); }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   24. ADAPTIVE LAYER — unified breakpoints, touch, sheets, safe areas
+   Breakpoint scale (mobile-first intent):
+     ≤380px  compact phone      768–1024px tablet
+     ≤767px  phone              ≥1025px   desktop
+   This section is the single place for cross-cutting responsive behaviour
+   (modal sheets, tap targets, sticky stepper bar, tablet two-column).
+═══════════════════════════════════════════════════════════════════════════ */
+:root {
+    --tap-min: 45px;  /* ≥44px WCAG/Apple minimum, +1px for sub-pixel rounding */
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* ── Modals: never taller than the visible viewport ── */
+.cropper-modal-overlay {
+    padding: max(0.5rem, var(--safe-top)) max(0.5rem, var(--safe-right))
+             max(0.5rem, var(--safe-bottom)) max(0.5rem, var(--safe-left));
+}
+
+.cropper-modal {
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ── Tablet 768–1024: two-column generator, preview stays in view ── */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .container { flex-wrap: nowrap; gap: 1.25rem; }
+    .form-section    { flex: 1 1 0; max-width: none; }
+    .preview-section { flex: 1 1 0; max-width: none; }
+    .hiw-steps       { gap: 0.5rem; }
+}
+
+/* Tablet portrait: preview card slightly smaller so the form keeps room */
+@media (min-width: 768px) and (max-width: 900px) and (orientation: portrait) {
+    .preview-section { gap: 0.85rem; }
+}
+
+/* ── Phone ≤767: bottom-sheet dialogs + sticky stepper bar ── */
+@media (max-width: 767px) {
+    .cropper-modal-overlay { align-items: flex-end; padding: 0; }
+
+    .cropper-modal,
+    .cropper-modal.batch-modal-panel,
+    .cropper-modal.ocr-modal-panel {
+        width: 100%;
+        max-width: none;
+        border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+        padding: 1.1rem 1rem calc(1rem + var(--safe-bottom));
+        max-height: 92vh;
+        max-height: 92dvh;
+        transform: translateY(40px);
+    }
+
+    .cropper-modal-overlay.active .cropper-modal { transform: translateY(0); }
+
+    /* overflow:clip keeps the rounded-corner clipping but, unlike hidden,
+       doesn't turn the panel into a scroll container (which breaks sticky) */
+    .form-section.glass-panel { overflow: clip; }
+
+    /* Form progression stays reachable while scrolling a long step */
+    .stepper-nav {
+        position: sticky;
+        bottom: 0;
+        z-index: 40;
+        margin-inline: -0.25rem;
+        padding: 0.75rem 0.25rem calc(0.75rem + var(--safe-bottom));
+        background: linear-gradient(180deg, transparent 0, var(--forest-900) 38%);
+    }
+}
+
+/* Short landscape phones: sheets become full-height panels */
+@media (max-height: 500px) and (orientation: landscape) {
+    .cropper-modal-overlay { align-items: stretch; justify-content: center; }
+    .cropper-modal,
+    .cropper-modal.batch-modal-panel,
+    .cropper-modal.ocr-modal-panel {
+        max-height: 100dvh;
+        height: 100%;
+        border-radius: 0;
+        width: min(100%, 720px);
+    }
+}
+
+/* ── Compact phones ── */
+@media (max-width: 380px) {
+    .stepper-btn { padding-inline: 0.75rem; }
+}
+
+/* ── Touch targets (coarse pointers and all phone widths) ── */
+@media (pointer: coarse), (max-width: 767px) {
+    .btn-nav, .btn-sm, .btn-ghost, .campus-pill, .add-student-btn,
+    .preview-tool-btn, .inspect-toggle-btn, .nav-hamburger,
+    .mobile-drawer-link, .footer-link, .footer-copy-link, .stepper-btn {
+        min-height: var(--tap-min);
+    }
+    .btn-nav, .add-student-btn, .nav-hamburger { min-width: var(--tap-min); }
+    .campus-pill, .btn-sm, .preview-tool-btn, .inspect-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-link { width: var(--tap-min); height: var(--tap-min); }
+    .footer-link, .footer-copy-link { display: inline-flex; align-items: center; }
+    #batch-search-input { min-height: var(--tap-min); }
+
+    /* Tiny controls get an invisible 44px hit area instead of a bigger look */
+    .stepper-dot, .flip-hint { position: relative; }
+    .stepper-dot::after, .flip-hint::after {
+        content: '';
+        position: absolute;
+        inset: -19px -8px;
+    }
+    #cropper-zoom { height: var(--tap-min); }
+}
+
+/* ── Hidden-tab pause (reduced motion is handled in the a11y section) ── */
+html.tab-hidden *,
+html.tab-hidden *::before,
+html.tab-hidden *::after {
+    animation-play-state: paused !important;
+}
+
+/* Export sheet: respect the home indicator, never exceed the viewport */
+.mobile-export-sheet {
+    z-index: 2100;
+    max-height: 90vh;
+    max-height: 90dvh;
+    overflow-y: auto;
+    padding-bottom: calc(1.5rem + var(--safe-bottom));
+}
+
+/* Short viewports (landscape phones): a sticky preview would fill the whole
+   screen and hide the form, so let it scroll with the page. */
+@media (max-height: 600px) {
+    .preview-section { position: static; }
+}
+
+/* Preview toolbar: wrap instead of clipping when the column is narrow (tablet) */
+.preview-header { flex-wrap: wrap; row-gap: 0.5rem; }
+.preview-tools  { flex-wrap: wrap; justify-content: flex-end; min-width: 0; }
+
+/* Compact phones: shorter brand so the navbar stays on two lines max */
+@media (max-width: 767px) {
+    .logo-text { font-size: 0.85rem; line-height: 1.2; }
+}

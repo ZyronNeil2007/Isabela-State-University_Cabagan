@@ -117,52 +117,31 @@ const CONFIG = {
 };
 
 /**
- * CONFIG for the 2026 New ID template.
- * Front: 675 × 1050 px   Back: 704 × 1050 px
+ * CONFIG for the 2026 New ID template — "ISU Student ID – CR80 Template".
+ * Front: 816 × 1296 px   Back: 816 × 1296 px   (CR80 = 54 × 85.6 mm, 384 dpi)
  *
- * All coordinates measured pixel-by-pixel from:
- *   - new_template_front.id.png  (the blank template)
- *   - front_reference.png        (the filled reference)
- *   - new_template_back.id.png   (the blank template)
- *   - back_reference.png         (the filled reference)
+ * All coordinates are native canvas pixels, taken from the CR80 design:
+ *   - new_template_front.id.png  (blank CR80 front — labels, seal, university wordmark, photo frame)
+ *   - new_template_back.id.png   (blank CR80 back  — labels, QR, registrar block)
+ *   - front_reference.png / back_reference.png (filled references rendered by this app)
  *
- * FRONT pixel math
- * ─────────────────
- *  Blue photo box outer (includes 4px green border):
- *    left=172  top=225  right=508  bottom=558  → w=336 h=333
- *  Photo FILL area (inside border, 4px inset each side):
- *    x=176 y=229 w=328 h=325  (corner-radius ≈ 18px)
+ * FRONT
+ * ─────
+ *  Photo frame outer: left=181 top=300 size=453×453 (6px green border, 28px radius)
+ *  Photo FILL area (inside the border): x=187 y=306 w=441 h=441, radius 22
+ *    (until a photo is added, cr80_photo_placeholder.png — the template's silhouette — fills it)
+ *  Signature: sits in the free band between the photo frame and the name
+ *  NAME value:           top=880  font 41px Poppins Bold      → text centre y = 907
+ *  STUDENT NUMBER value: top=984  font 41px Poppins Bold      → text centre y = 1011
+ *  Department block:     top=1112 font 32px Poppins SemiBold, line-height 41.6px,
+ *                        up to 3 lines (bottom band starts at y=1248)
  *
- *  "NAME" label (small caps in template) center: x=337 y=729
- *  Student name rendered ABOVE that label:
- *    font-size 36px → half-height ~18px → center y = 729 - 18 - 14 = 697
- *
- *  "STUDENT NUMBER" label center: x=337 y=813
- *  Student ID rendered ABOVE that label:
- *    font-size 42px → half-height ~21px → center y = 813 - 21 - 11 = 781
- *
- *  Department block (below "STUDENT NUMBER"):
- *    3 lines × 28px line-height, block top ~840  → center y = 840 + 28 = 868
- *    (center of 3-line block = top + lineHeight + 0.5*lineHeight = 840+14=854)
- *    Adjust to observed position: y = 880
- *
- * BACK pixel math (canvas 704 × 1050)
- * ─────────────────────────────────────
- *  Labels at left edge, bold values follow on same row.
- *  Label font in template: 13.5px bold Arial uppercase
- *    at 13.5px bold, avg uppercase char width ≈ 9.5px
- *
- *  "CONTACT PERSON"  (14 chars) ≈ 133px wide, starts x=30
- *     → ends at x=163, value starts x=173, y=108
- *
- *  "ADRESS"  (6 chars) ≈ 57px wide, starts x=30
- *     → ends at x=87, value starts x=97, y=152
- *
- *  "CONTACT NO"  (10 chars) ≈ 95px wide, starts x=30
- *     → ends at x=125, value starts x=135, y=195
- *
- *  "BIRTH DATE"  (10 chars) ≈ 95px wide, starts x=30
- *     → ends at x=125, value starts x=135, y=238
+ * BACK
+ * ────
+ *  Four label rows (21px labels) 76px apart. Each value (32px Poppins Bold)
+ *  starts right after its label; the x / y below were measured from the
+ *  rendered template. Values stop at x=492 so they never touch the QR code
+ *  (QR left edge = 510) and shrink to fit via `autoShrink`.
  */
 const CONFIG_2026 = {
     scaleMultiplier: 1,
@@ -170,108 +149,114 @@ const CONFIG_2026 = {
     /**
      * Photo FILL area: strictly inside the green border.
      */
-    photo: { x: 181, y: 249, width: 336, height: 315, borderRadius: 14 },
+    photo: { x: 187, y: 306, width: 441, height: 441, borderRadius: 22 },
 
-    /** Signature placement above the name */
-    signature: { x: 176, y: 565, width: 328, height: 100 },
+    /** Signature placement between the photo frame and the name */
+    signature: { x: 258, y: 758, width: 300, height: 114 },
 
     text: {
-        /**
-         * Student NAME — large bold caps, rendered ABOVE the printed "NAME" label.
-         * Increased font size to 42px to match the prominent text in the reference.
-         * Center y: 690.
-         */
+        /** Student NAME — large bold caps, centre y = 907. */
         name: {
-            x: 337.5, y: 690,
+            x: 408, y: 907,
             align: 'center',
-            font: "42px 'Arial'",
+            font: "41px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
-            fillStyle: '#000000',
-            strokeStyle: 'transparent'
+            fillStyle: '#0a6a35',
+            strokeStyle: 'transparent',
+            maxWidth: 744,
+            autoShrink: 24
         },
 
-        /**
-         * STUDENT NUMBER — extra-large bold, rendered ABOVE printed "STUDENT NUMBER".
-         * Increased font size to 52px.
-         * Center y: 780.
-         */
+        /** STUDENT NUMBER — bold, centre y = 1011. */
         idNumber: {
-            x: 337.5, y: 780,
+            x: 408, y: 1011,
             align: 'center',
-            font: "52px 'Arial'",
+            font: "41px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
-            fillStyle: '#000000',
-            strokeStyle: 'transparent'
+            fillStyle: '#0a6a35',
+            strokeStyle: 'transparent',
+            maxWidth: 744,
+            autoShrink: 24
         },
 
         /**
-         * DEPARTMENT full name — bold, dark green, multi-line (split on '\n').
-         * Center y: 890, increased font size to 26px.
+         * DEPARTMENT full name — SemiBold, multi-line (split on '\n').
+         * y is the centre of the whole block (free area 1112 → 1237).
          */
         department: {
-            x: 337.5, y: 890,
+            x: 408, y: 1178,
             align: 'center',
-            font: "26px 'Arial'",
-            isBold: true,
+            font: "600 32px 'Poppins', Arial, sans-serif",
+            isBold: false,
             strokeThickness: 0,
-            fillStyle: '#000000', // Changed to black to match reference image text
+            fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 600,
-            lineHeight: 34
+            maxWidth: 740,
+            autoShrink: 20,
+            lineHeight: 41.6
         },
 
         /* ══════════════════════════════════════════════════════════════
-         * BACK FACE — Canvas 704 × 1050 px
-         *
-         * Spacing matches reference: wider row spacing (~60px)
-         * Values are larger (26px) and bold, sitting precisely after the labels.
+         * BACK FACE — Canvas 816 × 1296 px
+         * Values sit on the same line as their printed label.
          * ═════════════════════════════════════════════════════════════ */
 
-        /** CONTACT PERSON value — y=120 (row 1), x=240 */
+        /** CONTACT PERSON value — row 1 */
         parentName: {
-            x: 240, y: 120,
+            x: 232, y: 175,
             align: 'left',
-            font: "bold 26px Arial",
+            font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
-            fillStyle: '#000000',
-            strokeStyle: 'transparent'
-        },
-
-        /** ADRESS value — y=180 (row 2), x=135 */
-        address: {
-            x: 135, y: 180,
-            align: 'left',
-            font: "bold 26px Arial",
-            isBold: true,
-            strokeThickness: 0,
-            fillStyle: '#000000',
+            fillStyle: '#0a6a35',
             strokeStyle: 'transparent',
-            maxWidth: 380
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         },
 
-        /** CONTACT NO value — y=240 (row 3), x=175 */
+        /** ADDRESS value — row 2 */
+        address: {
+            x: 232, y: 251,
+            align: 'left',
+            font: "bold 32px 'Poppins', Arial, sans-serif",
+            isBold: true,
+            strokeThickness: 0,
+            fillStyle: '#0a6a35',
+            strokeStyle: 'transparent',
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
+        },
+
+        /** CONTACT NO. value — row 3 */
         telephone: {
-            x: 175, y: 240,
+            x: 232, y: 327,
             align: 'left',
-            font: "bold 26px Arial",
+            font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
-            fillStyle: '#000000',
-            strokeStyle: 'transparent'
+            fillStyle: '#0a6a35',
+            strokeStyle: 'transparent',
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         },
 
-        /** BIRTH DATE value — y=300 (row 4), x=170 */
+        /** BIRTH DATE value — row 4 */
         dob: {
-            x: 170, y: 300,
+            x: 232, y: 403,
             align: 'left',
-            font: "bold 26px Arial",
+            font: "bold 32px 'Poppins', Arial, sans-serif",
             isBold: true,
             strokeThickness: 0,
-            fillStyle: '#000000',
-            strokeStyle: 'transparent'
+            fillStyle: '#0a6a35',
+            strokeStyle: 'transparent',
+            maxWidth: 260,
+            autoShrink: 22,
+            wrap: true
         }
     }
 };
@@ -282,7 +267,7 @@ const DEPARTMENT_LABELS = {
     'CCJE':   'COLLEGE OF CRIMINAL JUSTICE EDUCATION',
     'CAST':   'COLLEGE OF AGRICULTURAL,\nSCIENCE AND TECHNOLOGY',
     'CCSICT': 'COLLEGE OF COMPUTING STUDIES,\nINFORMATION COMMUNICATION\nTECHNOLOGY',
-    'COE':    'COLLEGE OF EDUCATION',
+    'COE':    'COLLEGE OF ENGINEERING',
     'CED':    'COLLEGE OF EDUCATION',
     'CFEM':   'COLLEGE OF FORESTRY AND\nENVIRONMENTAL MANAGEMENT',
     'CCSS':   'COLLEGE OF COMMUNICATION\nAND SOCIAL SCIENCES',
@@ -297,9 +282,10 @@ const state = {
     frontTemplate:     null,
     backTemplate:      null,
     front2026Template: null,
+    photoPlaceholder2026: null,   // silhouette shown in the 2026 photo frame until a photo is added
     back2026Template:  null,
     activeStudentIndex: 0,
-    idVersion: 'old',   // 'old' | '2026'
+    idVersion: '2026',  // 'old' | '2026'  (CR80 2026 design is the default)
     campusTheme: 'cabagan', // 'cabagan' | 'echague' | 'cauayan' | 'ilagan' | 'roxas'
     showHologram: true,
     audioEnabled: true,
@@ -347,10 +333,15 @@ let isDrawing = false;
 let lastX = 0;
 let lastY = 0;
 
-/** Resize the canvas to match its CSS-rendered width */
-function initSignaturePad() {
+/** Resize the canvas to match its CSS-rendered width.
+ *  Skipped while a stroke is in progress, and when the width is unchanged
+ *  (unless forced) so mobile URL-bar / keyboard resizes don't wipe the pad. */
+function initSignaturePad(force = true) {
+    if (isDrawing) return;
     const rect = sigCanvas.parentElement.getBoundingClientRect();
-    sigCanvas.width  = rect.width  || 300;
+    const w = Math.round(rect.width) || 300;
+    if (!force && w === sigCanvas.width) return;
+    sigCanvas.width  = w;
     sigCanvas.height = 140;
     sigCtx.lineWidth   = 2.5;
     sigCtx.lineCap     = 'round';
@@ -365,7 +356,7 @@ function initSignaturePad() {
     }
 }
 
-/** Normalise pointer position for both mouse and touch events */
+/** Pointer position in canvas pixels (compensates CSS scaling) */
 function getPointerPos(e) {
     const rect = sigCanvas.getBoundingClientRect();
     const source = e.touches && e.touches.length > 0 ? e.touches[0] : e;
@@ -380,7 +371,9 @@ function getPointerPos(e) {
 }
 
 function startDrawing(e) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
     isDrawing = true;
+    try { sigCanvas.setPointerCapture(e.pointerId); } catch (_) { /* synthetic event */ }
     const p = getPointerPos(e);
     lastX = p.x;
     lastY = p.y;
@@ -393,13 +386,17 @@ function startDrawing(e) {
 function draw(e) {
     if (!isDrawing) return;
     e.preventDefault();
-    const p = getPointerPos(e);
-    sigCtx.beginPath();
-    sigCtx.moveTo(lastX, lastY);
-    sigCtx.lineTo(p.x, p.y);
-    sigCtx.stroke();
-    lastX = p.x;
-    lastY = p.y;
+    // Coalesced events give smooth curves on fast finger / pen strokes
+    const events = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+    for (const ev of (events.length ? events : [e])) {
+        const p = getPointerPos(ev);
+        sigCtx.beginPath();
+        sigCtx.moveTo(lastX, lastY);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+        lastX = p.x;
+        lastY = p.y;
+    }
 }
 
 function stopDrawing() {
@@ -439,8 +436,12 @@ document.getElementById('clear-signature').addEventListener('click', () => {
     renderCanvases();
 });
 
-// Re-init on resize
-window.addEventListener('resize', initSignaturePad);
+// Re-fit when the container's width changes (rotation, split-view, layout switch)
+if ('ResizeObserver' in window) {
+    new ResizeObserver(() => initSignaturePad(false)).observe(sigCanvas.parentElement);
+} else {
+    window.addEventListener('resize', () => initSignaturePad(false));
+}
 initSignaturePad();
 
 
@@ -603,18 +604,35 @@ function loadImage(src) {
     });
 }
 
+/**
+ * Ask the browser to load the Poppins weights used by the CR80 ID canvas text.
+ * Canvas text does not trigger @font-face downloads by itself.
+ * Resolves (never rejects) so a font failure just falls back to Arial.
+ */
+function loadPoppinsFonts() {
+    if (!document.fonts || !document.fonts.load) return Promise.resolve();
+    return Promise.all([
+        document.fonts.load("600 32px 'Poppins'"),
+        document.fonts.load("700 41px 'Poppins'")
+    ]).catch(() => {});
+}
+
 async function loadTemplates() {
-    const [front, back, front2026, back2026] = await Promise.all([
+    const [front, back, front2026, back2026, photoPlaceholder2026] = await Promise.all([
         loadImage('images/template_front.id.png'),
         loadImage('images/template_back.id.png'),
-        loadImage('images/2026_id/new_template_front.id.png'),
-        loadImage('images/2026_id/new_template_back.id.png')
+        loadImage('images/2026_id/new_template_front.id.png?v=cr80c'),
+        loadImage('images/2026_id/new_template_back.id.png?v=cr80b'),
+        loadImage('images/2026_id/cr80_photo_placeholder.png'),
+        // CR80 design uses Poppins on the canvas — make sure it is loaded before first draw
+        loadPoppinsFonts()
     ]);
 
     state.frontTemplate     = front;
     state.backTemplate      = back;
     state.front2026Template = front2026;
     state.back2026Template  = back2026;
+    state.photoPlaceholder2026 = photoPlaceholder2026;
 
     // Set canvas intrinsic sizes from the loaded images (use old template as default)
     frontCanvas.width  = front ? front.width  : 638;
@@ -631,7 +649,8 @@ async function loadTemplates() {
         miniCanvasBack.height = backCanvas.height;
     }
 
-    renderCanvases();
+    // Sync toggle buttons / course-vs-department field with the default version, then draw
+    setIdVersion(state.idVersion);
 }
 
 
@@ -770,10 +789,10 @@ function renderCanvases() {
     const cfg     = is2026 ? CONFIG_2026 : CONFIG;
 
     // ── Resize canvases only when dimensions change (prevents GPU buffer discarding) ──
-    const targetFrontW = is2026 ? (state.front2026Template?.width || 675) : (state.frontTemplate?.width || 638);
-    const targetFrontH = is2026 ? (state.front2026Template?.height || 1050) : (state.frontTemplate?.height || 1013);
-    const targetBackW  = is2026 ? (state.back2026Template?.width || 704) : (state.backTemplate?.width || 638);
-    const targetBackH  = is2026 ? (state.back2026Template?.height || 1050) : (state.backTemplate?.height || 1013);
+    const targetFrontW = is2026 ? (state.front2026Template?.width || 816) : (state.frontTemplate?.width || 638);
+    const targetFrontH = is2026 ? (state.front2026Template?.height || 1296) : (state.frontTemplate?.height || 1013);
+    const targetBackW  = is2026 ? (state.back2026Template?.width || 816) : (state.backTemplate?.width || 638);
+    const targetBackH  = is2026 ? (state.back2026Template?.height || 1296) : (state.backTemplate?.height || 1013);
 
     if (frontCanvas.width !== targetFrontW)   frontCanvas.width = targetFrontW;
     if (frontCanvas.height !== targetFrontH) frontCanvas.height = targetFrontH;
@@ -808,8 +827,10 @@ function renderCanvases() {
             frontCtx.drawImage(frontTpl, 0, 0, frontCanvas.width, frontCanvas.height);
         }
 
-        // 3. Draw photo ON TOP (clipped perfectly inside the frame)
-        if (student.photoImage) {
+        // 3. Draw photo ON TOP (clipped perfectly inside the frame).
+        //    No photo yet → the template's silhouette placeholder, like the HTML preview.
+        const photoImg2026 = student.photoImage || state.photoPlaceholder2026;
+        if (photoImg2026) {
             const { x, y, width, height, borderRadius: r = 18 } = cfg.photo;
             frontCtx.save();
             frontCtx.beginPath();
@@ -825,13 +846,13 @@ function renderCanvases() {
             frontCtx.closePath();
             frontCtx.clip();
 
-            const imgRatio = student.photoImage.width / student.photoImage.height;
+            const imgRatio = photoImg2026.width / photoImg2026.height;
             const boxRatio = width / height;
             let dw = width, dh = height, dx = x, dy = y;
             if (imgRatio > boxRatio) { dw = height * imgRatio; dx = x - (dw - width) / 2; }
             else                    { dh = width / imgRatio;   dy = y - (dh - height) / 2; }
 
-            frontCtx.drawImage(student.photoImage, dx, dy, dw, dh);
+            frontCtx.drawImage(photoImg2026, dx, dy, dw, dh);
             frontCtx.restore();
         }
 
@@ -929,6 +950,9 @@ function renderCanvases() {
         renderText(backCtx, CONFIG.text.dob, 'Birth Date: ' + dobText);
     }
 
+    // ── CR80 HTML card in the preview section (2026 ID) ─────
+    renderCr80Preview();
+
     // ── Mini preview (mobile stepper header) ────────────────
     updateMiniCanvas();
 
@@ -959,15 +983,58 @@ function renderText2026(ctx, textConfig, textValue) {
     const lines      = textValue.split('\n');
     // Parse font-size: handles "bold 16px Arial" and "16px Arial" correctly
     const fontSizeMatch = fontStr.match(/(\d+(\.\d+)?)px/);
-    const fontSize   = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 14;
-    const lineHeight = textConfig.lineHeight || (fontSize * 1.35);
+    let fontSize     = fontSizeMatch ? parseFloat(fontSizeMatch[1]) : 14;
+    let lineHeight   = textConfig.lineHeight || (fontSize * 1.35);
+
+    // autoShrink (optional, number = minimum px size): reduce the font until the
+    // widest line fits maxWidth, so long names/addresses stay readable instead of
+    // being horizontally squeezed. lineHeight shrinks in proportion.
+    if (textConfig.autoShrink && textConfig.maxWidth && fontSizeMatch) {
+        const baseSize = fontSize;
+        const baseFont = ctx.font;
+        const widest = () => Math.max(...lines.map(l => ctx.measureText(l).width));
+        while (fontSize > textConfig.autoShrink && widest() > textConfig.maxWidth) {
+            fontSize -= 1;
+            ctx.font = baseFont.replace(/(\d+(\.\d+)?)px/, `${fontSize}px`);
+        }
+        if (fontSize !== baseSize) lineHeight = lineHeight * (fontSize / baseSize);
+    }
+
+    // wrap (optional): if the text still does not fit at the minimum size, word-wrap
+    // it into several lines (matches the CR80 HTML preview's two-line values).
+    if (textConfig.wrap && textConfig.maxWidth && lines.length === 1 && ctx.measureText(lines[0]).width > textConfig.maxWidth) {
+        const source = lines[0];
+        const baseFont = ctx.font;
+        const wrapAt = () => {
+            const wrapped = [];
+            let cur = '';
+            source.split(' ').forEach(w => {
+                const test = cur ? cur + ' ' + w : w;
+                if (cur && ctx.measureText(test).width > textConfig.maxWidth) { wrapped.push(cur); cur = w; }
+                else cur = test;
+            });
+            if (cur) wrapped.push(cur);
+            return wrapped;
+        };
+        let wrapped = wrapAt();
+        // keep shrinking until the wrapped block fits a 64px row (same rule as the HTML preview)
+        while (fontSize > 15 && wrapped.length * fontSize * 1.15 > 64) {
+            fontSize -= 1;
+            ctx.font = baseFont.replace(/(\d+(\.\d+)?)px/, `${fontSize}px`);
+            wrapped = wrapAt();
+        }
+        lines.splice(0, lines.length, ...wrapped);
+        lineHeight = fontSize * 1.15;
+    }
 
     // Center the whole block on textConfig.y
     const totalHeight = (lines.length - 1) * lineHeight;
     const startY      = textConfig.y - totalHeight / 2;
 
     lines.forEach((line, i) => {
-        const y = startY + i * lineHeight;
+        // Snap each line to a whole pixel (floor, like browsers do for line boxes) so the
+        // export matches the HTML card's crisp glyph edges
+        const y = Math.floor(startY + i * lineHeight);
         if (textConfig.maxWidth) {
             ctx.fillText(line, textConfig.x, y, textConfig.maxWidth);
         } else {
@@ -977,6 +1044,147 @@ function renderText2026(ctx, textConfig, textValue) {
 
     ctx.restore();
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   7b. CR80 HTML PREVIEW — Live HTML card for the 2026 ID
+   The preview section shows the "ISU Student ID – CR80 Template" markup
+   (index.html #cr80-front / #cr80-back, styled in style.css §23). It is filled
+   from the same state as the canvases: input → state → renderCanvases() →
+   renderCr80Preview(). The canvases keep rendering as the PNG/PDF export source.
+═══════════════════════════════════════════════════════════════════════════ */
+
+/** Design-board width the CR80 faces are laid out on (px) */
+const CR80_BOARD_W = 816;
+
+/** Silhouette shown in the photo frame until the student's photo is added */
+const CR80_PHOTO_PLACEHOLDER = 'images/2026_id/cr80_photo_placeholder.png';
+
+/**
+ * Shrink an element's font-size until it fits maxWidth (never below minPx).
+ * Uses offsetWidth (layout width) so the CSS scale transform does not affect it.
+ *
+ * @param {HTMLElement} el
+ * @param {number} basePx
+ * @param {number} minPx
+ * @param {number} maxWidth
+ */
+function fitCr80Text(el, basePx, minPx, maxWidth) {
+    let size = basePx;
+    el.style.fontSize = size + 'px';
+    while (size > minPx && el.offsetWidth > maxWidth) {
+        size -= 1;
+        el.style.fontSize = size + 'px';
+    }
+}
+
+/** Format a date-input value as MM/DD/YYYY (falls back to the raw text) */
+function formatCr80Dob(raw) {
+    if (!raw) return '01/01/2000';
+    const d = new Date(raw);
+    if (isNaN(d.getTime())) return raw;
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    return `${mm}/${dd}/${d.getUTCFullYear()}`;
+}
+
+/** Keep each CR80 face scaled to the width of its preview stage */
+function updateCr80Scale() {
+    document.querySelectorAll('.cr80-stage').forEach(stage => {
+        const w = stage.clientWidth;
+        if (w > 0) stage.style.setProperty('--cr80-scale', String(w / CR80_BOARD_W));
+    });
+}
+
+let _cr80Observer = null;
+
+/**
+ * Fill the CR80 HTML front/back from the active student and toggle the
+ * HTML card vs. canvas depending on the selected ID version.
+ */
+function renderCr80Preview() {
+    const card = document.getElementById('idCard');
+    if (!card) return;
+
+    const is2026 = state.idVersion === '2026';
+    card.classList.toggle('is-cr80', is2026);
+    if (!is2026) return;
+
+    if (!_cr80Observer && typeof ResizeObserver !== 'undefined') {
+        _cr80Observer = new ResizeObserver(updateCr80Scale);
+        document.querySelectorAll('.cr80-stage').forEach(st => _cr80Observer.observe(st));
+    }
+    updateCr80Scale();
+
+    const student = state.students[state.activeStudentIndex];
+    const fd      = student.formData;
+    const $       = id => document.getElementById(id);
+
+    // ── Front ──
+    const photo = $('cr80-photo');
+    if (photo) {
+        // No photo yet → the template's silhouette placeholder (same as the export canvas)
+        const photoSrc = student.photoDataUrl || CR80_PHOTO_PLACEHOLDER;
+        if (photo.getAttribute('src') !== photoSrc) photo.src = photoSrc;
+        photo.alt = student.photoDataUrl ? 'Student photo' : 'Photo placeholder';
+        photo.hidden = false;
+    }
+    const sig = $('cr80-signature');
+    if (sig) {
+        if (student.signatureDataUrl) {
+            if (sig.getAttribute('src') !== student.signatureDataUrl) sig.src = student.signatureDataUrl;
+            sig.hidden = false;
+        } else {
+            sig.removeAttribute('src');
+            sig.hidden = true;
+        }
+    }
+
+    const nameEl = $('cr80-name');
+    nameEl.textContent = fd.name || 'JUAN DELA CRUZ';
+    fitCr80Text(nameEl, 41, 24, 744);
+
+    const idEl = $('cr80-idnumber');
+    idEl.textContent = fd.idNumber || '25-00001';
+    fitCr80Text(idEl, 41, 24, 744);
+
+    const deptEl = $('cr80-department');
+    deptEl.textContent = fd.department ? (DEPARTMENT_LABELS[fd.department] || fd.department) : 'COLLEGE / DEPARTMENT';
+    fitCr80Text(deptEl, 32, 20, 680);
+
+    // Holographic watermark overlay (same toggle as the canvas version)
+    const holo = $('cr80-holo');
+    if (holo) {
+        const hctx = holo.getContext('2d');
+        hctx.clearRect(0, 0, holo.width, holo.height);
+        drawHologramWatermark(hctx, holo.width, holo.height);
+    }
+
+    // ── Back ──  aligned value column (x 232 → 492): shrink to 22px, then wrap to 2 lines
+    const fill = (id, text) => {
+        const el = $(id);
+        el.classList.remove('is-wrapped');
+        el.textContent = text;
+        let size = 32;
+        el.style.fontSize = size + 'px';
+        while (size > 22 && el.scrollWidth > el.clientWidth) {
+            size -= 1;
+            el.style.fontSize = size + 'px';
+        }
+        if (el.scrollWidth > el.clientWidth) {
+            el.classList.add('is-wrapped');
+            // keep shrinking until the wrapped text fits the 64px row height
+            while (size > 15 && el.offsetHeight > 64) {
+                size -= 1;
+                el.style.fontSize = size + 'px';
+            }
+        }
+    };
+    fill('cr80-parent',    fd.parentName || 'JANE DELA CRUZ');
+    fill('cr80-address',   fd.address    || 'BARUCBOC, QUEZON, ISABELA');
+    fill('cr80-telephone', fd.telephone  || '09123456789');
+    fill('cr80-dob',       formatCr80Dob(fd.dob));
+}
+
 
 /** Copy the main canvases into the small mini-preview thumbnails */
 function updateMiniCanvas() {
@@ -1009,6 +1217,14 @@ const STEP_TITLES = [
 ];
 
 let currentStep = 1;
+
+/** Touch devices: skip auto-focus so the on-screen keyboard doesn't cover the preview */
+const COARSE_POINTER = window.matchMedia('(pointer: coarse)');
+
+/** Pause CSS animations while the tab is hidden (saves battery on mobile) */
+document.addEventListener('visibilitychange', () => {
+    document.documentElement.classList.toggle('tab-hidden', document.hidden);
+});
 
 /** Returns true — stepper mode is always active */
 function isStepperMode() { return true; }
@@ -1079,7 +1295,7 @@ function updateDesktopHeader(step) {
  *  • Back / Next / Done button visibility
  *  • Card flip for back-face steps
  */
-function goToStep(n) {
+function goToStep(n, opts = {}) {
     if (n < 1 || n > TOTAL_STEPS) return;
     currentStep = n;
 
@@ -1090,7 +1306,7 @@ function goToStep(n) {
             el.classList.add('active-step');
             // Auto-focus the first interactive field (not file inputs)
             const firstInput = el.querySelector('input:not([type="file"]), textarea');
-            if (firstInput) setTimeout(() => firstInput.focus({ preventScroll: true }), 380);
+            if (firstInput && !opts.silent && !COARSE_POINTER.matches) setTimeout(() => firstInput.focus({ preventScroll: true }), 380);
         } else {
             el.classList.remove('active-step');
         }
@@ -1184,11 +1400,16 @@ function flipCard() {
 }
 
 /* ── Resize: re-apply stepper at current step ────────────── */
+let resizeRaf = 0;
 function handleResize() {
-    if (isStepperMode()) goToStep(currentStep);
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        if (isStepperMode()) goToStep(currentStep, { silent: true });
+    });
 }
 
-window.addEventListener('resize', handleResize);
+window.addEventListener('resize', handleResize, { passive: true });
 
 /* ── Boot stepper ───────────────────────────────────────── */
 function initStepper() {
@@ -1654,38 +1875,74 @@ document.getElementById('cropper-zoom')?.addEventListener('input', e => {
 });
 
 const viewport = document.getElementById('cropper-viewport');
-if (viewport) {
-    viewport.addEventListener('mousedown', startCropDrag);
-    viewport.addEventListener('mousemove', doCropDrag);
-    window.addEventListener('mouseup', endCropDrag);
-    viewport.addEventListener('touchstart', startCropDrag, {passive:false});
-    viewport.addEventListener('touchmove', doCropDrag, {passive:false});
-    window.addEventListener('touchend', endCropDrag);
+// Pointer Events: one pointer drags, two pointers pinch-zoom (touch-action:none in CSS)
+const cropPointers = new Map();
+let pinchStartDist = 0, pinchStartZoom = 1;
+
+function setCropZoom(z) {
+    const zoomEl = document.getElementById('cropper-zoom');
+    const min = parseFloat(zoomEl?.min) || 1;
+    const max = parseFloat(zoomEl?.max) || 3;
+    cropZoom = Math.min(max, Math.max(min, z));
+    if (zoomEl) zoomEl.value = cropZoom;
+    updateCropperTransform();
 }
 
-function getEventPos(e) {
-    return e.touches && e.touches.length > 0 ? { x: e.touches[0].clientX, y: e.touches[0].clientY } : { x: e.clientX, y: e.clientY };
+function pinchDistance() {
+    const [a, b] = [...cropPointers.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+if (viewport) {
+    viewport.addEventListener('pointerdown', startCropDrag);
+    viewport.addEventListener('pointermove', doCropDrag);
+    viewport.addEventListener('pointerup', endCropDrag);
+    viewport.addEventListener('pointercancel', endCropDrag);
+    viewport.addEventListener('wheel', e => {
+        e.preventDefault();
+        setCropZoom(cropZoom * (e.deltaY < 0 ? 1.08 : 0.92));
+    }, { passive: false });
 }
 
 function startCropDrag(e) {
-    isDraggingCrop = true;
-    const p = getEventPos(e);
-    startDragX = p.x - imgOffsetX;
-    startDragY = p.y - imgOffsetY;
-    if(e.cancelable) e.preventDefault();
+    cropPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { viewport.setPointerCapture(e.pointerId); } catch (_) { /* synthetic */ }
+    if (cropPointers.size === 2) {
+        pinchStartDist = pinchDistance();
+        pinchStartZoom = cropZoom;
+        isDraggingCrop = false;
+    } else {
+        isDraggingCrop = true;
+        startDragX = e.clientX - imgOffsetX;
+        startDragY = e.clientY - imgOffsetY;
+    }
+    if (e.cancelable) e.preventDefault();
 }
 
 function doCropDrag(e) {
-    if (!isDraggingCrop) return;
-    const p = getEventPos(e);
-    imgOffsetX = p.x - startDragX;
-    imgOffsetY = p.y - startDragY;
-    updateCropperTransform();
-    if(e.cancelable) e.preventDefault();
+    if (!cropPointers.has(e.pointerId)) return;
+    cropPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (cropPointers.size === 2 && pinchStartDist) {
+        setCropZoom(pinchStartZoom * pinchDistance() / pinchStartDist);
+    } else if (isDraggingCrop) {
+        imgOffsetX = e.clientX - startDragX;
+        imgOffsetY = e.clientY - startDragY;
+        updateCropperTransform();
+    }
+    if (e.cancelable) e.preventDefault();
 }
 
-function endCropDrag() {
+function endCropDrag(e) {
+    if (e && e.pointerId !== undefined) cropPointers.delete(e.pointerId);
+    else cropPointers.clear();
     isDraggingCrop = false;
+    // Lifting one finger of a pinch: resume dragging with the remaining one
+    if (cropPointers.size === 1) {
+        const [p] = [...cropPointers.values()];
+        isDraggingCrop = true;
+        startDragX = p.x - imgOffsetX;
+        startDragY = p.y - imgOffsetY;
+    }
 }
 
 document.getElementById('cropper-cancel-btn')?.addEventListener('click', closeCropper);
@@ -1765,7 +2022,13 @@ document.addEventListener('click', () => {
 });
 
 function showMobileExportMenu() {
-    document.getElementById('mobile-export-sheet')?.classList.add('show');
+    const sheet = document.getElementById('mobile-export-sheet');
+    if (!sheet) return;
+    // A fixed element inside a backdrop-filter ancestor is positioned against
+    // that ancestor, not the viewport (breaks landscape phones >860px wide).
+    // Re-parent to <body> so it is always viewport-fixed.
+    if (sheet.parentElement !== document.body) document.body.appendChild(sheet);
+    sheet.classList.add('show');
 }
 function hideMobileExportMenu() {
     document.getElementById('mobile-export-sheet')?.classList.remove('show');

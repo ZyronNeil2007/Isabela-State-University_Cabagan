@@ -3,7 +3,7 @@
 A premium, fully responsive **client-side** web application for generating high-fidelity, print-ready student identification cards for **all 11 Isabela State University (ISU) campuses**. Built with a stunning glassmorphism UI, interactive 3D card preview, multi-campus theme engine, security hologram overlays, real-time QR verification, and a powerful batch export studio — no backend, no build tools, runs entirely in the browser.
 
 🔗 **Live Demo Git Page**: [https://zyronneil2007.github.io/Isabela-State-University_Cabagan/](https://zyronneil2007.github.io/Isabela-State-University_Cabagan/)<br>
-🔗 **Live Demo (Vercel)**: [isabela-state-university-cabagan.vercel.app](https://isabela-state-university-cabagan.vercel.app)<br>
+🔗 **Live Demo (Vercel)**: [https://isuid.vercel.app/web/](https://isuid.vercel.app/web/)<br>
 🔗 **Live Demo (Netlify)**: [idgenratorisuc.netlify.app](https://idgenratorisuc.netlify.app)
 
 ---
@@ -321,3 +321,7 @@ Created, designed, and developed by **Zyron Neil**.
 
 ---
 © 2026 Zyron Neil. All rights reserved.
+
+### Unreleased — Responsive & adaptive UI overhaul (v3.8.8)
+- Unified breakpoints (≤767 phone, 768–1024 tablet two-column, ≥1025 desktop), bottom-sheet dialogs, sticky stepper bar and preview, 45px touch targets, safe-area support.
+- Signature pad and cropper moved to Pointer Events (pinch zoom); hidden-tab animation pause; Android assets synced. See RESPONSIVE_QA_REPORT.md.

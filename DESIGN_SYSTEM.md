@@ -122,6 +122,7 @@ Campus theme switching overwrites these two variables at runtime via `document.d
 ```
 - `--font-base`: Used for all UI elements (body, labels, buttons, nav, forms).
 - `--font-card`: Used inside the ID card canvas rendering (`ctx.font` calls in `app.js`).
+- **Poppins** (400 / 600 / 700): used by the 2026 CR80 ID card (HTML preview and canvas). Bundled locally in `web/fonts/` and declared in `style.css` §1a, so it works offline.
 
 ### 3.2 Font Loading
 Both fonts are loaded from Google Fonts via `<link rel="preconnect">` and `<link href="...fonts.googleapis.com">` in `<head>`. Canvases re-render after `document.fonts.ready` resolves to prevent font-swap layout shifts.
@@ -510,3 +511,6 @@ Text is rendered at 4.17× canvas scale. Key fields:
 
 ### 2026 Template (CONFIG_2026)
 Similar structure to old template but with different coordinate mapping, photo clip path (rounded rectangle with `ctx.clip()`), and department abbreviation lookup table.
+
+## Breakpoints & touch
+Scale: ≤380, ≤767, 768–1024, ≥1025. Minimum tap target `--tap-min` (45px); use invisible `::after` hit areas for tiny controls. Safe-area tokens `--safe-*`.

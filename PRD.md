@@ -45,6 +45,7 @@ ISU students and administrators lack a fast, accessible, zero-cost tool to produ
 - Two official templates: **Old ID** and **2026 New ID**.
 - Controlled by `state.idVersion` (`'old'` | `'2026'`).
 - Switching reloads the appropriate template PNG images and CONFIG coordinate objects.
+- **2026 New ID** is the default and follows the *ISU Student ID – CR80 Template* (816 × 1296 px, CR80 proportions). Its preview is a live HTML card; the canvases stay as the PNG/PDF export source.
 
 ### Feature 2 — Campus Theme Selector
 - 11 ISU campuses: Cabagan (default), Echague, Cauayan, Ilagan, Roxas, Angadanan, San Mateo, Jones, Palanan, San Mariano, Santiago City.
@@ -298,6 +299,8 @@ Click "OCR Autofill" → modal opens; Tesseract pre-loads
 | BR-005 | Crop output always 315 × 355 px |
 | BR-006 | 2026 ID: photo drawn *under* template (border shows over photo); Old ID: template drawn *over* photo area |
 | BR-007 | Hologram watermark embedded in all canvas exports |
+| BR-009 | 2026 ID: until a photo is added the frame shows the template's silhouette placeholder (preview and export); an empty signature shows nothing |
+| BR-010 | 2026 ID back: long contact-person / address values shrink to 22 px, then wrap to two lines and shrink further to fit the row |
 | BR-008 | QR payload: `ISU-VERIFY:{studentId}:{studentName}` |
 | BR-009 | Campus theme changes UI colors only — does not swap template PNG |
 | BR-010 | PDF export: `activeStudentIndex` temporarily iterated per student; restored in `finally` |
