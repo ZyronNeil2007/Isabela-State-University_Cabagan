@@ -1,0 +1,68 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   14. DESKTOP FORM HEADER
+─────────────────────────────────────────────────────────────────────────── */
+.desktop-form-header {
+    display: block;
+    /* controlled by media query in stepper mode */
+    margin-bottom: 1.25rem;
+}
+
+.desktop-form-header-top {
+    margin-bottom: 1rem;
+}
+
+.desktop-step-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: var(--radius-full);
+    background: rgba(29, 219, 29, 0.12);
+    border: 1px solid rgba(29, 219, 29, 0.35);
+    color: var(--green-400);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.65rem;
+    box-shadow: 0 0 12px rgba(29, 219, 29, 0.12);
+}
+
+.desktop-step-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    line-height: 1.1;
+    margin-bottom: 0.35rem;
+}
+
+/* Segmented progress bar — 9 segments injected by JS */
+.desktop-progress-bar {
+    display: flex;
+    gap: 4px;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+
+.progress-segment {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--white-12);
+    transition: background var(--dur-base) var(--ease-smooth),
+        transform var(--dur-base) var(--ease-spring);
+    transform-origin: left;
+}
+
+.progress-segment.done {
+    background: rgba(21, 185, 21, 0.50);
+}
+
+.progress-segment.active {
+    background: linear-gradient(90deg, var(--green-500), var(--green-400));
+    box-shadow: 0 0 8px var(--green-glow);
+    transform: scaleY(1.4);
+}
+
+

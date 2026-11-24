@@ -10,12 +10,13 @@
 | Key | Value |
 |---|---|
 | **Project** | ISU Premium ID Generator |
-| **Version** | 3.9.0 |
-| **Type** | Client-Side PWA (no build step, no framework, no backend) |
+| **Version** | 3.9.0 (refactor branch: cache `isu-id-v3.9.2`, unreleased) |
+| **Type** | Client-Side PWA (no build step, no framework, no backend; native ES modules) |
 | **Entry Point** | `web/index.html` |
-| **Primary Logic** | `web/app.js` |
-| **Styling** | `web/style.css` |
-| **Animations** | `web/animations.js` |
+| **Primary Logic** | `web/src/` (entry `web/src/app.js`; ES modules by feature) |
+| **Styling** | `web/styles/` (43 files, load order documented in `styles/main.css`) |
+| **Animations** | `web/src/animations/animations.js` |
+| **Docs** | `docs/` (architecture, design, development, deployment, security, decisions) |
 | **Android App** | `android/` (Kotlin + Jetpack Compose + WebView shell) |
 
 ---
@@ -23,7 +24,7 @@
 ## 2. Absolute Rules (Do Not Violate)
 
 ### 2.1 — No Build Tools
-There is **no Webpack, Vite, Rollup, npm, or Node.js build pipeline** for the web app. Do not introduce one. All files are plain HTML, CSS, and vanilla JavaScript. They must be openable directly via `file://` or a static HTTP server.
+There is **no Webpack, Vite, Rollup, npm, or Node.js build pipeline** for the web app. Do not introduce one. All files are plain HTML, CSS, and vanilla JavaScript (native ES modules). The app must be served over HTTP(S) — GitHub Pages, `localhost` (`cd web && python3 -m http.server 8000`) or the Android asset loader. **`file://` is not supported** (browsers block module scripts there; see `docs/decisions/0001-es-modules-with-window-bridge.md`). Dev-only tooling in `scripts/` (Playwright, ESLint) is allowed because nothing in it ships or is required to run the app.
 
 ### 2.2 — No Backend
 There is **no server, no API, no database, no auth**. All processing — rendering, OCR, signature extraction, PDF generation, session persistence — happens entirely in the browser. Do not introduce any server-side dependency.
@@ -36,7 +37,7 @@ All CDN libraries must:
 1. Be loaded with `defer` attribute.
 2. Include a SHA-384 SRI hash (`integrity` attribute).
 3. Include `crossorigin="anonymous"`.
-4. Be documented in `ARCHITECTURE.md` under the Integrations section.
+4. Be documented in `docs/architecture/ARCHITECTURE.md` under the Integrations section.
 
 ### 2.5 — Privacy Preservation
 Never introduce code that:
@@ -45,14 +46,14 @@ Never introduce code that:
 - Sets cookies or accesses `document.cookie`.
 
 ### 2.6 — No Modification Without Understanding the State Model
-The global `state` object in `app.js` is the single source of truth. Before modifying any feature, understand the full state flow:
+The `state` object (`web/src/core/state/state.js`) is the single source of truth. Before modifying any feature, understand the full state flow:
 ```
 DOM input event → state.students[activeIndex].formData update → renderCanvases() → saveSessionToStorage()
 ```
 Always update `state` first, then call `renderCanvases()`. Never mutate the canvas directly without going through state.
 
 ### 2.7 — Preserve Existing Comments and Docstrings
-Do not remove or shorten existing JSDoc comments, section headers (the `═══` banner comments in `app.js`), or CSS section comments. These are the developer's primary navigation system in a large, single-file codebase.
+Do not remove or shorten existing JSDoc comments, section headers (the `═══` banner comments at the top of each module in `web/src/`), or CSS section comments. These are the developer's primary navigation system in a large, single-file codebase.
 
 ---
 
@@ -64,7 +65,8 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
 | `web/style.css` | Styling | All CSS; design tokens in `:root`; 22 documented sections | Use `!important` excessively; add Tailwind; use inline styles in JS unless dynamically computed |
 | `web/app.js` | Logic | State management, canvas rendering, all feature modules | Move logic to HTML; use `document.write`; use synchronous XHR |
 | `web/animations.js` | Motion | GSAP, Anime.js, Three.js animations only | Add business logic; modify state object; call `renderCanvases()` |
-| `web/fonts/` | Assets | Local Poppins woff2 files (SIL OFL, see `Poppins-OFL.txt`) used by the CR80 ID | Add fonts without a license file |
+| `web/assets/` | Assets | Images (`logos`, `templates/{legacy,2026}`, `placeholders`, `screenshots`) and local Poppins woff2 files (SIL OFL, see `fonts/Poppins-OFL.txt`) |
+| `web/assets/fonts/` | Assets | Local Poppins woff2 files (SIL OFL, see `Poppins-OFL.txt`) used by the CR80 ID | Add fonts without a license file |
 | `web/sw.js` | PWA | Service Worker; cache versioning | Add fetch interception for POST requests |
 | `web/manifest.webmanifest` | PWA | App identity, icons, display mode | Change `start_url` without updating SW cache name |
 
@@ -81,11 +83,11 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
   - DOM element lookups: prefer `getElementById` for unique elements; `querySelector` for CSS selectors.
 - **Error handling**: Wrap all async operations in `try/catch/finally`. All user-facing errors must go through `showToast(message, 'error')`.
 - **DOM queries**: Do not cache DOM element references at module top-level if elements may not exist at parse time. Use `?.` optional chaining or guard with `if (!el) return;`.
-- **Throttle/Debounce**: Use the existing `throttle()` utility in `app.js`. Do not import lodash.
+- **Throttle/Debounce**: Use the existing `throttle()` utility (`web/src/utils/throttle.js`). Do not import lodash.
 - **No jQuery**.
 
 ### 4.2 CSS
-- All design tokens live in `style.css` under section `1. DESIGN TOKENS` as CSS custom properties on `:root`.
+- All design tokens live in `web/styles/base/tokens.css` (section `1. DESIGN TOKENS`) as CSS custom properties on `:root`.
 - Never hardcode color hex values in component rules — always reference a CSS variable.
 - New components must follow the existing glass tier system:
   - `--glass-t1-*`: Main panels (form, preview).
@@ -97,7 +99,7 @@ Do not remove or shorten existing JSDoc comments, section headers (the `══�
      N. SECTION NAME
   ─────────────────────────────────────────────────────────── */
   ```
-- Animations must respect `prefers-reduced-motion`. Check `animations.js` module G for the pattern.
+- Animations must respect `prefers-reduced-motion`. Check `src/animations/animations.js` module G for the pattern.
 - Mobile performance rules (≤ 860px): disable `backdrop-filter`, hide decorative orbs/glows.
 
 ### 4.3 HTML
@@ -136,7 +138,7 @@ CONFIG = {
 - All coordinates in CONFIG are in native canvas pixels, not CSS pixels.
 
 ### 5.3a — CR80 HTML Preview (2026)
-The 2026 preview is a live HTML card (`#cr80-front`, `#cr80-back`, CSS in `style.css` §23), filled by `renderCr80Preview()` which `renderCanvases()` calls. The canvases are still rendered and remain the export source, so:
+The 2026 preview is a live HTML card (`#cr80-front`, `#cr80-back`, CSS in `web/styles/features/cr80-card.css` (§23)), filled by `renderCr80Preview()` which `renderCanvases()` calls. The canvases are still rendered and remain the export source, so:
 - Never edit the card in the DOM directly — update `state` first, then `renderCanvases()`.
 - A layout change must be made in **both** places: the CSS/HTML card and `CONFIG_2026` + the blank template PNGs.
 - Use the `[hidden]` attribute on card images only together with `.cr80-face img[hidden] { display: none; }` (the global `img { display: block }` reset overrides it otherwise).
@@ -178,7 +180,8 @@ const state = {
   audioEnabled:        boolean,
   activeStudentIndex:  number,
   students:            StudentObject[],
-  _quotaWarned:        boolean        // internal flag; do not expose to UI
+  _quotaWarned:        boolean,       // internal flag; do not expose to UI
+  _restorePending:     boolean        // internal: restore banner shown; blank autosaves are skipped
 };
 ```
 
@@ -263,13 +266,13 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 
 ---
 
-## 11. Animation Module Rules (`animations.js`)
+## 11. Animation Module Rules (`src/animations/animations.js`)
 
 - Must register `gsap.registerPlugin(ScrollTrigger)` at the top.
 - Always check `prefersReducedMotion()` inside each function — never at parse time.
 - Three.js `initThreeHero()` is currently **disabled** (returns immediately). Do not re-enable without profiling.
 - The holographic shimmer rAF loop must pause when `document.hidden === true`.
-- `window.onCampusThemeChange` is a public callback registered by `animations.js`. `app.js` calls it on campus theme switch to update particle colors.
+- `window.onCampusThemeChange` is a public callback registered by `animations.js`. `campus-theme.js` calls it on campus theme switch to update particle colors.
 
 ---
 
@@ -281,25 +284,28 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 - QR generation uses **ZXing**.
 - Photo crop uses **uCrop** library.
 - Session persistence uses **Room** (SQLite) + **DataStore** (preferences).
-- The `android/app/src/main/assets/www/` directory contains a mirrored copy of the web app's `style.css` — keep it in sync with `web/style.css`.
+- `android/app/src/main/assets/www/` is a **generated mirror of `web/`** (minus `sw.js`, manifest, `tools/`, screenshots). Never edit it by hand: run `node scripts/sync-android-assets/sync.js` after every web change; CI runs it with `--check`.
+- The Android injected JS (`BRIDGE_INJECTION_JS`) patches `document.createElement('a')` and file inputs; keep PNG/PDF export going through `<a download>` clicks.
 
 ---
 
 ## 13. Testing Checklist (Before Any PR)
 
-- [ ] Open `web/index.html` directly in Chrome and Firefox (no local server).
+- [ ] Serve `web/` (`python3 -m http.server 8000`) and open it in Chrome and Firefox.
+- [ ] `node scripts/validation/check-references.js`, `node scripts/validation/regression.js`, `node scripts/validation/features.js` (see `CONTRIBUTING.md`).
 - [ ] Fill in a full student record: name, photo (upload + crop), ID, course/department, DOB, parent, address, telephone, signature (draw and AI modes).
 - [ ] Verify live canvas updates on each step.
 - [ ] Verify card flips at step 6.
 - [ ] Test PDF export (single + batch of 2 students).
 - [ ] Test PNG export (front, back, both).
 - [ ] Test session restore: fill form, reload page, click "Restore".
-- [ ] Test CSV import with the sample CSV from `web/scripts/dummy_data_generator.py`.
+- [ ] Test CSV import with the sample CSV from `web/tools/dummy_data_generator.py`.
 - [ ] Test OCR modal (if applicable — requires local HTTP server for Tesseract WASM).
 - [ ] Test all 11 campus themes — verify UI colors update.
 - [ ] Test on mobile viewport (Chrome DevTools): stepper, export sheet, camera input.
 - [ ] Confirm no `console.error` output (warnings are acceptable).
-- [ ] Check that `sw.js` cache version (`isu-id-vX.Y.Z`) was bumped if any cached asset changed.
+- [ ] Check that `sw.js` cache version (`isu-id-vX.Y.Z`) was bumped if any cached asset changed, and that new files are in `PRECACHE_ASSETS`.
+- [ ] Run `node scripts/sync-android-assets/sync.js` so the Android bundle matches `web/`.
 
 ---
 
@@ -313,14 +319,14 @@ The AI signature enhancement pipeline (`enhanceSignatureWithAI`) follows this se
 | JS constants | `UPPER_SNAKE_CASE` | `CAMPUS_CONFIG`, `SESSION_KEY` |
 | Image files | `descriptive_snake_case.ext` | `template_front.id.png` |
 | CSS keyframes | `camelCase` | `@keyframes wordPop`, `@keyframes pulseDot` |
-| Section comments in `app.js` | `N. FEATURE NAME — Description` | `17. SESSION SAVE — Auto-persist...` |
-| Section comments in `style.css` | `N. SECTION NAME` with `───` divider | `22. RESPONSIVE BREAKPOINTS` |
+| Section comments in `web/src/**` | `N. FEATURE NAME — Description` | `17. SESSION SAVE — Auto-persist...` |
+| Section comments in `web/styles/**` | `N. SECTION NAME` with `───` divider | `22. RESPONSIVE BREAKPOINTS` |
 
 ---
 
 ## 15. What NOT to Change Without Discussion
 
-- The `CONFIG` and `CONFIG_2026` objects — changing coordinates breaks the template alignment (and the CR80 HTML card in `style.css` §23 must match).
+- The `CONFIG` and `CONFIG_2026` objects — changing coordinates breaks the template alignment (and the CR80 HTML card CSS in `web/styles/features/cr80-card.css` §23 must match).
 - The `SESSION_KEY` constant — changing it invalidates all users' saved sessions.
 - The SW cache name `isu-id-vX.Y.Z` convention — must be bumped with every release.
 - The `MAX_STUDENTS = 5` UI tab limit — changing this without updating PDF layout logic breaks exports.

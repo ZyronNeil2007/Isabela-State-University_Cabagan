@@ -1,0 +1,66 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   4. FLOATING ORBS (Decorative Background Blobs)
+─────────────────────────────────────────────────────────────────────────── */
+.floating-orbs {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    /*
+     * PERF FIX 2: Removed filter:blur(80px) — a large-radius CSS blur
+     * is one of the most GPU-intensive operations in the browser.
+     * The orbs already use radial-gradient(…, transparent) which gives
+     * a soft, naturally-diffused edge without any blur calculation.
+     * On mobile we additionally hide them via the media query below.
+     */
+}
+
+.orb-1 {
+    width: clamp(400px, 50vw, 700px);
+    height: clamp(400px, 50vw, 700px);
+    background: radial-gradient(circle, rgba(21, 185, 21, 0.16) 0%, rgba(10, 100, 10, 0.08) 50%, transparent 70%);
+    top: -15%;
+    left: -15%;
+}
+
+.orb-2 {
+    width: clamp(300px, 40vw, 550px);
+    height: clamp(300px, 40vw, 550px);
+    background: radial-gradient(circle, rgba(4, 57, 4, 0.30) 0%, transparent 70%);
+    bottom: 5%;
+    right: -10%;
+}
+
+.orb-3 {
+    width: clamp(200px, 25vw, 400px);
+    height: clamp(200px, 25vw, 400px);
+    background: radial-gradient(circle, rgba(201, 168, 76, 0.07) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.orb-4 {
+    width: clamp(250px, 30vw, 480px);
+    height: clamp(250px, 30vw, 480px);
+    background: radial-gradient(circle, rgba(160, 120, 48, 0.09) 0%, transparent 70%);
+    bottom: 10%;
+    left: -8%;
+}
+
+/* Ensure all page content sits above orbs */
+nav,
+section,
+main,
+footer {
+    position: relative;
+    z-index: 1;
+}
+
+

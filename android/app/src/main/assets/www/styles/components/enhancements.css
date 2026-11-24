@@ -1,0 +1,118 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   24. UI/UX PRO MAX ENHANCEMENTS — Social Brand Colors, Scroll Reveal, Polish
+─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Social icon brand colors on hover ── */
+.icon-link:hover {
+    background: var(--white-12) !important;
+    color: var(--text-primary);
+    border-color: var(--white-20) !important;
+    transform: scale(1.14) translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* GitHub — green glow */
+a[aria-label="GitHub"]:hover {
+    color: #4ade80 !important;
+    box-shadow: 0 0 14px rgba(74, 222, 128, 0.30) !important;
+}
+
+/* Facebook — blue tint */
+a[aria-label="Facebook"]:hover {
+    color: #60a5fa !important;
+    box-shadow: 0 0 14px rgba(96, 165, 250, 0.25) !important;
+}
+
+/* Instagram — pink tint */
+a[aria-label="Instagram"]:hover {
+    color: #f472b6 !important;
+    box-shadow: 0 0 14px rgba(244, 114, 182, 0.25) !important;
+}
+
+/* Email — gold tint */
+a[aria-label="Email"]:hover {
+    color: var(--gold-400) !important;
+    box-shadow: 0 0 14px var(--gold-glow) !important;
+}
+
+/* ── Scroll reveal animation ── */
+@keyframes revealUp {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.98);
+        filter: blur(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+.reveal {
+    animation: revealUp 0.65s var(--ease-out) both;
+}
+
+/* ── Flip hint rotate animation on hover ── */
+.flip-hint i {
+    transition: transform 0.5s var(--ease-spring);
+}
+
+.flip-hint:hover i {
+    transform: rotate(200deg);
+}
+
+/* ── Stepper next button — vivid green ── */
+.stepper-btn-next {
+    background: linear-gradient(150deg, var(--forest-600) 0%, var(--green-500) 50%, var(--green-vivid) 100%);
+    color: #fff;
+    box-shadow: 0 6px 24px rgba(21, 185, 21, 0.35);
+}
+
+.stepper-btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(29, 219, 29, 0.50);
+}
+
+/* ── Glass panel top-edge green accent on hover ── */
+.glass-panel:hover::before {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(29, 219, 29, 0.35) 30%,
+            rgba(255, 255, 255, 0.55) 50%,
+            rgba(29, 219, 29, 0.35) 70%,
+            transparent 100%);
+}
+
+/* ── Student tab hover upgrade ── */
+.student-tab:hover:not(.active) {
+    background: rgba(29, 219, 29, 0.08);
+    border-color: rgba(29, 219, 29, 0.25);
+    color: var(--green-300);
+    transform: translateY(-1px);
+}
+
+/* ── Add student btn — green glow on hover ── */
+.add-student-btn:hover {
+    background: rgba(29, 219, 29, 0.14);
+    border-color: var(--green-vivid);
+    color: var(--green-300);
+    transform: scale(1.08);
+    box-shadow: 0 0 12px rgba(29, 219, 29, 0.20);
+}
+
+/* ── Session banner upgrade ── */
+.session-banner {
+    background: linear-gradient(135deg, rgba(29, 219, 29, 0.14), rgba(5, 88, 6, 0.10));
+    border-bottom: 1px solid rgba(29, 219, 29, 0.30);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(29, 219, 29, 0.10);
+}
+
+/* ── Smooth focus-visible ring for accessibility ── */
+*:focus-visible {
+    outline: 2px solid rgba(29, 219, 29, 0.70);
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+
+

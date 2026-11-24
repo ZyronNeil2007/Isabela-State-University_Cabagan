@@ -1,0 +1,908 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   22. RESPONSIVE BREAKPOINTS
+─────────────────────────────────────────────────────────────────────────── */
+
+/* ═══ DESKTOP NAV — show at ≥861px ════════════════════════════ */
+@media (min-width: 861px) {
+    .logo-container {
+        flex: 1;
+    }
+
+    .desktop-menu {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+    }
+
+    .nav-actions {
+        flex: 1;
+        justify-content: flex-end;
+    }
+
+    /* Ensure hamburger hidden on desktop */
+    .nav-hamburger {
+        display: none !important;
+    }
+
+    /* Show "Get Your ID" text on desktop */
+    #nav-cta-btn span {
+        display: inline !important;
+    }
+
+    .footer-container {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .footer-text {
+        text-align: left;
+    }
+}
+
+
+/* ═══ STEPPER MODE — GLOBAL ACTIVATION ════════════════════════
+   Applied at all screen sizes (as per original design intent).
+   Sections below selectively restore desktop elements.
+══════════════════════════════════════════════════════════════ */
+
+/* Force stepper chrome visible */
+.stepper-header {
+    display: flex !important;
+}
+
+.stepper-nav {
+    display: flex !important;
+}
+
+/* Hide desktop-only in stepper mode */
+.desktop-form-header {
+    display: none !important;
+}
+
+.desktop-download-btn {
+    display: none !important;
+}
+
+#desktop-export-actions {
+    display: none !important;
+}
+
+/* All form steps hidden by default */
+.steps-wrapper .form-group {
+    display: none;
+    animation: stepFadeIn 0.35s var(--ease-smooth) both;
+    margin-bottom: 0;
+}
+
+/* Only the active step visible */
+.steps-wrapper .form-group.active-step {
+    display: block;
+}
+
+
+/* ═══ DESKTOP OVERRIDES (≥ 900px) ══════════════════════════
+   On wider screens: restore the desktop header, segmented bar,
+   and download button. Hide the mini-preview header (full preview
+   is visible on the right sticky column).
+══════════════════════════════════════════════════════════════ */
+@media (min-width: 900px) {
+
+    /* Restore desktop header elements */
+    .desktop-form-header {
+        display: block !important;
+    }
+
+    .desktop-download-btn {
+        display: block !important;
+    }
+
+    #desktop-export-actions {
+        display: flex !important;
+    }
+
+    /* Hide mini-preview header on desktop (full preview is on the right) */
+    .stepper-header {
+        display: none !important;
+    }
+
+    /* Stepper nav stays visible as Back/Next on desktop */
+    .stepper-nav {
+        display: flex !important;
+        margin-top: 1rem;
+    }
+
+    /* Desktop stepper nav — more compact style */
+    .stepper-btn {
+        padding: 11px 16px;
+        font-size: 0.85rem;
+        flex: initial;
+    }
+
+    .stepper-btn-back {
+        flex: 0 0 auto;
+        padding: 11px 20px;
+    }
+
+    .stepper-btn-next {
+        flex: 1;
+    }
+
+    .stepper-btn-done {
+        flex: 1;
+    }
+
+    /* Container: two-column split */
+    .container {
+        flex-wrap: nowrap;
+        align-items: flex-start;
+    }
+
+    .form-section {
+        max-width: 460px;
+        flex-shrink: 0;
+    }
+
+    .preview-section {
+        max-width: none;
+        flex: 1;
+    }
+}
+
+
+/* ═══ LARGE DESKTOP (≥ 1200px) ═══════════════════════════════ */
+@media (min-width: 1200px) {
+    .form-section {
+        max-width: 500px;
+    }
+
+    .flip-card-container {
+        max-width: 360px;
+    }
+}
+
+
+/* ═══ PHONE stack (≤ 767px) — tablets (768–1024) use the two-column layer in §24 ═══ */
+@media (max-width: 767px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .form-section,
+    .preview-section {
+        flex: none;
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .flip-card-container {
+        max-width: 380px;
+    }
+
+    .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .hero-text-col {
+        align-items: center;
+    }
+
+    .hero-subtitle {
+        max-width: 100%;
+    }
+
+    .hero-actions {
+        justify-content: center;
+    }
+
+    .hero-features {
+        align-items: center;
+        justify-content: center;
+    }
+
+    .hero-card-col {
+        min-height: 360px;
+        margin-top: 1rem;
+    }
+
+    .hero-id-front {
+        width: 190px;
+    }
+
+    .hero-id-back {
+        width: 155px;
+        transform: rotate(8deg) translate(65px, 28px);
+        animation: heroCardFloat2Tablet 7s 0.5s ease-in-out infinite;
+    }
+
+    .hero-fb-2 {
+        left: 8%;
+    }
+}
+
+
+/* ═══ MOBILE (≤ 600px) ═══════════════════════════════════════ */
+@media (max-width: 600px) {
+    body {
+        padding-top: 0;
+    }
+
+    .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .glass-panel {
+        border-radius: var(--radius-xl);
+        padding: 1.25rem;
+    }
+
+    /* Hero section: reduce spacing for compact above-fold layout */
+    .hero-section {
+        min-height: auto;
+        padding-top: calc(var(--navbar-height) + 1.5rem);
+        padding-bottom: 0.5rem;
+    }
+
+    /* Tighten vertical rhythm between all hero stacked elements */
+    .hero-content {
+        gap: clamp(0.75rem, 2vw, 1.15rem);
+        padding: 0.75rem 0.5rem 0.25rem;
+    }
+
+    /* Title */
+    .hero-title {
+        font-size: clamp(1.8rem, 9.5vw, 2.5rem);
+        line-height: 1.15;
+        margin: 0;
+    }
+
+    .hero-title-sub {
+        display: block;
+        margin-top: 0.2rem;
+    }
+
+    /* Subtitle */
+    .hero-subtitle {
+        max-width: 100%;
+        font-size: 0.9rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Badge: allow wrapping on narrow viewports */
+    .hero-badge {
+        margin: 0 auto;
+        max-width: calc(100vw - 3rem);
+        white-space: normal;
+        text-align: center;
+        line-height: 1.5;
+    }
+
+    /* CTA buttons: full-width stacked column on mobile */
+    .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+        width: 100%;
+        gap: 0.55rem;
+    }
+
+    .hero-actions .btn-primary,
+    .hero-actions .btn-ghost {
+        width: 100%;
+        flex: none;
+        padding: 0.85rem 1.2rem;
+        font-size: 0.9rem;
+        justify-content: center;
+    }
+
+    /* Card stage: self-contained box, overflow visible for floating badges */
+    .hero-stage {
+        width: min(86vw, 320px);
+        height: clamp(190px, 54vw, 268px);
+        overflow: visible;
+        margin: 0 auto;
+    }
+
+    /* Front card: slightly left, consistent rotation */
+    .hero-id-front {
+        width: clamp(130px, 40vw, 175px);
+        transform: rotate(-5deg) translate(-28%, 0);
+        animation: cardFloatA 7s ease-in-out infinite;
+    }
+
+    /* Back card: proportional offset, no fixed pixel translate */
+    .hero-id-back {
+        width: clamp(100px, 31vw, 138px);
+        transform: rotate(7deg) translate(38%, 8%);
+        animation: heroCardFloat2Mobile 8s 0.8s ease-in-out infinite;
+    }
+
+    /* Floating badge chips: smaller, still legible */
+    .hero-floating-badge {
+        font-size: 0.58rem;
+        padding: 0.26rem 0.55rem;
+        border-radius: 1rem;
+        gap: 0.25rem;
+    }
+
+    /* Reposition badges to stay within viewport */
+    .hero-fb-1 {
+        top: -12%;
+        left: 50%;
+        right: auto;
+        --bx: -50%;
+    }
+
+    .hero-fb-2 {
+        left: -4%;
+        bottom: 20%;
+        top: auto;
+        right: auto;
+        --bx: 0;
+    }
+
+    .hero-fb-3 {
+        right: -4%;
+        bottom: 5%;
+        left: auto;
+        top: auto;
+        --bx: 0;
+    }
+
+    .hero-fb-4 {
+        bottom: -12%;
+        left: 50%;
+        right: auto;
+        --bx: -50%;
+    }
+
+    /* Stats strip: shrink padding so 4 items fit at any width */
+    .hero-stats {
+        width: 100%;
+        max-width: min(100%, 340px);
+    }
+
+    .hero-stat {
+        padding: 0.6rem 0.65rem;
+        flex: 1;
+    }
+
+    .hero-stat-number {
+        font-size: 1.05rem;
+    }
+
+    .hero-stat-label {
+        font-size: 0.54rem;
+        letter-spacing: 0.06em;
+    }
+
+    .hero-stat-div {
+        height: 26px;
+    }
+
+    /* Scroll indicator: compress padding */
+    .hero-scroll-indicator {
+        padding: 0.4rem 0 0.8rem;
+        margin-top: 0;
+    }
+
+    /* Decorative: smaller, lower opacity to reduce visual weight */
+    .hero-card-glow {
+        width: 200px;
+        height: 200px;
+    }
+
+
+    /* Marquee: tighter spacing */
+    .hero-marquee {
+        margin-top: 0.25rem;
+        padding: 0.6rem 0;
+    }
+
+    /* Legacy grid/col classes */
+    .hero-grid {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        gap: 1rem;
+    }
+
+    .hero-text-col {
+        display: contents;
+    }
+
+    .hero-card-col {
+        min-height: 260px;
+        margin: 0.25rem 0;
+        width: 100%;
+    }
+
+    /* Feature pills */
+    .hero-features {
+        align-items: center;
+        justify-content: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .hero-feature-pill {
+        max-width: none;
+        width: auto;
+        padding: 0.4rem 0.75rem;
+        border-radius: 2rem;
+    }
+
+    .feature-pill-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+    }
+
+    .feature-pill-icon i {
+        font-size: 0.82rem;
+    }
+
+    .feature-pill-title {
+        font-size: 0.73rem;
+    }
+
+    .feature-pill-desc {
+        display: none;
+    }
+
+    /* Navbar */
+    .logo-text {
+        font-size: 0.85rem;
+        max-width: 120px;
+        line-height: 1.2;
+    }
+
+    #navbar .logo-img {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .btn-nav span {
+        display: none;
+    }
+
+    .btn-nav {
+        padding: 0.55rem 0.7rem;
+    }
+
+    .btn-nav i {
+        font-size: 1.1rem;
+    }
+
+    .flip-card-container {
+        max-width: 290px;
+    }
+}
+
+
+/* ═══ SMALL MOBILE (≤ 380px) ═════════════════════════════════ */
+@media (max-width: 380px) {
+    .hero-title {
+        font-size: clamp(1.65rem, 9vw, 1.85rem);
+    }
+
+    /* Buttons: already column from 600px block; ensure full width */
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .hero-actions .btn-primary,
+    .hero-actions .btn-ghost {
+        width: 100%;
+        padding: 0.75rem 1rem;
+    }
+
+    /* Stage: tighter on very small screens */
+    .hero-stage {
+        width: min(92vw, 290px);
+        height: clamp(170px, 54vw, 240px);
+    }
+
+    .hero-id-front {
+        width: clamp(110px, 37vw, 155px);
+    }
+
+    .hero-id-back {
+        width: clamp(86px, 29vw, 120px);
+    }
+
+    /* Stats: hide dividers at 380px to save space */
+    .hero-stat {
+        padding: 0.5rem 0.5rem;
+    }
+
+    .hero-stat-number {
+        font-size: 0.95rem;
+    }
+
+    .hero-stat-label {
+        font-size: 0.5rem;
+    }
+
+    /* Badge: smaller text at this breakpoint */
+    .hero-badge {
+        font-size: 0.6rem;
+        padding: 0.3rem 0.7rem;
+    }
+
+    .hero-feature-pill {
+        padding: 0.4rem 0.65rem;
+    }
+
+    .preview-chips {
+        gap: 0.35rem;
+    }
+
+    .chip {
+        font-size: 0.65rem;
+        padding: 0.25rem 0.55rem;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   23. V3.0 UPGRADES � STUDENT TABS, CROPPER, EXPORT ACTIONS
+--------------------------------------------------------------------------- */
+
+/* -- STUDENT TABS -- */
+.student-tabs-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+.student-tabs-container::-webkit-scrollbar {
+    display: none;
+    /* Chrome/Safari */
+}
+
+.student-tabs {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.student-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    background: var(--glass-t2-bg);
+    border: 1px solid var(--glass-t2-border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--dur-fast) var(--ease-smooth);
+    white-space: nowrap;
+}
+
+.student-tab.active {
+    background: var(--green-glow-strong);
+    border-color: var(--accent);
+    color: var(--text-primary);
+}
+
+.student-tab-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--white-12);
+}
+
+.btn-remove-student {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--danger);
+    font-size: 0.6rem;
+    margin-left: 0.25rem;
+    transition: background 0.2s;
+}
+
+.btn-remove-student:hover {
+    background: rgba(255, 59, 48, 0.5);
+    color: #fff;
+}
+
+.add-student-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--white-12);
+    border: 1px dashed var(--white-40);
+    color: var(--text-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--dur-fast) ease;
+}
+
+.add-student-btn:hover {
+    background: var(--white-20);
+    border-color: var(--white);
+    transform: scale(1.05);
+}
+
+/* -- PHOTO CROPPER -- */
+.photo-preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.recrop-btn {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--glass-t3-bg);
+    border: 1px solid var(--glass-t3-border);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    padding: 0.25rem 0.75rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all var(--dur-fast) ease;
+}
+
+.recrop-btn:hover {
+    color: var(--text-primary);
+    background: var(--white-12);
+}
+
+.cropper-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--dur-base) ease;
+}
+
+.cropper-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.cropper-modal {
+    width: 90%;
+    max-width: 500px;
+    background: var(--forest-900);
+    /* solid fallback */
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1.5rem;
+    transform: translateY(20px) scale(0.95);
+    transition: transform var(--dur-base) var(--ease-spring);
+}
+
+.cropper-modal-overlay.active .cropper-modal {
+    transform: translateY(0) scale(1);
+}
+
+.cropper-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cropper-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.btn-close {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    transition: color 0.2s;
+}
+
+.btn-close:hover {
+    color: var(--text-primary);
+}
+
+.cropper-body {
+    position: relative;
+    width: 100%;
+    height: 350px;
+    background: #000;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    touch-action: none;
+    /* Prevent scroll on drag */
+}
+
+.cropper-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: grab;
+    touch-action: none;
+}
+
+.cropper-viewport:active {
+    cursor: grabbing;
+}
+
+#cropper-img {
+    max-width: none;
+    transform-origin: center;
+    pointer-events: none;
+}
+
+.cropper-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* Passport ratio 315:355 = 1:1.127 */
+    width: 200px;
+    height: 225.4px;
+    border: 2px solid var(--gold-500);
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.cropper-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.cropper-zoom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.cropper-zoom input[type="range"] {
+    flex: 1;
+    accent-color: var(--green-500);
+}
+
+.cropper-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.cropper-actions button {
+    padding: 0.5rem 1.25rem;
+}
+
+/* -- EXPORT ACTIONS -- */
+.export-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.export-dropdown-container {
+    position: relative;
+}
+
+.export-dropdown-menu {
+    position: absolute;
+    bottom: calc(100% + 0.5rem);
+    right: 0;
+    background: var(--glass-t1-bg);
+    backdrop-filter: blur(var(--glass-t1-blur));
+    border: 1px solid var(--glass-t1-border);
+    border-radius: var(--radius-lg);
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 160px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px);
+    transition: all var(--dur-fast) ease;
+    box-shadow: var(--glass-t2-shadow);
+}
+
+.export-dropdown-menu.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.export-dropdown-menu button {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+.export-dropdown-menu button:hover {
+    background: var(--white-12);
+}
+
+/* Mobile Export Sheet */
+.mobile-export-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: var(--forest-900);
+    border-top: 1px solid var(--glass-t1-border);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transform: translateY(100%);
+    transform: translateY(110%);
+    transition: transform var(--dur-base) var(--ease-spring), visibility var(--dur-base);
+    visibility: hidden;
+}
+
+.mobile-export-sheet.show {
+    transform: translateY(0);
+    visibility: visible;
+}
+
+.sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sheet-header h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.sheet-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sheet-body button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+}
+
+

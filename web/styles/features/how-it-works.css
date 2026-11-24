@@ -1,0 +1,138 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   HOW IT WORKS SECTION
+────────────────────────────────────────────────────────────────────────── */
+.hiw-section {
+    padding: var(--section-padding);
+    position: relative;
+}
+
+/* Background accent */
+.hiw-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 50% at 50% 100%,
+        rgba(29, 219, 29, 0.06) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Steps row */
+.hiw-steps {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Individual step */
+.hiw-step {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    text-align: center;
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    border-radius: var(--radius-xl);
+    background: var(--glass-t2-bg);
+    border: 1px solid var(--glass-t2-border);
+    position: relative;
+    transition: transform 0.35s var(--ease-spring), box-shadow 0.35s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.hiw-step:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(29, 219, 29, 0.20);
+}
+
+/* Step number */
+.hiw-step-num {
+    position: absolute;
+    top: -0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--green-400);
+    background: var(--forest-900);
+    border: 1px solid rgba(29, 219, 29, 0.30);
+    border-radius: var(--radius-full);
+    padding: 0.15rem 0.6rem;
+    white-space: nowrap;
+}
+
+/* Step icon circle */
+.hiw-step-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(29, 219, 29, 0.15) 0%, rgba(10, 138, 10, 0.08) 100%);
+    border: 1px solid rgba(29, 219, 29, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    color: var(--green-400);
+    box-shadow: 0 0 20px rgba(29, 219, 29, 0.12);
+    transition: transform 0.35s var(--ease-spring), box-shadow 0.35s ease;
+}
+
+.hiw-step:hover .hiw-step-icon {
+    transform: scale(1.10) rotate(-4deg);
+    box-shadow: 0 0 28px rgba(29, 219, 29, 0.25);
+}
+
+.hiw-step-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.hiw-step-desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+/* Connector between steps */
+.hiw-connector {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.5rem;
+    flex-shrink: 0;
+    gap: 0.3rem;
+}
+
+.hiw-connector-line {
+    width: clamp(30px, 4vw, 60px);
+    height: 2px;
+    background: linear-gradient(90deg, rgba(29, 219, 29, 0.30), rgba(29, 219, 29, 0.10));
+    border-radius: 2px;
+}
+
+.hiw-connector-arrow {
+    font-size: 1rem;
+    color: rgba(29, 219, 29, 0.40);
+}
+
+/* CTA below steps */
+.hiw-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: clamp(2rem, 4vw, 3.5rem);
+}
+
+.hiw-cta .btn-primary {
+    width: auto;
+    padding: 14px 32px;
+    font-size: 1rem;
+}
+

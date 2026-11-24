@@ -1,0 +1,195 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   SITE FOOTER
+────────────────────────────────────────────────────────────────────────── */
+.site-footer {
+    position: relative;
+    background: linear-gradient(180deg, transparent 0%, rgba(2, 15, 2, 0.95) 30%, #010d01 100%);
+    border-top: 1px solid rgba(29, 219, 29, 0.15);
+    margin-top: clamp(3rem, 6vw, 6rem);
+    overflow: hidden;
+}
+
+.footer-glow {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(600px, 80vw);
+    height: 200px;
+    background: radial-gradient(ellipse at 50% 0%,
+        rgba(29, 219, 29, 0.08) 0%,
+        transparent 70%);
+    pointer-events: none;
+}
+
+.footer-inner {
+    padding-top: clamp(3rem, 6vw, 5rem);
+    padding-bottom: 2rem;
+}
+
+/* Top section: brand + links grid */
+.footer-top {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: flex-start;
+    margin-bottom: clamp(2rem, 4vw, 3.5rem);
+}
+
+/* Brand column */
+.footer-brand { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.footer-logo-text { display: flex; flex-direction: column; }
+
+.footer-logo-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+}
+
+.footer-logo-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.03em;
+}
+
+.footer-tagline {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    max-width: 360px;
+}
+
+.footer-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.footer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--radius-full);
+    background: rgba(29, 219, 29, 0.08);
+    border: 1px solid rgba(29, 219, 29, 0.22);
+    color: var(--green-400);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.footer-badge i { font-size: 0.8rem; }
+
+/* Links grid */
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.footer-links-col {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.footer-links-heading {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.3rem;
+}
+
+.footer-link {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    cursor: pointer;
+}
+
+.footer-link:hover {
+    color: var(--green-400);
+    padding-left: 4px;
+}
+
+/* Divider */
+.footer-rule {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08) 30%, rgba(29, 219, 29, 0.20) 50%, rgba(255,255,255,0.08) 70%, transparent);
+    margin-bottom: clamp(1rem, 3vw, 2rem);
+}
+
+/* Bottom bar */
+.footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.footer-copy {
+    font-size: 0.80rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+.footer-copy-link {
+    color: var(--green-400);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.footer-copy-link:hover { color: var(--green-300); }
+
+.footer-version {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.footer-version-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    background: rgba(29, 219, 29, 0.12);
+    border: 1px solid rgba(29, 219, 29, 0.25);
+    color: var(--green-400);
+    letter-spacing: 0.06em;
+}
+
+.footer-version-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+}
+
+/* Footer responsive */
+@media (max-width: 860px) {
+    .footer-top {
+        grid-template-columns: 1fr;
+    }
+    .footer-links-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .footer-tagline { max-width: 100%; }
+}
+
+@media (max-width: 480px) {
+    .footer-links-grid { grid-template-columns: 1fr; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
+

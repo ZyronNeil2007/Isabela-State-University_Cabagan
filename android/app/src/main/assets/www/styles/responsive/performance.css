@@ -1,0 +1,110 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   PERFORMANCE — Mobile / Low-End GPU Overrides
+   PERF FIX 3: Disable expensive backdrop-filter on mobile (≤ 860px).
+   Mobile/tablet GPUs struggle to composite multiple blur layers while
+   scrolling. Replace with semi-opaque solid fallbacks for readability.
+═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+
+    /* Hide orbs entirely on mobile — they add GPU overhead with no benefit
+       on small screens where they're largely off-viewport anyway. */
+    .floating-orbs {
+        display: none;
+    }
+
+    /* Glass Tier 1 — main panels */
+    .glass-panel {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(4, 30, 4, 0.82) !important;
+    }
+
+    /* Form groups — Tier 2 */
+    .form-group {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(2, 20, 2, 0.75) !important;
+    }
+
+    /* Liquid Glass — navbar / footer elements — Tier 3 */
+    .liquid-glass {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 20, 3, 0.88) !important;
+    }
+
+    /* Exception: restore blur on the top nav bar only */
+    #navbar.liquid-glass {
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        background: var(--glass-t3-bg) !important;
+    }
+
+    /* Navbar scrolled state — also keep blur */
+    #navbar.scrolled {
+        backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+        background: rgba(2, 15, 2, 0.92) !important;
+    }
+
+    /* Top nav blur backdrop */
+    .top-nav-backdrop {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Hero floating badges */
+    .hero-floating-badge {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(4, 40, 4, 0.85) !important;
+    }
+
+    /* Hero stats strip */
+    .hero-stats {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.80) !important;
+    }
+
+    /* Ghost button */
+    .btn-ghost {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.70) !important;
+    }
+
+    /* Nav action buttons */
+    .btn-nav {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 20, 3, 0.65) !important;
+    }
+
+    /* Cropper modal overlay */
+    .cropper-modal-overlay {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+    }
+
+    /* Session restore banner */
+    .session-banner {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(0, 40, 20, 0.92) !important;
+    }
+
+    /* Export dropdown */
+    .export-dropdown-menu {
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        background: rgba(3, 25, 3, 0.95) !important;
+    }
+
+    /* Hero glow elements — hide entirely on mobile (not visible anyway) */
+    .hero-glow-primary,
+    .hero-glow-gold {
+        display: none;
+    }
+}
+

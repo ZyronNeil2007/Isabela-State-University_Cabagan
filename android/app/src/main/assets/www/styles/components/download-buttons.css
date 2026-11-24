@@ -1,0 +1,18 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   15. DOWNLOAD BUTTONS
+─────────────────────────────────────────────────────────────────────────── */
+/* Desktop download — always shown on desktop */
+.desktop-download-btn {
+    display: block;
+    margin-top: 1.25rem;
+    width: 100%;
+}
+
+/* Loading state when exporting */
+.desktop-download-btn.loading {
+    opacity: 0.7;
+    pointer-events: none;
+    cursor: wait;
+}
+
+

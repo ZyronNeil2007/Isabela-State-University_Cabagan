@@ -1,0 +1,24 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   19. LIQUID GLASS (Navbar / Footer elements)
+─────────────────────────────────────────────────────────────────────────── */
+.liquid-glass {
+    background: var(--glass-t3-bg) !important;
+    backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-t3-blur)) saturate(160%) !important;
+    border: 1px solid var(--glass-t3-border) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 16px 48px rgba(0, 0, 0, 0.35) !important;
+    color: var(--text-primary);
+}
+
+/* Navbar-specific override */
+#navbar.liquid-glass {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.10),
+        inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+        0 12px 40px rgba(0, 0, 0, 0.30),
+        0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+

@@ -1,0 +1,44 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   3. BODY & BACKGROUND
+─────────────────────────────────────────────────────────────────────────── */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: clamp(2rem, 4vw, 3rem);
+    position: relative;
+}
+
+/* Flex-column body centres children by content size; without this a wide
+   min-content (e.g. 200px step cards) stretched sections past the viewport
+   on 320px phones. Sections must be viewport-wide and allowed to shrink. */
+body > section,
+body > main,
+body > footer {
+    width: 100%;
+    min-width: 0;
+}
+
+/*
+ * PERF FIX 1: Background is painted once on a fixed pseudo-element.
+ * This avoids the repaint triggered by `background-attachment: fixed`
+ * on the body during every scroll frame.
+ */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    /* Premium layered gradient background */
+    background:
+        radial-gradient(ellipse 80% 60% at 15% 0%, rgba(10, 80, 10, 0.38) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 85% 100%, rgba(4, 57, 4, 0.50) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 60% 30%, rgba(21, 185, 21, 0.07) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 35% at 90% 5%, rgba(160, 120, 48, 0.08) 0%, transparent 60%),
+        linear-gradient(160deg, var(--forest-950) 0%, var(--forest-900) 45%, var(--forest-800) 100%);
+    pointer-events: none;
+}
+
+

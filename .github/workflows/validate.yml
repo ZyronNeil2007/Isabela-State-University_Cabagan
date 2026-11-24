@@ -1,0 +1,29 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main, beta]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - name: Install dev tooling (not part of the app — it has no build step)
+        run: |
+          npm i -g playwright eslint@9 globals
+          npx playwright install --with-deps chromium
+      - name: Referenced files, ES imports and SW precache exist
+        run: node scripts/validation/check-references.js
+      - name: Android assets in sync with web/
+        run: node scripts/sync-android-assets/sync.js --check
+      - name: ESLint (module graph)
+        run: NODE_PATH=$(npm root -g) eslint -c scripts/validation/eslint.config.mjs web/src
+        continue-on-error: true   # animations.js ST_HERO is a tracked known issue (docs/development/KNOWN_ISSUES.md #16)
+      - name: Regression suite (raster hashes skipped: they depend on the OS font stack)
+        run: NODE_PATH=$(npm root -g) node scripts/validation/regression.js --no-pixels
+      - name: Feature smoke tests
+        run: NODE_PATH=$(npm root -g) node scripts/validation/features.js

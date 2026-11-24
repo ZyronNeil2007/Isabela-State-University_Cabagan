@@ -1,0 +1,39 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   HERO — Mobile Right-Column Fix
+────────────────────────────────────────────────────────────────────────── */
+/* ─── HERO: mobile right-col stacking fix ─────────────────────────────────
+   Overrides the desktop grid to re-stack columns vertically.               */
+@media (max-width: 959px) {
+    .hero-right-col {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        animation: heroFadeUp 0.8s 0.45s var(--ease-out) both;
+    }
+
+    .hero-right-col .hero-stage {
+        width: clamp(240px, 78vw, 380px);
+        height: clamp(260px, 82vw, 420px);
+    }
+
+    /* Floating badges: smaller on mobile */
+    .hero-floating-badge {
+        font-size: 0.7rem;
+        padding: 0.28rem 0.6rem;
+        gap: 0.3rem;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 420px) {
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .hero-actions .btn-primary,
+    .hero-actions .btn-ghost {
+        width: 100%;
+        justify-content: center;
+    }
+}
+

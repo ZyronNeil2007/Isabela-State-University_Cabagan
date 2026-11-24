@@ -1,0 +1,57 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   2. RESET & BASE
+─────────────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    overflow-x: hidden;
+    overflow-x: clip;   /* no scroll container → position:sticky works inside */
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    background-color: var(--forest-950);
+}
+
+body {
+    font-family: var(--font-base);
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6;
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'kern' 1, 'liga' 1;
+    overflow-x: hidden;
+    overflow-x: clip;   /* hidden makes <body> a scroll container and kills sticky */
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+button {
+    font-family: var(--font-base);
+    cursor: pointer;
+    border: none;
+    background: none;
+}
+
+img,
+canvas {
+    display: block;
+    max-width: 100%;
+}
+
+textarea {
+    resize: vertical;
+    font-family: var(--font-base);
+}
+
+

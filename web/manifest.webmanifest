@@ -9,13 +9,13 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "images/isu_logo_256.png",
+      "src": "assets/images/logos/isu_logo_256.png",
       "sizes": "256x256",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "images/isu_logo_512.png",
+      "src": "assets/images/logos/isu_logo_512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

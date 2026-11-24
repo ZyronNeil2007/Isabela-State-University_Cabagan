@@ -1,0 +1,83 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   ISU PREMIUM ID GENERATOR — DESIGN SYSTEM
+   Apple-inspired Glassmorphism · Inter Typography · ISU Green + Gold Palette
+   ═══════════════════════════════════════════════════════════════════════════
+
+   SECTIONS:
+   1.  Design Tokens (CSS Variables)
+   1a. Local Fonts (Poppins for the CR80 ID)
+   2.  Reset & Base
+   3.  Body & Background
+   4.  Floating Orbs
+   5.  Nav Backdrop & Navbar
+   6.  Hero Section
+   7.  Main Container (Split Grid)
+   8.  Glass Panel Base
+   9.  Form Section
+   10. Form Groups & Inputs
+   11. Photo Upload Area
+   12. Signature Pad
+   13. Stepper System (Header, Meta, Nav)
+   14. Desktop Form Header
+   15. Download Buttons
+   16. Preview Section
+   17. Card Stage & Flip Card
+   18. Preview Chips & Flip Hint
+   19. Liquid Glass & Shared Components
+   20. Footer
+   21. Animations & Keyframes
+   22. Responsive Breakpoints
+   23. CR80 ID — live HTML preview
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────────────────
+   STYLESHEET LOAD ORDER  (see the <link> tags in index.html)
+   The cascade order of the original single style.css is preserved exactly:
+   files are listed in source order, grouped by layer folder
+   (base / layout / components / features / responsive). Do NOT reorder the
+   <link> tags without checking the cascade — later files override earlier ones.
+   When adding a file, add its <link> in index.html AND to sw.js PRECACHE_ASSETS.
+   main.css
+   base/tokens.css
+   base/fonts.css
+   base/reset.css
+   layout/body.css
+   layout/orbs.css
+   components/navbar.css
+   features/hero.css
+   components/buttons.css
+   layout/container.css
+   components/glass-panel.css
+   components/form.css
+   features/photo-upload.css
+   features/signature.css
+   features/ai-signature.css
+   features/stepper.css
+   components/form-header.css
+   components/download-buttons.css
+   layout/preview-section.css
+   features/card-preview.css
+   components/chips.css
+   components/liquid-glass.css
+   components/footer.css
+   base/animations.css
+   responsive/breakpoints.css
+   features/session-restore.css
+   features/ocr.css
+   base/accessibility.css
+   features/id-version.css
+   components/enhancements.css
+   features/hero-split.css
+   features/features-section.css
+   features/how-it-works.css
+   responsive/sections.css
+   components/mobile-nav.css
+   features/bento.css
+   responsive/hero-mobile.css
+   components/section-divider.css
+   components/site-footer.css
+   base/reduced-motion.css
+   responsive/performance.css
+   features/cr80-card.css
+   responsive/adaptive.css
+────────────────────────────────────────────────────────────────────────── */

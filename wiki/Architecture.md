@@ -18,7 +18,7 @@ The project is modularized into dedicated folders under `isu_id`:
   - `app.js`: The powerhouse of the application. Contains all logic, state management, and the Canvas rendering pipeline.
   - `animations.js`: Visual motion layer (GSAP 3, Anime.js v4, Three.js hero particles).
   - `images/`: Contains the blank ID template references (Front and Back), university logos, and static assets.
-  - `scripts/`: Python utility scripts (e.g., `generate_dummy_students.py`, `resize_photos.py`).
+  - `tools/`: Python utility scripts (`dummy_data_generator.py`, `photo_resizer.py`).
 - **`android/`**: Android Studio Project
   - `app/`: Native / hybrid Android application source (Kotlin, Jetpack Compose, ML Kit OCR, WebView bridge).
   - `gradle/`, `build.gradle.kts`, `settings.gradle.kts`: Gradle build configuration.
@@ -29,7 +29,7 @@ The core of the ID generator is the HTML5 Canvas API. The rendering pipeline wor
 1. **State Management:** When a user types in a field or uploads an image, the global `students` array (which holds up to 5 student objects) is updated.
 2. **Debounced Re-render:** The `renderCard()` function is triggered. It uses `requestAnimationFrame` and a debounce timer to prevent lag while typing.
 3. **Template Layering:** 
-   - The blank template image (e.g., `images/2026_id/new_template_front.id.png`) is drawn onto the `frontCanvas` and `backCanvas` (the PNG/PDF export source).
+   - The blank template image (e.g., `assets/images/templates/2026/new_template_front.id.png`) is drawn onto the `frontCanvas` and `backCanvas` (the PNG/PDF export source).
    - For the 2026 CR80 ID the preview section shows a live HTML/CSS card (`#cr80-front` / `#cr80-back`) filled by `renderCr80Preview()` from the same state; the canvases keep rendering in the background.
    - Uploaded photos are drawn using `drawImage()`, respecting aspect ratios and applying circular or rectangular clipping masks.
 4. **Text Layering:** 
